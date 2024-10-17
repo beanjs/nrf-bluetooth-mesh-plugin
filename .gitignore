@@ -1,6 +1,6 @@
 # node files
-dist
 node_modules
+yarn.lock
 
 # iOS files
 Pods
