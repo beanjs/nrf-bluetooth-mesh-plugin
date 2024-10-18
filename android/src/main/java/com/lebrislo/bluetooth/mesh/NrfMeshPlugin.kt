@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nordicsemi.android.mesh.MeshManagerApi
+import no.nordicsemi.android.mesh.MeshNetwork
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes
 import java.util.UUID
@@ -150,18 +151,22 @@ class NrfMeshPlugin : Plugin() {
                         val serviceData = Utils.getServiceData(
                             it.scanResult!!,
                             MeshManagerApi.MESH_PROXY_UUID
-                        )
+                        ) ?: return@forEach
 
-                        if (serviceData == null || serviceData.size < 18) return@forEach
+                        val meshapi = implementation.meshManagerApi
+                        val network = meshapi.meshNetwork!!
 
-                        val uuid: UUID = implementation.meshManagerApi.getDeviceUuid(serviceData)
-
-                        put(JSObject().apply {
-                            put("uuid", uuid.toString())
-                            put("macAddress", it.scanResult.device.address)
-                            put("rssi", it.rssi)
-                            put("name", it.name)
-                        })
+                        for (node in network.nodes) {
+                            if (meshapi.nodeIdentityMatches(node, serviceData)) {
+                                put(JSObject().apply {
+                                    put("unicastAddress", node.unicastAddress)
+                                    put("macAddress", it.scanResult.device.address)
+                                    put("rssi", it.rssi)
+                                    put("name", it.name)
+                                })
+                                break
+                            }
+                        }
                     }
                 })
             }
@@ -395,13 +400,15 @@ class NrfMeshPlugin : Plugin() {
                 return@launch
             }
 
-//            PluginCallManager.getInstance()
-//                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD, unicastAddress, call)
+            PluginCallManager.getInstance()
+                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD.toInt(), unicastAddress, call)
 
             val deferred = implementation.addApplicationKeyToNode(unicastAddress, appKeyIndex)
             val result = deferred.await()
 
-            call.resolve(JSObject().put("success", result))
+            if (!result) {
+                call.reject("Failed to bind application key to Node")
+            }
         }
     }
 
@@ -490,7 +497,11 @@ class NrfMeshPlugin : Plugin() {
                 unicastAddress,
                 appKeyIndex,
                 onOff,
-                0
+                1,
+                    2,
+                    3,
+                    20,
+                    acknowledgement!!
             )
 
             if (!result) {
@@ -555,10 +566,10 @@ class NrfMeshPlugin : Plugin() {
                 return@launch
             }
 
-            if (acknowledgement == true) {
-                PluginCallManager.getInstance()
-                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_SET, unicastAddress, call)
-            }
+//            if (acknowledgement == true) {
+//                PluginCallManager.getInstance()
+//                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_SET, unicastAddress, call)
+//            }
 
             val result = implementation.sendGenericPowerLevelSet(
                 unicastAddress,
@@ -594,8 +605,8 @@ class NrfMeshPlugin : Plugin() {
                 return@launch
             }
 
-            PluginCallManager.getInstance()
-                .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_GET, unicastAddress, call)
+//            PluginCallManager.getInstance()
+//                .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_GET, unicastAddress, call)
 
             val result = implementation.sendGenericPowerLevelGet(
                 unicastAddress,

@@ -7,6 +7,7 @@ export interface BleMeshDevice {
     uuid: string;
     rssi: number;
     macAddress: string;
+    unicastAddress?: number;
 }
 export interface ScanMeshDevices {
     unprovisioned: BleMeshDevice[];
@@ -86,6 +87,7 @@ export interface NrfMeshPlugin {
         unicastAddress: number;
     }): Promise<void>;
     sendGenericOnOffSet(options: {
+        acknowledgement?: boolean
         unicastAddress: number;
         appKeyIndex: number;
         onOff: boolean;

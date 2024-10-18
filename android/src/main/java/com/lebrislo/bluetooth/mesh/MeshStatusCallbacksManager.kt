@@ -9,7 +9,7 @@ import no.nordicsemi.android.mesh.transport.ConfigModelAppStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeResetStatus
 import no.nordicsemi.android.mesh.transport.ControlMessage
 import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
-import no.nordicsemi.android.mesh.transport.GenericPowerLevelStatus
+//import no.nordicsemi.android.mesh.transport.GenericPowerLevelStatus
 import no.nordicsemi.android.mesh.transport.LightCtlStatus
 import no.nordicsemi.android.mesh.transport.LightHslStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
@@ -51,8 +51,6 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             nrfMeshManager.onCompositionDataStatusReceived(meshMessage)
         } else if (meshMessage is GenericOnOffStatus) {
             PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
-        } else if (meshMessage is GenericPowerLevelStatus) {
-            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         } else if (meshMessage is LightHslStatus) {
             PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         } else if (meshMessage is LightCtlStatus) {
@@ -60,6 +58,10 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
         } else if (meshMessage is VendorModelMessageStatus) {
             PluginCallManager.getInstance().resolveVendorPluginCall(meshMessage)
         }
+
+//        else if (meshMessage is GenericPowerLevelStatus) {
+//            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+//        }
     }
 
     override fun onMessageDecryptionFailed(meshLayer: String?, errorMessage: String?) {

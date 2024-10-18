@@ -4,7 +4,7 @@ import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import no.nordicsemi.android.mesh.transport.GenericLevelStatus
 import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
-import no.nordicsemi.android.mesh.transport.GenericPowerLevelStatus
+//import no.nordicsemi.android.mesh.transport.GenericPowerLevelStatus
 import no.nordicsemi.android.mesh.transport.LightCtlStatus
 import no.nordicsemi.android.mesh.transport.LightHslStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
@@ -29,7 +29,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                 "data", when (meshMessage) {
                     is GenericOnOffStatus -> genericOnOffStatusResponse(meshMessage)
                     is GenericLevelStatus -> genericLevelStatusResponse(meshMessage)
-                    is GenericPowerLevelStatus -> genericPowerLevelStatusResponse(meshMessage)
+//                    is GenericPowerLevelStatus -> genericPowerLevelStatusResponse(meshMessage)
                     is LightHslStatus -> lightHslStatusResponse(meshMessage)
                     is LightCtlStatus -> lightCtlStatusResponse(meshMessage)
                     else -> JSObject()
@@ -50,11 +50,11 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
             return data
         }
 
-        private fun genericPowerLevelStatusResponse(meshMessage: GenericPowerLevelStatus): JSObject {
-            val data = JSObject()
-            data.put("powerLevel", meshMessage.presentLevel.toUShort().toInt())
-            return data
-        }
+//        private fun genericPowerLevelStatusResponse(meshMessage: GenericPowerLevelStatus): JSObject {
+//            val data = JSObject()
+//            data.put("powerLevel", meshMessage.presentLevel.toUShort().toInt())
+//            return data
+//        }
 
         private fun lightHslStatusResponse(meshMessage: LightHslStatus): JSObject {
             val data = JSObject()

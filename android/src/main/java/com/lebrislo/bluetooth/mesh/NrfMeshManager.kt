@@ -27,9 +27,9 @@ import no.nordicsemi.android.mesh.transport.GenericLevelSetUnacknowledged
 import no.nordicsemi.android.mesh.transport.GenericOnOffGet
 import no.nordicsemi.android.mesh.transport.GenericOnOffSet
 import no.nordicsemi.android.mesh.transport.GenericOnOffSetUnacknowledged
-import no.nordicsemi.android.mesh.transport.GenericPowerLevelGet
-import no.nordicsemi.android.mesh.transport.GenericPowerLevelSet
-import no.nordicsemi.android.mesh.transport.GenericPowerLevelSetUnacknowledged
+//import no.nordicsemi.android.mesh.transport.GenericPowerLevelGet
+//import no.nordicsemi.android.mesh.transport.GenericPowerLevelSet
+//import no.nordicsemi.android.mesh.transport.GenericPowerLevelSetUnacknowledged
 import no.nordicsemi.android.mesh.transport.LightCtlSet
 import no.nordicsemi.android.mesh.transport.LightCtlSetUnacknowledged
 import no.nordicsemi.android.mesh.transport.LightHslGet
@@ -631,26 +631,26 @@ class NrfMeshManager(private val context: Context) {
 
         var meshMessage: MeshMessage? = null
 
-        if (acknowledgement) {
-            meshMessage = GenericPowerLevelSet(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                tId,
-                transitionStep,
-                transitionResolution,
-                powerLevel,
-                delay
-            )
-        } else {
-            meshMessage = GenericPowerLevelSetUnacknowledged(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                tId,
-                transitionStep,
-                transitionResolution,
-                powerLevel,
-                delay
-            )
-        }
-        meshManagerApi.createMeshPdu(address, meshMessage)
+//        if (acknowledgement) {
+//            meshMessage = GenericPowerLevelSet(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                tId,
+//                transitionStep,
+//                transitionResolution,
+//                powerLevel,
+//                delay
+//            )
+//        } else {
+//            meshMessage = GenericPowerLevelSetUnacknowledged(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                tId,
+//                transitionStep,
+//                transitionResolution,
+//                powerLevel,
+//                delay
+//            )
+//        }
+//        meshManagerApi.createMeshPdu(address, meshMessage)
         return true
     }
 
@@ -673,11 +673,11 @@ class NrfMeshManager(private val context: Context) {
             return false
         }
 
-        val meshMessage = GenericPowerLevelGet(
-            meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-        )
-
-        meshManagerApi.createMeshPdu(address, meshMessage)
+//        val meshMessage = GenericPowerLevelGet(
+//            meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//        )
+//
+//        meshManagerApi.createMeshPdu(address, meshMessage)
         return true
     }
 
