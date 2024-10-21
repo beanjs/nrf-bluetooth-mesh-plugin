@@ -100,9 +100,9 @@ class ScannerRepository(
         if (scanRecord != null) {
             if (scanRecord.bytes != null && scanRecord.serviceUuids != null) {
                 device = ExtendedBluetoothDevice(result)
-                if (!provisionedDevices.contains(device)) {
-                    Log.d(tag, "Provisioned device discovered: ${result.device.address} ")
-                    synchronized(provisionedDevices) {
+                synchronized(provisionedDevices) {
+                    if (!provisionedDevices.contains(device)) {
+                        Log.d(tag, "Provisioned device discovered: ${result.device.address} ")
                         provisionedDevices.add(device)
                     }
                 }

@@ -6,6 +6,30 @@
     "tags": [],
     "methods": [
       {
+        "name": "isBluetoothEnabled",
+        "signature": "() => Promise<BluetoothState>",
+        "parameters": [],
+        "returns": "Promise<BluetoothState>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "BluetoothState"
+        ],
+        "slug": "isbluetoothenabled"
+      },
+      {
+        "name": "requestBluetoothEnable",
+        "signature": "() => Promise<BluetoothState>",
+        "parameters": [],
+        "returns": "Promise<BluetoothState>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "BluetoothState"
+        ],
+        "slug": "requestbluetoothenable"
+      },
+      {
         "name": "checkPermissions",
         "signature": "() => Promise<Permissions>",
         "parameters": [],
@@ -175,12 +199,12 @@
       },
       {
         "name": "sendGenericOnOffSet",
-        "signature": "(options: { unicastAddress: number; appKeyIndex: number; onOff: boolean; }) => Promise<ModelMessageStatus | PluginCallRejection>",
+        "signature": "(options: { unicastAddress: number; appKeyIndex: number; onOff: boolean; acknowledgement?: boolean; }) => Promise<ModelMessageStatus | PluginCallRejection>",
         "parameters": [
           {
             "name": "options",
             "docs": "",
-            "type": "{ unicastAddress: number; appKeyIndex: number; onOff: boolean; }"
+            "type": "{ unicastAddress: number; appKeyIndex: number; onOff: boolean; acknowledgement?: boolean | undefined; }"
           }
         ],
         "returns": "Promise<ModelMessageStatus | PluginCallRejection>",
@@ -374,7 +398,7 @@
       },
       {
         "name": "addListener",
-        "signature": "(eventName: string, listenerFunc: (event: ModelMessageStatus) => void) => Promise<PluginListenerHandle>",
+        "signature": "(eventName: string, listenerFunc: (event: any) => void) => Promise<PluginListenerHandle>",
         "parameters": [
           {
             "name": "eventName",
@@ -384,15 +408,14 @@
           {
             "name": "listenerFunc",
             "docs": "",
-            "type": "(event: ModelMessageStatus) => void"
+            "type": "(event: any) => void"
           }
         ],
         "returns": "Promise<PluginListenerHandle>",
         "tags": [],
         "docs": "",
         "complexTypes": [
-          "PluginListenerHandle",
-          "ModelMessageStatus"
+          "PluginListenerHandle"
         ],
         "slug": "addlistenerstring-"
       },
@@ -410,6 +433,22 @@
     "properties": []
   },
   "interfaces": [
+    {
+      "name": "BluetoothState",
+      "slug": "bluetoothstate",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "enabled",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean"
+        }
+      ]
+    },
     {
       "name": "Permissions",
       "slug": "permissions",
@@ -460,13 +499,6 @@
           "type": "string"
         },
         {
-          "name": "uuid",
-          "tags": [],
-          "docs": "",
-          "complexTypes": [],
-          "type": "string"
-        },
-        {
           "name": "rssi",
           "tags": [],
           "docs": "",
@@ -479,6 +511,20 @@
           "docs": "",
           "complexTypes": [],
           "type": "string"
+        },
+        {
+          "name": "uuid",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "unicastAddress",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
         }
       ]
     },

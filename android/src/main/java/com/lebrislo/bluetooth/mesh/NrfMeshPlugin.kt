@@ -29,9 +29,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nordicsemi.android.mesh.MeshManagerApi
-import no.nordicsemi.android.mesh.MeshNetwork
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes
+import java.util.Random
 import java.util.UUID
 
 
@@ -196,18 +196,16 @@ class NrfMeshPlugin : Plugin() {
 
                         val meshapi = implementation.meshManagerApi
                         val network = meshapi.meshNetwork!!
+                        val node = network.nodes.find {
+                            meshapi.nodeIdentityMatches(it,serviceData)
+                        } ?: return@forEach
 
-                        for (node in network.nodes) {
-                            if (meshapi.nodeIdentityMatches(node, serviceData)) {
-                                put(JSObject().apply {
-                                    put("unicastAddress", node.unicastAddress)
-                                    put("macAddress", it.scanResult.device.address)
-                                    put("rssi", it.rssi)
-                                    put("name", it.name)
-                                })
-                                break
-                            }
-                        }
+                        put(JSObject().apply {
+                            put("unicastAddress", node.unicastAddress)
+                            put("macAddress", it.scanResult.device.address)
+                            put("rssi", it.rssi)
+                            put("name", it.name)
+                        })
                     }
                 })
             }
@@ -522,12 +520,8 @@ class NrfMeshPlugin : Plugin() {
             val result = implementation.sendGenericOnOffSet(
                 unicastAddress,
                 appKeyIndex,
-                onOff,
-                1,
-                    2,
-                    3,
-                    20,
-                    acknowledgement!!
+                onOff, Random().nextInt(), 0, 0, 0,
+                acknowledgement!!
             )
 
             if (!result) {

@@ -5,7 +5,11 @@ import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import no.nordicsemi.android.mesh.MeshStatusCallbacks
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
+import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
+import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelAppStatus
+import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitSet
+import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeResetStatus
 import no.nordicsemi.android.mesh.transport.ControlMessage
 import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
@@ -27,11 +31,11 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
     }
 
     override fun onBlockAcknowledgementProcessed(dst: Int, message: ControlMessage) {
-
+        Log.d(tag, "onBlockAcknowledgementProcessed")
     }
 
     override fun onBlockAcknowledgementReceived(src: Int, message: ControlMessage) {
-
+        Log.d(tag, "onBlockAcknowledgementReceived")
     }
 
     override fun onMeshMessageProcessed(dst: Int, meshMessage: MeshMessage) {
@@ -40,6 +44,8 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
 
     override fun onMeshMessageReceived(src: Int, meshMessage: MeshMessage) {
         Log.d(tag, "onMeshMessageReceived ${meshMessage.javaClass.simpleName}")
+        val meshManager = nrfMeshManager.meshManagerApi
+
         if (meshMessage is ConfigNodeResetStatus) {
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigModelAppStatus) {
@@ -48,16 +54,28 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             nrfMeshManager.onAppKeyAddStatusReceived(meshMessage)
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigCompositionDataStatus) {
+            val configDefaultTtlGet = ConfigDefaultTtlGet()
+            meshManager.createMeshPdu(meshMessage.src,configDefaultTtlGet)
+        } else if (meshMessage is ConfigDefaultTtlStatus){
+            val networkTransmitSet = ConfigNetworkTransmitSet(2,1)
+            meshManager.createMeshPdu(meshMessage.src,networkTransmitSet)
+        } else if (meshMessage is ConfigNetworkTransmitStatus){
             nrfMeshManager.onCompositionDataStatusReceived(meshMessage)
         } else if (meshMessage is GenericOnOffStatus) {
             PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
-        } else if (meshMessage is LightHslStatus) {
-            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
-        } else if (meshMessage is LightCtlStatus) {
-            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
-        } else if (meshMessage is VendorModelMessageStatus) {
-            PluginCallManager.getInstance().resolveVendorPluginCall(meshMessage)
         }
+
+
+
+//        else if (meshMessage is GenericOnOffStatus) {
+//            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+//        } else if (meshMessage is LightHslStatus) {
+//            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+//        } else if (meshMessage is LightCtlStatus) {
+//            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+//        } else if (meshMessage is VendorModelMessageStatus) {
+//            PluginCallManager.getInstance().resolveVendorPluginCall(meshMessage)
+//        }
 
 //        else if (meshMessage is GenericPowerLevelStatus) {
 //            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)

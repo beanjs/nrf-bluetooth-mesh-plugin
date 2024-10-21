@@ -20,7 +20,10 @@ import no.nordicsemi.android.mesh.transport.ConfigAppKeyAdd
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataGet
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
+import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
+import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelAppBind
+import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeReset
 import no.nordicsemi.android.mesh.transport.GenericLevelSet
 import no.nordicsemi.android.mesh.transport.GenericLevelSetUnacknowledged
@@ -121,31 +124,35 @@ class NrfMeshManager(private val context: Context) {
         if (bleMeshManager.isConnected) {
             Log.d(tag, "searchProxyMesh : Connected to a bluetooth device")
 
-            val isMeshProxy = scannerRepository.provisionedDevices.any() { device ->
-                device.scanResult?.device?.address == bleMeshManager.bluetoothDevice?.address
+            synchronized(scannerRepository.provisionedDevices) {
+                val isMeshProxy = scannerRepository.provisionedDevices.any() { device ->
+                    device.scanResult?.device?.address == bleMeshManager.bluetoothDevice?.address
+                }
+
+                Log.d(tag, "searchProxyMesh : Is mesh proxy: $isMeshProxy")
+
+                if (isMeshProxy) {
+                    Log.i(tag, "searchProxyMesh : Connected to a mesh proxy ${bleMeshManager.bluetoothDevice?.address}")
+                    return bleMeshManager.bluetoothDevice
+                }
             }
 
-            Log.d(tag, "searchProxyMesh : Is mesh proxy: $isMeshProxy")
-
-            if (isMeshProxy) {
-                Log.i(tag, "searchProxyMesh : Connected to a mesh proxy ${bleMeshManager.bluetoothDevice?.address}")
-                return bleMeshManager.bluetoothDevice
-            } else {
-                withContext(Dispatchers.IO) {
-                    disconnectBle()
-                }
+            withContext(Dispatchers.IO) {
+                disconnectBle()
             }
         }
 
-        Log.d(tag, "searchProxyMesh : Provisioned devices: ${scannerRepository.provisionedDevices.size}")
+        synchronized(scannerRepository.provisionedDevices) {
+            Log.d(tag, "searchProxyMesh : Provisioned devices: ${scannerRepository.provisionedDevices.size}")
 
-        if (scannerRepository.provisionedDevices.isNotEmpty()) {
-            synchronized(scannerRepository.provisionedDevices) {
-                scannerRepository.provisionedDevices.sortBy { device -> device.scanResult?.rssi }
+            if (scannerRepository.provisionedDevices.isNotEmpty()) {
+                synchronized(scannerRepository.provisionedDevices) {
+                    scannerRepository.provisionedDevices.sortBy { device -> device.scanResult?.rssi }
+                }
+                val device = scannerRepository.provisionedDevices.first().device
+                Log.i(tag, "searchProxyMesh : Found a mesh proxy ${device!!.address}")
+                return device
             }
-            val device = scannerRepository.provisionedDevices.first().device
-            Log.i(tag, "searchProxyMesh : Found a mesh proxy ${device!!.address}")
-            return device
         }
         return null
     }
@@ -160,22 +167,27 @@ class NrfMeshManager(private val context: Context) {
     suspend fun searchUnprovisionedBluetoothDevice(uuid: String): BluetoothDevice? {
         if (bleMeshManager.isConnected) {
             val macAddress = bleMeshManager.bluetoothDevice!!.address
-            if (scannerRepository.unprovisionedDevices.any { device -> device.scanResult?.device?.address == macAddress }) {
-                return bleMeshManager.bluetoothDevice
-            } else {
-                withContext(Dispatchers.IO) {
-                    disconnectBle()
+
+            synchronized(scannerRepository.unprovisionedDevices){
+                if (scannerRepository.unprovisionedDevices.any { device -> device.scanResult?.device?.address == macAddress }) {
+                    return bleMeshManager.bluetoothDevice
                 }
+            }
+
+            withContext(Dispatchers.IO) {
+                disconnectBle()
             }
         }
 
-        return scannerRepository.unprovisionedDevices.firstOrNull { device ->
-            device.scanResult?.let {
-                val serviceData = Utils.getServiceData(it, MeshManagerApi.MESH_PROVISIONING_UUID)
-                val deviceUuid = meshManagerApi.getDeviceUuid(serviceData!!)
-                deviceUuid.toString() == uuid
-            } ?: false
-        }?.device
+        synchronized(scannerRepository.unprovisionedDevices) {
+            return scannerRepository.unprovisionedDevices.firstOrNull { device ->
+                device.scanResult?.let {
+                    val serviceData = Utils.getServiceData(it, MeshManagerApi.MESH_PROVISIONING_UUID)
+                    val deviceUuid = meshManagerApi.getDeviceUuid(serviceData!!)
+                    deviceUuid.toString() == uuid
+                } ?: false
+            }?.device
+        }
     }
 
     /**
@@ -186,12 +198,33 @@ class NrfMeshManager(private val context: Context) {
      * @return List<ExtendedBluetoothDevice>
      */
     suspend fun scanMeshDevices(scanDurationMs: Int = 5000): List<ExtendedBluetoothDevice> {
-        scannerRepository.unprovisionedDevices.clear()
-        scannerRepository.provisionedDevices.clear()
+        synchronized(scannerRepository.unprovisionedDevices) {
+            scannerRepository.unprovisionedDevices.clear()
+        }
+
+        synchronized(scannerRepository.provisionedDevices){
+            scannerRepository.provisionedDevices.clear()
+        }
+
         scannerRepository.stopScanDevices()
         scannerRepository.startScanDevices()
         delay(scanDurationMs.toLong())
-        return scannerRepository.unprovisionedDevices + scannerRepository.provisionedDevices
+
+        val devices : MutableList<ExtendedBluetoothDevice> = mutableListOf()
+
+        synchronized(scannerRepository.unprovisionedDevices){
+            scannerRepository.unprovisionedDevices.forEach {
+                devices.add(it)
+            }
+        }
+
+        synchronized(scannerRepository.provisionedDevices){
+            scannerRepository.provisionedDevices.forEach {
+                devices.add(it)
+            }
+        }
+
+        return  devices
     }
 
     /**
@@ -273,6 +306,8 @@ class NrfMeshManager(private val context: Context) {
                 val uuid = bleMeshDevice.node.uuid
                 provisioningStatusMap[uuid]?.complete(bleMeshDevice)
                 provisioningStatusMap.remove(uuid)
+
+                bleMeshManager.disconnect().enqueue()
             }
 
             is BleMeshDevice.Unprovisioned -> {
@@ -444,7 +479,7 @@ class NrfMeshManager(private val context: Context) {
         return deferred
     }
 
-    fun onCompositionDataStatusReceived(meshMessage: ConfigCompositionDataStatus) {
+    fun onCompositionDataStatusReceived(meshMessage: ConfigNetworkTransmitStatus) {
         Log.d(tag, "onCompositionDataStatusReceived")
         val unicastAddress = meshMessage.src
         val operationSucceeded = meshMessage.statusCode == 0

@@ -10,9 +10,10 @@ export interface Permissions {
 
 export interface BleMeshDevice {
   name: string;
-  uuid: string;
   rssi: number;
   macAddress: string;
+  uuid?: string;
+  unicastAddress?: number;
 }
 
 export interface ScanMeshDevices {
@@ -71,16 +72,17 @@ export interface MeshNetworkObject {
 export interface NrfMeshPlugin {
   isBluetoothEnabled(): Promise<BluetoothState>;
   requestBluetoothEnable(): Promise<BluetoothState>;
-  checkPermissions(): Promise<Permissions>
-  requestPermissions(): Promise<any>
-  scanMeshDevices(options: {
-    timeout: number;
-  }): Promise<ScanMeshDevices>;
+  checkPermissions(): Promise<Permissions>;
+  requestPermissions(): Promise<any>;
+  scanMeshDevices(options: { timeout: number }): Promise<ScanMeshDevices>;
   getProvisioningCapabilities(options: {
     macAddress: string;
     uuid: string;
   }): Promise<ProvisioningCapabilities | void>;
-  provisionDevice(options: { macAddress: string; uuid: string }): Promise<ProvisioningStatus>;
+  provisionDevice(options: {
+    macAddress: string;
+    uuid: string;
+  }): Promise<ProvisioningStatus>;
   unprovisionDevice(options: { unicastAddress: number }): Promise<void>;
   createApplicationKey(): Promise<void>;
   removeApplicationKey(options: { appKeyIndex: number }): Promise<void>;
@@ -98,6 +100,7 @@ export interface NrfMeshPlugin {
     unicastAddress: number;
     appKeyIndex: number;
     onOff: boolean;
+    acknowledgement?: boolean;
   }): Promise<ModelMessageStatus | PluginCallRejection>;
   sendGenericOnOffGet(options: {
     unicastAddress: number;
@@ -136,11 +139,14 @@ export interface NrfMeshPlugin {
     modelId: number;
     opcode: number;
     payload?: Uint8Array;
-    opPairCode?: number
+    opPairCode?: number;
   }): Promise<ModelMessageStatus | PluginCallRejection>;
   initMeshNetwork(options: { networkName: string }): Promise<MeshNetworkObject>;
   exportMeshNetwork(): Promise<MeshNetworkObject>;
   importMeshNetwork(options: { meshNetwork: string }): Promise<void>;
-  addListener(eventName: string, listenerFunc: (event: any) => void): Promise<PluginListenerHandle>;
+  addListener(
+    eventName: string,
+    listenerFunc: (event: any) => void,
+  ): Promise<PluginListenerHandle>;
   removeAllListeners(): Promise<void>;
 }

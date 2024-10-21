@@ -6,6 +6,14 @@ var capacitorNrfMesh = (function (exports, core) {
     });
 
     class NrfMeshWeb extends core.WebPlugin {
+        async isBluetoothEnabled() {
+            console.log('isBluetoothEnabled');
+            return { enabled: true };
+        }
+        async requestBluetoothEnable() {
+            console.log('requestBluetoothEnabled');
+            return { enabled: true };
+        }
         async checkPermissions() {
             console.log('checkPermissions');
             return { 'LOCATION': 'granted', 'BLUETOOTH': 'granted' };

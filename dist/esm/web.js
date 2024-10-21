@@ -1,5 +1,13 @@
 import { WebPlugin } from '@capacitor/core';
 export class NrfMeshWeb extends WebPlugin {
+    async isBluetoothEnabled() {
+        console.log('isBluetoothEnabled');
+        return { enabled: true };
+    }
+    async requestBluetoothEnable() {
+        console.log('requestBluetoothEnabled');
+        return { enabled: true };
+    }
     async checkPermissions() {
         console.log('checkPermissions');
         return { 'LOCATION': 'granted', 'BLUETOOTH': 'granted' };

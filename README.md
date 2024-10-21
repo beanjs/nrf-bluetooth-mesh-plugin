@@ -215,12 +215,12 @@ compositionDataGet(options: { unicastAddress: number; }) => Promise<void>
 ### sendGenericOnOffSet(...)
 
 ```typescript
-sendGenericOnOffSet(options: { unicastAddress: number; appKeyIndex: number; onOff: boolean; }) => Promise<ModelMessageStatus | PluginCallRejection>
+sendGenericOnOffSet(options: { unicastAddress: number; appKeyIndex: number; onOff: boolean; acknowledgement?: boolean; }) => Promise<ModelMessageStatus | PluginCallRejection>
 ```
 
-| Param         | Type                                                                          |
-| ------------- | ----------------------------------------------------------------------------- |
-| **`options`** | <code>{ unicastAddress: number; appKeyIndex: number; onOff: boolean; }</code> |
+| Param         | Type                                                                                                     |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; appKeyIndex: number; onOff: boolean; acknowledgement?: boolean; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#modelmessagestatus">ModelMessageStatus</a> | <a href="#plugincallrejection">PluginCallRejection</a>&gt;</code>
 
@@ -419,12 +419,13 @@ removeAllListeners() => Promise<void>
 
 #### BleMeshDevice
 
-| Prop             | Type                |
-| ---------------- | ------------------- |
-| **`name`**       | <code>string</code> |
-| **`uuid`**       | <code>string</code> |
-| **`rssi`**       | <code>number</code> |
-| **`macAddress`** | <code>string</code> |
+| Prop                 | Type                |
+| -------------------- | ------------------- |
+| **`name`**           | <code>string</code> |
+| **`rssi`**           | <code>number</code> |
+| **`macAddress`**     | <code>string</code> |
+| **`uuid`**           | <code>string</code> |
+| **`unicastAddress`** | <code>number</code> |
 
 
 #### ProvisioningCapabilities

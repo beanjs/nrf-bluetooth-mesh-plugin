@@ -1,12 +1,15 @@
 import type { PluginListenerHandle } from '@capacitor/core';
+export interface BluetoothState {
+    enabled: boolean;
+}
 export interface Permissions {
     [key: string]: string;
 }
 export interface BleMeshDevice {
     name: string;
-    uuid: string;
     rssi: number;
     macAddress: string;
+    uuid?: string;
     unicastAddress?: number;
 }
 export interface ScanMeshDevices {
@@ -54,6 +57,8 @@ export interface MeshNetworkObject {
     meshNetwork: string;
 }
 export interface NrfMeshPlugin {
+    isBluetoothEnabled(): Promise<BluetoothState>;
+    requestBluetoothEnable(): Promise<BluetoothState>;
     checkPermissions(): Promise<Permissions>;
     requestPermissions(): Promise<any>;
     scanMeshDevices(options: {
@@ -87,10 +92,10 @@ export interface NrfMeshPlugin {
         unicastAddress: number;
     }): Promise<void>;
     sendGenericOnOffSet(options: {
-        acknowledgement?: boolean
         unicastAddress: number;
         appKeyIndex: number;
         onOff: boolean;
+        acknowledgement?: boolean;
     }): Promise<ModelMessageStatus | PluginCallRejection>;
     sendGenericOnOffGet(options: {
         unicastAddress: number;
@@ -138,6 +143,6 @@ export interface NrfMeshPlugin {
     importMeshNetwork(options: {
         meshNetwork: string;
     }): Promise<void>;
-    addListener(eventName: string, listenerFunc: (event: ModelMessageStatus) => void): Promise<PluginListenerHandle>;
+    addListener(eventName: string, listenerFunc: (event: any) => void): Promise<PluginListenerHandle>;
     removeAllListeners(): Promise<void>;
 }
