@@ -2,17 +2,18 @@ package com.lebrislo.bluetooth.mesh
 
 import android.util.Log
 import com.lebrislo.bluetooth.mesh.models.BleMeshDevice
+import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import no.nordicsemi.android.mesh.MeshProvisioningStatusCallbacks
 import no.nordicsemi.android.mesh.provisionerstates.ProvisioningState
 import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
 
 class MeshProvisioningCallbacksManager(
-    var unprovisionedMeshNodes: ArrayList<UnprovisionedMeshNode>,
     var nrfMeshManager: NrfMeshManager
 ) :
     MeshProvisioningStatusCallbacks {
     private val tag: String = MeshProvisioningCallbacksManager::class.java.simpleName
+    val unprovisionedMeshNodes: ArrayList<UnprovisionedMeshNode> = ArrayList()
 
     override fun onProvisioningStateChanged(
         meshNode: UnprovisionedMeshNode?,
@@ -22,7 +23,7 @@ class MeshProvisioningCallbacksManager(
         Log.d(tag, "onProvisioningStateChanged : ${meshNode?.deviceUuid}  ${state?.name}")
         if (state == ProvisioningState.States.PROVISIONING_CAPABILITIES) {
             unprovisionedMeshNodes.add(meshNode!!)
-            nrfMeshManager.onProvisioningCapabilitiesReceived(meshNode)
+            PluginCallManager.getInstance().resolveMeshIndetifyPluginCall(meshNode)
         }
     }
 
@@ -33,7 +34,8 @@ class MeshProvisioningCallbacksManager(
     ) {
         Log.d(tag, "onProvisioningFailed : " + meshNode?.deviceUuid)
         if (state == ProvisioningState.States.PROVISIONING_FAILED) {
-            nrfMeshManager.onProvisioningFinish(BleMeshDevice.Unprovisioned(meshNode!!))
+            nrfMeshManager.disconnectBle()
+            PluginCallManager.getInstance().resolveMeshProvisionPluginCall(BleMeshDevice.Unprovisioned(meshNode!!))
         }
     }
 
@@ -44,7 +46,8 @@ class MeshProvisioningCallbacksManager(
     ) {
         Log.d(tag, "onProvisioningCompleted : " + meshNode?.uuid)
         if (state == ProvisioningState.States.PROVISIONING_COMPLETE) {
-            nrfMeshManager.onProvisioningFinish(BleMeshDevice.Provisioned(meshNode!!))
+            nrfMeshManager.disconnectBle()
+            PluginCallManager.getInstance().resolveMeshProvisionPluginCall(BleMeshDevice.Provisioned(meshNode!!))
         }
     }
 }

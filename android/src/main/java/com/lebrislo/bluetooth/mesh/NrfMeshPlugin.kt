@@ -9,6 +9,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import androidx.activity.result.ActivityResult
 import com.getcapacitor.JSArray
@@ -19,7 +21,7 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.ActivityCallback
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
-import com.lebrislo.bluetooth.mesh.models.BleMeshDevice
+import com.getcapacitor.annotation.PermissionCallback
 import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import com.lebrislo.bluetooth.mesh.utils.BluetoothStateReceiver
 import com.lebrislo.bluetooth.mesh.utils.Permissions
@@ -28,30 +30,51 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import no.nordicsemi.android.mesh.Features
 import no.nordicsemi.android.mesh.MeshManagerApi
-import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes
-import java.util.Random
+import no.nordicsemi.android.mesh.utils.CompanyIdentifiers
+import no.nordicsemi.android.mesh.utils.CompositionDataParser
+import no.nordicsemi.android.mesh.utils.MeshParserUtils
+import java.text.DateFormat
 import java.util.UUID
 
-
+@SuppressLint("MissingPermission")
 @CapacitorPlugin(
     name = "NrfMesh",
     permissions = [
         Permission(
-            strings = [
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
-            ],
-            alias = "LOCATION"
+                strings = [
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                ], alias = "ACCESS_COARSE_LOCATION"
         ),
         Permission(
-            strings = [
-                android.Manifest.permission.BLUETOOTH,
-                android.Manifest.permission.BLUETOOTH_ADMIN,
-            ],
-            alias = "BLUETOOTH"
-        )
+                strings = [
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                ], alias = "ACCESS_FINE_LOCATION"
+        ),
+        Permission(
+                strings = [
+                    android.Manifest.permission.BLUETOOTH,
+                ], alias = "BLUETOOTH"
+        ),
+        Permission(
+                strings = [
+                    android.Manifest.permission.BLUETOOTH_ADMIN,
+                ], alias = "BLUETOOTH_ADMIN"
+        ),
+        Permission(
+                strings = [
+                    // Manifest.permission.BLUETOOTH_SCAN
+                    "android.permission.BLUETOOTH_SCAN",
+                ], alias = "BLUETOOTH_SCAN"
+        ),
+        Permission(
+                strings = [
+                    // Manifest.permission.BLUETOOTH_ADMIN
+                    "android.permission.BLUETOOTH_CONNECT",
+                ], alias = "BLUETOOTH_CONNECT"
+        ),
     ]
 )
 class NrfMeshPlugin : Plugin() {
@@ -62,6 +85,7 @@ class NrfMeshPlugin : Plugin() {
         val BLUETOOTH_ADAPTER_EVENT_STRING: String = "bluetoothAdapterEvent"
     }
 
+    private var aliases: Array<String> = arrayOf()
     private lateinit var implementation: NrfMeshManager
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var bluetoothStateReceiver: BroadcastReceiver
@@ -71,21 +95,25 @@ class NrfMeshPlugin : Plugin() {
         this.implementation = NrfMeshManager(this.context)
         PluginCallManager.getInstance().setPlugin(this)
 
-        Log.i(tag, "Permissions : ${this.permissionStates.keys}")
-        Log.i(tag, "Permissions : ${this.permissionStates.values}")
-
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = bluetoothManager.adapter
+        aliases = if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(
+                    "BLUETOOTH_SCAN",
+                    "BLUETOOTH_CONNECT",
+                    "ACCESS_FINE_LOCATION",
+            )
+        } else {
+            arrayOf(
+                    "ACCESS_COARSE_LOCATION",
+                    "ACCESS_FINE_LOCATION",
+                    "BLUETOOTH",
+                    "BLUETOOTH_ADMIN",
+            )
+        }
     }
 
     override fun handleOnStart() {
         Log.d(tag, "handleOnStart")
         super.handleOnStart()
-        // Register for Bluetooth state changes
-        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        bluetoothStateReceiver = BluetoothStateReceiver(this)
-        context.registerReceiver(bluetoothStateReceiver, filter)
-        implementation.startScan()
     }
 
     override fun handleOnStop() {
@@ -122,95 +150,28 @@ class NrfMeshPlugin : Plugin() {
         implementation.stopScan()
     }
 
-    private fun assertBluetoothAdapter(call: PluginCall): Boolean? {
-        if (bluetoothAdapter == null) {
-            call.reject("Bluetooth LE not initialized.")
-            return null
-        }
-        return true
-    }
-
+    @PermissionCallback
     @PluginMethod
-    fun isBluetoothEnabled(call: PluginCall) {
-        assertBluetoothAdapter(call) ?: return
-        val enabled = bluetoothAdapter.isEnabled
-        val result = JSObject()
-        result.put("enabled", enabled)
-        call.resolve(result)
-    }
-
-    @PluginMethod
-    fun requestBluetoothEnable(call: PluginCall) {
-        assertBluetoothAdapter(call) ?: return
-        val intent = Intent(ACTION_REQUEST_ENABLE)
-        startActivityForResult(call, intent, "handleRequestEnableResult")
-    }
-
-    @ActivityCallback
-    private fun handleRequestEnableResult(call: PluginCall, result: ActivityResult) {
-        call.resolve(JSObject().put("enabled", result.resultCode == Activity.RESULT_OK))
-    }
-
-    @PluginMethod
-    fun scanMeshDevices(call: PluginCall) {
-        val scanDuration = call.getInt("timeout", 5000)
-
-        if (!Permissions.isBleEnabled(context)) {
-            call.reject("Bluetooth is disabled")
+    override fun checkPermissions(call: PluginCall) {
+        if (!activity.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            return call.reject("BLE is not supported.")
         }
 
-        if (!Permissions.isLocationGranted(context)) {
-            call.reject("Location permission is required")
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        if (bluetoothManager.adapter == null) {
+            return call.reject("BLE is not available.")
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val devices = implementation.scanMeshDevices(scanDuration!!)
-
-            // return a dict of devices, unprovisioned and provisioned
-            val result = JSObject().apply {
-                put("unprovisioned", JSArray().apply {
-                    devices.forEach {
-                        val serviceData = Utils.getServiceData(
-                            it.scanResult!!,
-                            MeshManagerApi.MESH_PROVISIONING_UUID
-                        )
-
-                        if (serviceData == null || serviceData.size < 18) return@forEach
-
-                        val uuid: UUID = implementation.meshManagerApi.getDeviceUuid(serviceData)
-
-                        put(JSObject().apply {
-                            put("uuid", uuid.toString())
-                            put("macAddress", it.scanResult.device.address)
-                            put("rssi", it.rssi)
-                            put("name", it.name)
-                        })
-                    }
-                })
-                put("provisioned", JSArray().apply {
-                    devices.forEach {
-                        val serviceData = Utils.getServiceData(
-                            it.scanResult!!,
-                            MeshManagerApi.MESH_PROXY_UUID
-                        ) ?: return@forEach
-
-                        val meshapi = implementation.meshManagerApi
-                        val network = meshapi.meshNetwork!!
-                        val node = network.nodes.find {
-                            meshapi.nodeIdentityMatches(it,serviceData)
-                        } ?: return@forEach
-
-                        put(JSObject().apply {
-                            put("unicastAddress", node.unicastAddress)
-                            put("macAddress", it.scanResult.device.address)
-                            put("rssi", it.rssi)
-                            put("name", it.name)
-                        })
-                    }
-                })
+        call.resolve(JSObject().apply {
+            aliases.forEach {
+                put(it,getPermissionState(it))
             }
-            call.resolve(result)
-        }
+        })
+    }
+
+    @PluginMethod
+    override fun requestPermissions(call: PluginCall) {
+        requestPermissionForAliases(aliases, call, "checkPermissions")
     }
 
     private fun connectedToUnprovisionedDestinations(destinationMacAddress: String): Boolean {
@@ -218,11 +179,10 @@ class NrfMeshPlugin : Plugin() {
     }
 
     private suspend fun connectionToUnprovisionedDevice(
-        destinationMacAddress: String,
-        destinationUuid: String
+            destinationMacAddress: String,
+            destinationUuid: String
     ): Boolean {
         return withContext(Dispatchers.IO) {
-
             if (!connectedToUnprovisionedDestinations(destinationMacAddress)) {
                 if (implementation.isBleConnected()) {
                     withContext(Dispatchers.IO) {
@@ -266,48 +226,161 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
+    private fun assertBluetoothAdapter(call: PluginCall): Boolean {
+        if (bluetoothAdapter == null) {
+            call.reject("Bluetooth LE not initialized.")
+            return false
+        }
+        return true
+    }
+
+    @PluginMethod
+    fun isBluetoothEnabled(call: PluginCall) {
+        val result = JSObject()
+        result.put("enabled", Permissions.isBleEnabled(context))
+        call.resolve(result)
+    }
+
+    @PluginMethod
+    fun requestBluetoothEnable(call: PluginCall) {
+        val intent = Intent(ACTION_REQUEST_ENABLE)
+        startActivityForResult(call, intent, "handleRequestEnableResult")
+    }
+
+    @ActivityCallback
+    private fun handleRequestEnableResult(call: PluginCall, result: ActivityResult) {
+        call.resolve(JSObject().put("enabled", result.resultCode == Activity.RESULT_OK))
+    }
+
+    @PluginMethod
+    fun initMeshNetwork(call: PluginCall) {
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothAdapter = bluetoothManager.adapter
+
+        // Register for Bluetooth state changes
+        val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        bluetoothStateReceiver = BluetoothStateReceiver(this)
+        context.registerReceiver(bluetoothStateReceiver, filter)
+
+        implementation.initMeshNetwork()
+        implementation.startScan()
+        call.resolve()
+    }
+
+
+    @PluginMethod
+    fun scanMeshDevices(call: PluginCall) {
+        val scanDuration = call.getInt("timeout", 5000)
+
+        if (!Permissions.isBleEnabled(context)) {
+            return call.reject("Bluetooth is disabled")
+        }
+
+        if (!Permissions.isLocationGranted(context)) {
+            return call.reject("Location permission is required")
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val devices = implementation.scanMeshDevices(scanDuration!!)
+
+            // return a dict of devices, unprovisioned and provisioned
+            val result = JSObject().apply {
+                put("unprovisioned", JSArray().apply {
+                    devices.forEach {
+                        if (it.provisioned) return@forEach
+
+                        val serviceData = Utils.getServiceData(
+                            it.scanResult!!,
+                            MeshManagerApi.MESH_PROVISIONING_UUID
+                        )?: return@forEach
+
+                        if (serviceData.size < 18) return@forEach
+
+                        val uuid: UUID = implementation.meshManagerApi.getDeviceUuid(serviceData)
+
+                        put(JSObject().apply {
+                            put("uuid", uuid.toString())
+                            put("macAddress", it.scanResult.device.address)
+                            put("rssi", it.rssi)
+                            put("name", it.name)
+                        })
+                    }
+                })
+                put("proxy", JSArray().apply {
+                    devices.forEach {
+                        if (!it.provisioned) return@forEach
+
+                        put(JSObject().apply {
+                            put("macAddress", it.scanResult?.device?.address)
+                            put("rssi", it.rssi)
+                            put("name", it.name)
+                        })
+                    }
+                })
+                put("provisioned",JSArray().apply {
+                    val nodes = implementation.getNodes()
+                    nodes.forEach{
+                        put(JSObject().apply {
+                            put("name",it.nodeName)
+                            put("provisionedTime",DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.LONG).format(it.timeStamp))
+                            put("unicastAddress",it.unicastAddress)
+                            put("security",it.isSecurelyProvisioned)
+                            put("deviceKey",MeshParserUtils.bytesToHex(it.deviceKey,false))
+                            if (it.companyIdentifier != null) {
+                                put("companyIdentifier", CompanyIdentifiers.getCompanyName(it.companyIdentifier.toShort()))
+                            }
+                            if(it.productIdentifier !=null){
+                                put("productIdentifier",CompositionDataParser.formatProductIdentifier(it.productIdentifier,false))
+                            }
+                            if (it.versionIdentifier != null){
+                                put("productVersion",CompositionDataParser.formatVersionIdentifier(it.versionIdentifier,false))
+                            }
+                            if (it.crpl != null){
+                                put("replayProtectionCount",CompositionDataParser.formatReplayProtectionCount(it.crpl,false))
+                            }
+
+                            if(it.nodeFeatures != null) {
+                                put("nodeFeaturesSupported", JSObject().apply {
+                                    put("relay", it.nodeFeatures.isRelayFeatureSupported)
+                                    put("proxy", it.nodeFeatures.isProxyFeatureSupported)
+                                    put("friend", it.nodeFeatures.isFriendFeatureSupported)
+                                    put("lowPower", it.nodeFeatures.isLowPowerFeatureSupported)
+                                })
+                                put("nodeFeatures", JSObject().apply {
+                                    put("relay", it.nodeFeatures.relay == Features.ENABLED)
+                                    put("proxy", it.nodeFeatures.proxy == Features.ENABLED)
+                                    put("friend", it.nodeFeatures.friend == Features.ENABLED)
+                                    put("lowPower", it.nodeFeatures.lowPower == Features.ENABLED)
+                                })
+                            }
+                        })
+                    }
+
+                })
+            }
+            call.resolve(result)
+        }
+    }
+
 
     @PluginMethod
     fun getProvisioningCapabilities(call: PluginCall) {
         val macAddress = call.getString("macAddress")
         val uuid = call.getString("uuid")
         if (macAddress == null || uuid == null) {
-            call.reject("macAddress and uuid are required")
-            return
+            return call.reject("macAddress and uuid are required")
         }
 
         CoroutineScope(Dispatchers.Main).launch {
             val connected = connectionToUnprovisionedDevice(macAddress, uuid)
             if (!connected) {
-                call.reject("Failed to connect to device : $macAddress $uuid")
-                return@launch
+                return@launch call.reject("Failed to connect to device : $macAddress $uuid")
             }
 
-            val deferred = implementation.getProvisioningCapabilities(UUID.fromString(uuid))
+            PluginCallManager.getInstance()
+                .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call)
 
-            val unprovisionedDevice = deferred.await()
-            if (unprovisionedDevice != null) {
-
-                val result = JSObject().apply {
-                    put("numberOfElements", unprovisionedDevice.provisioningCapabilities.numberOfElements)
-                    val oobTypeArray = JSArray().apply {
-                        unprovisionedDevice.provisioningCapabilities.availableOOBTypes.forEach {
-                            put(it)
-                        }
-                    }
-                    put("availableOOBTypes", oobTypeArray)
-                    put("algorithms", unprovisionedDevice.provisioningCapabilities.rawAlgorithm)
-                    put("publicKeyType", unprovisionedDevice.provisioningCapabilities.rawPublicKeyType)
-                    put("staticOobTypes", unprovisionedDevice.provisioningCapabilities.rawStaticOOBType)
-                    put("outputOobSize", unprovisionedDevice.provisioningCapabilities.outputOOBSize)
-                    put("outputOobActions", unprovisionedDevice.provisioningCapabilities.rawOutputOOBAction)
-                    put("inputOobSize", unprovisionedDevice.provisioningCapabilities.inputOOBSize)
-                    put("inputOobActions", unprovisionedDevice.provisioningCapabilities.rawInputOOBAction)
-                }
-                call.resolve(result)
-            } else {
-                call.reject("Failed to get provisioning capabilities")
-            }
+            implementation.identify(UUID.fromString(uuid))
         }
     }
 
@@ -315,61 +388,38 @@ class NrfMeshPlugin : Plugin() {
     fun provisionDevice(call: PluginCall) {
         val macAddress = call.getString("macAddress")
         val uuid = call.getString("uuid")
+
         if (macAddress == null || uuid == null) {
-            call.reject("macAddress and uuid are required")
-            return
+            return call.reject("macAddress and uuid are required")
         }
 
         CoroutineScope(Dispatchers.Main).launch {
             val connected = connectionToUnprovisionedDevice(macAddress, uuid)
             if (!connected) {
-                call.reject("Failed to connect to device : $macAddress $uuid")
-                return@launch
+                return@launch call.reject("Failed to connect to device : $macAddress $uuid")
             }
 
-            val deferred = implementation.provisionDevice(UUID.fromString(uuid))
+            implementation.unprovisionedMeshNode(UUID.fromString(uuid))
+                    ?: return@launch call.reject("Unprovisioned Mesh Node not found, try identifying the node first")
 
-            val meshDevice = deferred.await()
-            if (meshDevice == null) {
-                call.reject("Failed to provision device")
-                return@launch
-            }
+            PluginCallManager.getInstance()
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call)
 
-            when (meshDevice) {
-                is BleMeshDevice.Provisioned -> {
-                    val result = JSObject().apply {
-                        put("provisioningComplete", true)
-                        put("uuid", meshDevice.node.uuid)
-                        put("unicastAddress", meshDevice.node.unicastAddress)
-                    }
-                    call.resolve(result)
-                }
-
-                is BleMeshDevice.Unprovisioned -> {
-                    val result = JSObject().apply {
-                        put("provisioningComplete", false)
-                        put("uuid", meshDevice.node.deviceUuid)
-                    }
-                    call.resolve(result)
-                }
-            }
+            implementation.provisionDevice(UUID.fromString(uuid))
         }
     }
 
     @PluginMethod
     fun unprovisionDevice(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
-
-        if (unicastAddress == null) {
-            call.reject("unicastAddress is required")
-            return
-        }
+                ?: return call.reject("unicastAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
             val connected = connectionToProvisionedDevice()
             if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
+                return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
             PluginCallManager.getInstance()
@@ -380,486 +430,478 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun createApplicationKey(call: PluginCall) {
-        val result = implementation.createApplicationKey()
-
-        if (result) {
-            call.resolve()
-        } else {
-            call.reject("Failed to add application key")
-        }
-    }
-
-    @PluginMethod
-    fun removeApplicationKey(call: PluginCall) {
-        val appKeyIndex = call.getInt("appKeyIndex")
-
-        if (appKeyIndex == null) {
-            call.reject("appKeyIndex is required")
-        }
-
-        val result = implementation.removeApplicationKey(appKeyIndex!!)
-
-        if (result) {
-            call.resolve()
-        } else {
-            call.reject("Failed to remove application key")
-        }
-    }
-
-    @PluginMethod
-    fun addApplicationKeyToNode(call: PluginCall) {
+    fun getCompositionData(call: PluginCall){
         val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-
-        if (appKeyIndex == null || unicastAddress == null) {
-            call.reject("appKeyIndex and unicastAddress are required")
-            return
-        }
+                ?: return call.reject("unicastAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
             val connected = connectionToProvisionedDevice()
             if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
+                return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
             PluginCallManager.getInstance()
-                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD.toInt(), unicastAddress, call)
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_COMPOSITION_DATA_GET, unicastAddress, call)
 
-            val deferred = implementation.addApplicationKeyToNode(unicastAddress, appKeyIndex)
-            val result = deferred.await()
-
-            if (!result) {
-                call.reject("Failed to bind application key to Node")
-            }
+            implementation.getCompositionData(unicastAddress)
         }
     }
 
-    @PluginMethod
-    fun bindApplicationKeyToModel(call: PluginCall) {
-        val elementAddress = call.getInt("elementAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-        val modelId = call.getInt("modelId")
+//    @PluginMethod
+//    fun createApplicationKey(call: PluginCall) {
+//        val result = implementation.createApplicationKey()
+//
+//        if (result) {
+//            call.resolve()
+//        } else {
+//            call.reject("Failed to add application key")
+//        }
+//    }
 
-        if (elementAddress == null || appKeyIndex == null || modelId == null) {
-            call.reject("elementAddress, appKeyIndex and modelId are required")
-            return
-        }
+//    @PluginMethod
+//    fun removeApplicationKey(call: PluginCall) {
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//
+//        if (appKeyIndex == null) {
+//            call.reject("appKeyIndex is required")
+//        }
+//
+//        val result = implementation.removeApplicationKey(appKeyIndex!!)
+//
+//        if (result) {
+//            call.resolve()
+//        } else {
+//            call.reject("Failed to remove application key")
+//        }
+//    }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
+//    @PluginMethod
+//    fun addApplicationKeyToNode(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//
+//        if (appKeyIndex == null || unicastAddress == null) {
+//            call.reject("appKeyIndex and unicastAddress are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+//            PluginCallManager.getInstance()
+//                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD.toInt(), unicastAddress, call)
+//
+//            val deferred = implementation.addApplicationKeyToNode(unicastAddress, appKeyIndex)
+//            val result = deferred.await()
+//
+//            if (!result) {
+//                call.reject("Failed to bind application key to Node")
+//            }
+//        }
+//    }
 
-            PluginCallManager.getInstance()
-                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND, elementAddress, call)
+//    @PluginMethod
+//    fun bindApplicationKeyToModel(call: PluginCall) {
+//        val elementAddress = call.getInt("elementAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//        val modelId = call.getInt("modelId")
+//
+//        if (elementAddress == null || appKeyIndex == null || modelId == null) {
+//            call.reject("elementAddress, appKeyIndex and modelId are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+//            PluginCallManager.getInstance()
+//                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND, elementAddress, call)
+//
+//            val result = implementation.bindApplicationKeyToModel(elementAddress, appKeyIndex, modelId)
+//
+//            if (!result) {
+//                call.reject("Failed to bind application key")
+//            }
+//        }
+//    }
 
-            val result = implementation.bindApplicationKeyToModel(elementAddress, appKeyIndex, modelId)
-
-            if (!result) {
-                call.reject("Failed to bind application key")
-            }
-        }
-    }
-
-    @PluginMethod
-    fun compositionDataGet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-
-        if (unicastAddress == null) {
-            call.reject("unicastAddress is required")
-            return
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
-            val deferred = implementation.compositionDataGet(unicastAddress)
-
-            val result = deferred.await()
-            if (result!!) {
-                val meshNetwork = implementation.exportMeshNetwork()
-                call.resolve(JSObject().put("meshNetwork", meshNetwork))
-            } else {
-                call.reject("Failed to get composition data")
-            }
-        }
-    }
-
-    @PluginMethod
-    fun sendGenericOnOffSet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-        val onOff = call.getBoolean("onOff")
-        val acknowledgement = call.getBoolean("acknowledgement", false)
-
-        if (unicastAddress == null || appKeyIndex == null || onOff == null) {
-            call.reject("unicastAddress, appKeyIndex, and onOff are required")
-            return
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
-            if (acknowledgement == true) {
-                PluginCallManager.getInstance()
-                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_SET, unicastAddress, call)
-            }
-
-            val result = implementation.sendGenericOnOffSet(
-                unicastAddress,
-                appKeyIndex,
-                onOff, Random().nextInt(), 0, 0, 0,
-                acknowledgement!!
-            )
-
-            if (!result) {
-                call.reject("Failed to send Generic OnOff Set")
-            } else {
-                if (acknowledgement == false) {
-                    call.resolve()
-                }
-            }
-        }
-    }
-
-    @PluginMethod
-    fun sendGenericOnOffGet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-
-        if (unicastAddress == null || appKeyIndex == null) {
-            call.reject("unicastAddress and appKeyIndex are required")
-            return
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
-            PluginCallManager.getInstance()
-                .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_GET, unicastAddress, call)
-
-            val result = implementation.sendGenericOnOffGet(
-                unicastAddress,
-                appKeyIndex,
-            )
-
-            if (!result) {
-                call.reject("Failed to send Generic OnOff Get")
-            } else {
-                call.resolve()
-            }
-        }
-    }
-
-    @PluginMethod
-    fun sendGenericPowerLevelSet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-        val powerLevel = call.getInt("powerLevel")
-        val acknowledgement = call.getBoolean("acknowledgement", false)
-
-        if (unicastAddress == null || appKeyIndex == null || powerLevel == null) {
-            call.reject("unicastAddress, appKeyIndex, and powerLevel are required")
-            return
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
+//    @PluginMethod
+//    fun sendGenericOnOffSet(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//        val onOff = call.getBoolean("onOff")
+//        val acknowledgement = call.getBoolean("acknowledgement", false)
+//
+//        if (unicastAddress == null || appKeyIndex == null || onOff == null) {
+//            call.reject("unicastAddress, appKeyIndex, and onOff are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
 //            if (acknowledgement == true) {
 //                PluginCallManager.getInstance()
-//                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_SET, unicastAddress, call)
+//                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_SET, unicastAddress, call)
 //            }
+//
+//            val result = implementation.sendGenericOnOffSet(
+//                unicastAddress,
+//                appKeyIndex,
+//                onOff, Random().nextInt(), 0, 0, 0,
+//                acknowledgement!!
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Generic OnOff Set")
+//            } else {
+//                if (acknowledgement == false) {
+//                    call.resolve()
+//                }
+//            }
+//        }
+//    }
 
-            val result = implementation.sendGenericPowerLevelSet(
-                unicastAddress,
-                appKeyIndex,
-                powerLevel,
-                0
-            )
-
-            if (!result) {
-                call.reject("Failed to send Generic Power Level Set")
-            } else {
-                if (acknowledgement == false) {
-                    call.resolve()
-                }
-            }
-        }
-    }
-
-    @PluginMethod
-    fun sendGenericPowerLevelGet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-
-        if (unicastAddress == null || appKeyIndex == null) {
-            call.reject("unicastAddress and appKeyIndex are required")
-            return
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
+//    @PluginMethod
+//    fun sendGenericOnOffGet(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//
+//        if (unicastAddress == null || appKeyIndex == null) {
+//            call.reject("unicastAddress and appKeyIndex are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
 //            PluginCallManager.getInstance()
-//                .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_GET, unicastAddress, call)
+//                .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_GET, unicastAddress, call)
+//
+//            val result = implementation.sendGenericOnOffGet(
+//                unicastAddress,
+//                appKeyIndex,
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Generic OnOff Get")
+//            } else {
+//                call.resolve()
+//            }
+//        }
+//    }
 
-            val result = implementation.sendGenericPowerLevelGet(
-                unicastAddress,
-                appKeyIndex,
-            )
+//    @PluginMethod
+//    fun sendGenericPowerLevelSet(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//        val powerLevel = call.getInt("powerLevel")
+//        val acknowledgement = call.getBoolean("acknowledgement", false)
+//
+//        if (unicastAddress == null || appKeyIndex == null || powerLevel == null) {
+//            call.reject("unicastAddress, appKeyIndex, and powerLevel are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+////            if (acknowledgement == true) {
+////                PluginCallManager.getInstance()
+////                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_SET, unicastAddress, call)
+////            }
+//
+//            val result = implementation.sendGenericPowerLevelSet(
+//                unicastAddress,
+//                appKeyIndex,
+//                powerLevel,
+//                0
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Generic Power Level Set")
+//            } else {
+//                if (acknowledgement == false) {
+//                    call.resolve()
+//                }
+//            }
+//        }
+//    }
 
-            if (!result) {
-                call.reject("Failed to send Generic Power Level Get")
-            } else {
-                call.resolve()
-            }
-        }
-    }
+//    @PluginMethod
+//    fun sendGenericPowerLevelGet(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//
+//        if (unicastAddress == null || appKeyIndex == null) {
+//            call.reject("unicastAddress and appKeyIndex are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+////            PluginCallManager.getInstance()
+////                .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_POWER_LEVEL_GET, unicastAddress, call)
+//
+//            val result = implementation.sendGenericPowerLevelGet(
+//                unicastAddress,
+//                appKeyIndex,
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Generic Power Level Get")
+//            } else {
+//                call.resolve()
+//            }
+//        }
+//    }
 
-    @PluginMethod
-    fun sendLightHslSet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-        val hue = call.getInt("hue")
-        val saturation = call.getInt("saturation")
-        val lightness = call.getInt("lightness")
-        val acknowledgement = call.getBoolean("acknowledgement", false)
+//    @PluginMethod
+//    fun sendLightHslSet(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//        val hue = call.getInt("hue")
+//        val saturation = call.getInt("saturation")
+//        val lightness = call.getInt("lightness")
+//        val acknowledgement = call.getBoolean("acknowledgement", false)
+//
+//        if (unicastAddress == null || appKeyIndex == null || hue == null || saturation == null || lightness == null) {
+//            call.reject("unicastAddress, appKeyIndex, hue, saturation, and lightness are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+//            if (acknowledgement == true) {
+//                PluginCallManager.getInstance()
+//                    .addSigPluginCall(ApplicationMessageOpCodes.LIGHT_HSL_SET, unicastAddress, call)
+//            }
+//
+//            val result = implementation.sendLightHslSet(
+//                unicastAddress,
+//                appKeyIndex,
+//                hue,
+//                saturation,
+//                lightness,
+//                0
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Light HSL Set")
+//            } else {
+//                if (acknowledgement == false) {
+//                    call.resolve()
+//                }
+//            }
+//        }
+//    }
 
-        if (unicastAddress == null || appKeyIndex == null || hue == null || saturation == null || lightness == null) {
-            call.reject("unicastAddress, appKeyIndex, hue, saturation, and lightness are required")
-            return
-        }
+//    @PluginMethod
+//    fun sendLightHslGet(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//
+//        if (unicastAddress == null || appKeyIndex == null) {
+//            call.reject("unicastAddress and appKeyIndex are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+//            PluginCallManager.getInstance()
+//                .addSigPluginCall(ApplicationMessageOpCodes.LIGHT_HSL_GET, unicastAddress, call)
+//
+//            val result = implementation.sendLightHslGet(
+//                unicastAddress,
+//                appKeyIndex,
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Light HSL Get")
+//            } else {
+//                call.resolve()
+//            }
+//        }
+//    }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
+//    @PluginMethod
+//    fun sendLightCtlSet(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//        val lightness = call.getInt("lightness")
+//        val temperature = call.getInt("temperature")
+//        val deltaUv = call.getInt("deltaUv")
+//        val acknowledgement = call.getBoolean("acknowledgement", false)
+//
+//        if (unicastAddress == null || appKeyIndex == null || lightness == null || temperature == null || deltaUv == null) {
+//            call.reject("unicastAddress, appKeyIndex, lightness, temperature, and deltaUv are required")
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+//            if (acknowledgement == true) {
+//                PluginCallManager.getInstance()
+//                    .addSigPluginCall(ApplicationMessageOpCodes.LIGHT_CTL_SET, unicastAddress, call)
+//            }
+//
+//            val result = implementation.sendLightCtlSet(
+//                unicastAddress,
+//                appKeyIndex,
+//                lightness,
+//                temperature,
+//                deltaUv,
+//                0
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Light CTL Set")
+//            } else {
+//                if (acknowledgement == false) {
+//                    call.resolve()
+//                }
+//            }
+//        }
+//    }
 
-            if (acknowledgement == true) {
-                PluginCallManager.getInstance()
-                    .addSigPluginCall(ApplicationMessageOpCodes.LIGHT_HSL_SET, unicastAddress, call)
-            }
+//    @PluginMethod
+//    fun sendVendorModelMessage(call: PluginCall) {
+//        val unicastAddress = call.getInt("unicastAddress")
+//        val appKeyIndex = call.getInt("appKeyIndex")
+//        val modelId = call.getInt("modelId")
+//        val opcode = call.getInt("opcode")
+//        val payload = call.getObject("payload")
+//        val opPairCode = call.getInt("opPairCode", null)
+//        val companyIdentifier = modelId?.shr(16)
+//
+//        if (unicastAddress == null || appKeyIndex == null || modelId == null || companyIdentifier == null || opcode == null) {
+//            call.reject("unicastAddress, appKeyIndex, modelId, companyIdentifier and opcode are required")
+//            return
+//        }
+//
+//        var payloadData = byteArrayOf()
+//        if (payload != null) { // Convert the payload object into a ByteArray
+//            payloadData = payload.keys()
+//                .asSequence()
+//                .mapNotNull { key -> payload.getInt(key) } // Convert each value to an Int, ignoring nulls
+//                .map { it.toByte() } // Convert each Int to a Byte
+//                .toList()
+//                .toByteArray()
+//        }
+//
+//        if (opPairCode != null) {
+//            PluginCallManager.getInstance()
+//                .addVendorPluginCall(modelId, opcode, opPairCode, unicastAddress, call)
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch {
+//            val connected = connectionToProvisionedDevice()
+//            if (!connected) {
+//                call.reject("Failed to connect to Mesh proxy")
+//                return@launch
+//            }
+//
+//            val result = implementation.sendVendorModelMessage(
+//                unicastAddress,
+//                appKeyIndex,
+//                modelId,
+//                companyIdentifier,
+//                opcode,
+//                payloadData,
+//            )
+//
+//            if (!result) {
+//                call.reject("Failed to send Vendor Model Message")
+//            }
+//        }
+//    }
 
-            val result = implementation.sendLightHslSet(
-                unicastAddress,
-                appKeyIndex,
-                hue,
-                saturation,
-                lightness,
-                0
-            )
-
-            if (!result) {
-                call.reject("Failed to send Light HSL Set")
-            } else {
-                if (acknowledgement == false) {
-                    call.resolve()
-                }
-            }
-        }
-    }
-
-    @PluginMethod
-    fun sendLightHslGet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-
-        if (unicastAddress == null || appKeyIndex == null) {
-            call.reject("unicastAddress and appKeyIndex are required")
-            return
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
-            PluginCallManager.getInstance()
-                .addSigPluginCall(ApplicationMessageOpCodes.LIGHT_HSL_GET, unicastAddress, call)
-
-            val result = implementation.sendLightHslGet(
-                unicastAddress,
-                appKeyIndex,
-            )
-
-            if (!result) {
-                call.reject("Failed to send Light HSL Get")
-            } else {
-                call.resolve()
-            }
-        }
-    }
-
-    @PluginMethod
-    fun sendLightCtlSet(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-        val lightness = call.getInt("lightness")
-        val temperature = call.getInt("temperature")
-        val deltaUv = call.getInt("deltaUv")
-        val acknowledgement = call.getBoolean("acknowledgement", false)
-
-        if (unicastAddress == null || appKeyIndex == null || lightness == null || temperature == null || deltaUv == null) {
-            call.reject("unicastAddress, appKeyIndex, lightness, temperature, and deltaUv are required")
-            return
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
-            if (acknowledgement == true) {
-                PluginCallManager.getInstance()
-                    .addSigPluginCall(ApplicationMessageOpCodes.LIGHT_CTL_SET, unicastAddress, call)
-            }
-
-            val result = implementation.sendLightCtlSet(
-                unicastAddress,
-                appKeyIndex,
-                lightness,
-                temperature,
-                deltaUv,
-                0
-            )
-
-            if (!result) {
-                call.reject("Failed to send Light CTL Set")
-            } else {
-                if (acknowledgement == false) {
-                    call.resolve()
-                }
-            }
-        }
-    }
-
-    @PluginMethod
-    fun sendVendorModelMessage(call: PluginCall) {
-        val unicastAddress = call.getInt("unicastAddress")
-        val appKeyIndex = call.getInt("appKeyIndex")
-        val modelId = call.getInt("modelId")
-        val opcode = call.getInt("opcode")
-        val payload = call.getObject("payload")
-        val opPairCode = call.getInt("opPairCode", null)
-        val companyIdentifier = modelId?.shr(16)
-
-        if (unicastAddress == null || appKeyIndex == null || modelId == null || companyIdentifier == null || opcode == null) {
-            call.reject("unicastAddress, appKeyIndex, modelId, companyIdentifier and opcode are required")
-            return
-        }
-
-        var payloadData = byteArrayOf()
-        if (payload != null) { // Convert the payload object into a ByteArray
-            payloadData = payload.keys()
-                .asSequence()
-                .mapNotNull { key -> payload.getInt(key) } // Convert each value to an Int, ignoring nulls
-                .map { it.toByte() } // Convert each Int to a Byte
-                .toList()
-                .toByteArray()
-        }
-
-        if (opPairCode != null) {
-            PluginCallManager.getInstance()
-                .addVendorPluginCall(modelId, opcode, opPairCode, unicastAddress, call)
-        }
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val connected = connectionToProvisionedDevice()
-            if (!connected) {
-                call.reject("Failed to connect to Mesh proxy")
-                return@launch
-            }
-
-            val result = implementation.sendVendorModelMessage(
-                unicastAddress,
-                appKeyIndex,
-                modelId,
-                companyIdentifier,
-                opcode,
-                payloadData,
-            )
-
-            if (!result) {
-                call.reject("Failed to send Vendor Model Message")
-            }
-        }
-    }
-
-    @PluginMethod
-    fun exportMeshNetwork(call: PluginCall) {
-        val result = implementation.exportMeshNetwork()
-
-        if (result != null) {
-            call.resolve(JSObject().put("meshNetwork", result))
-        } else {
-            call.reject("Failed to export mesh network")
-        }
-    }
-
-    @PluginMethod
-    fun importMeshNetwork(call: PluginCall) {
-        val meshNetwork = call.getString("meshNetwork")
-
-        if (meshNetwork == null) {
-            call.reject("meshNetwork is required")
-            return
-        }
-
-        val result = implementation.importMeshNetwork(meshNetwork)
-
-        call.resolve()
-    }
-
-    @PluginMethod
-    fun initMeshNetwork(call: PluginCall) {
-        val networkName = call.getString("networkName")
-
-        if (networkName == null) {
-            call.reject("networkName is required")
-            return
-        }
-
-        implementation.initMeshNetwork(networkName)
-
-        val network = implementation.exportMeshNetwork()
-
-        if (network != null) {
-            call.resolve(JSObject().put("meshNetwork", network))
-        } else {
-            call.reject("Failed to initialize mesh network")
-        }
-    }
+//    @PluginMethod
+//    fun exportMeshNetwork(call: PluginCall) {
+//        val result = implementation.exportMeshNetwork()
+//
+//        if (result != null) {
+//            call.resolve(JSObject().put("meshNetwork", result))
+//        } else {
+//            call.reject("Failed to export mesh network")
+//        }
+//    }
+//
+//    @PluginMethod
+//    fun importMeshNetwork(call: PluginCall) {
+//        val meshNetwork = call.getString("meshNetwork")
+//
+//        if (meshNetwork == null) {
+//            call.reject("meshNetwork is required")
+//            return
+//        }
+//
+//        val result = implementation.importMeshNetwork(meshNetwork)
+//
+//        call.resolve()
+//    }
+//
+//    @PluginMethod
+//    fun initMeshNetwork(call: PluginCall) {
+//        val networkName = call.getString("networkName")
+//
+//        if (networkName == null) {
+//            call.reject("networkName is required")
+//            return
+//        }
+//
+//        implementation.initMeshNetwork(networkName)
+//
+//        val network = implementation.exportMeshNetwork()
+//
+//        if (network != null) {
+//            call.resolve(JSObject().put("meshNetwork", network))
+//        } else {
+//            call.reject("Failed to initialize mesh network")
+//        }
+//    }
 
     fun sendNotification(eventName: String, data: JSObject) {
         if (!hasListeners(eventName)) {

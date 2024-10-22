@@ -54,13 +54,15 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             nrfMeshManager.onAppKeyAddStatusReceived(meshMessage)
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigCompositionDataStatus) {
-            val configDefaultTtlGet = ConfigDefaultTtlGet()
-            meshManager.createMeshPdu(meshMessage.src,configDefaultTtlGet)
+            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//            val configDefaultTtlGet = ConfigDefaultTtlGet()
+//            meshManager.createMeshPdu(meshMessage.src,configDefaultTtlGet)
         } else if (meshMessage is ConfigDefaultTtlStatus){
             val networkTransmitSet = ConfigNetworkTransmitSet(2,1)
             meshManager.createMeshPdu(meshMessage.src,networkTransmitSet)
         } else if (meshMessage is ConfigNetworkTransmitStatus){
-            nrfMeshManager.onCompositionDataStatusReceived(meshMessage)
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//            nrfMeshManager.onCompositionDataStatusReceived(meshMessage)
         } else if (meshMessage is GenericOnOffStatus) {
             PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }

@@ -25,28 +25,30 @@ class ScannerRepository(
     private val tag: String = ScannerRepository::class.java.simpleName
 
     var isScanning: Boolean = false
-
-    val unprovisionedDevices: MutableList<ExtendedBluetoothDevice> = mutableListOf()
-    val provisionedDevices: MutableList<ExtendedBluetoothDevice> = mutableListOf()
+    val devices: MutableList<ExtendedBluetoothDevice> = mutableListOf()
 
     private val scanCallback: ScanCallback = object : ScanCallback() {
 
         override fun onScanResult(callbackType: Int, result: ScanResult) {
+            val device = ExtendedBluetoothDevice(result)
             val serviceUuid = result.scanRecord?.serviceUuids?.get(0)?.uuid
 
             if (serviceUuid == MeshManagerApi.MESH_PROVISIONING_UUID) {
                 Log.v(tag, "Unprovisioned device discovered: ${result.device.address}")
-                unprovDeviceDiscovered(result)
+                device.provisioned = false
+                unprovDeviceDiscovered(device)
             } else if (serviceUuid == MeshManagerApi.MESH_PROXY_UUID) {
                 val serviceData: ByteArray? = Utils.getServiceData(result, MeshManagerApi.MESH_PROXY_UUID)
                 Log.v(tag, "Proxy discovered: ${result.device.address}")
                 if (meshManagerApi.isAdvertisingWithNetworkIdentity(serviceData)) {
                     if (meshManagerApi.networkIdMatches(serviceData)) {
-                        provDeviceDiscovered(result)
+                        device.provisioned = true
+                        provDeviceDiscovered(device)
                     }
                 } else if (meshManagerApi.isAdvertisedWithNodeIdentity(serviceData)) {
                     if (checkIfNodeIdentityMatches(serviceData!!)) {
-                        provDeviceDiscovered(result)
+                        device.provisioned = true
+                        provDeviceDiscovered(device)
                     }
                 }
             }
@@ -61,50 +63,45 @@ class ScannerRepository(
         }
     }
 
-    private fun unprovDeviceDiscovered(result: ScanResult) {
-        val device: ExtendedBluetoothDevice
-        val scanRecord = result.scanRecord
+    private fun unprovDeviceDiscovered(device: ExtendedBluetoothDevice) {
+        val result = device.scanResult
+        val record = result?.scanRecord ?: return
 
-        if (scanRecord != null) {
-            if (scanRecord.bytes != null && scanRecord.serviceUuids != null) {
-                device = ExtendedBluetoothDevice(result)
-                synchronized(unprovisionedDevices) {
-                    if (!unprovisionedDevices.contains(device)) {
-                        Log.d(tag, "Unprovisioned device discovered: ${result.device.address} ")
-                        unprovisionedDevices.add(device)
+        if (record.bytes != null && record.serviceUuids != null) {
+            synchronized(devices) {
+                if (!devices.contains(device)) {
+                    Log.d(tag, "Unprovisioned device discovered: ${result.device.address} ")
+                    devices.add(device)
 
-                        // Delete the node from the mesh network if it was previously provisioned
-                        val serviceData = Utils.getServiceData(
-                            device.scanResult!!,
-                            MeshManagerApi.MESH_PROVISIONING_UUID
-                        )
+                    // Delete the node from the mesh network if it was previously provisioned
+                    val serviceData = Utils.getServiceData(
+                        result,
+                        MeshManagerApi.MESH_PROVISIONING_UUID
+                    )
 
-                        if (serviceData == null || serviceData.size < 18) return
+                    if (serviceData == null || serviceData.size < 18) return
+                    val deviceUuid: UUID = meshManagerApi.getDeviceUuid(serviceData)
 
-                        val deviceUuid: UUID = meshManagerApi.getDeviceUuid(serviceData)
-                        meshManagerApi.meshNetwork?.nodes?.forEach { node ->
-                            if (node.uuid == deviceUuid.toString()) {
-                                meshManagerApi.meshNetwork?.deleteNode(node)
-                            }
+                    meshManagerApi.meshNetwork?.nodes?.forEach { node ->
+                        if (node.uuid == deviceUuid.toString()) {
+                            meshManagerApi.meshNetwork?.deleteNode(node)
                         }
                     }
                 }
             }
         }
+
     }
 
-    private fun provDeviceDiscovered(result: ScanResult) {
-        val device: ExtendedBluetoothDevice
-        val scanRecord = result.scanRecord
+    private fun provDeviceDiscovered(device: ExtendedBluetoothDevice) {
+        val result = device.scanResult
+        val record = result?.scanRecord ?: return
 
-        if (scanRecord != null) {
-            if (scanRecord.bytes != null && scanRecord.serviceUuids != null) {
-                device = ExtendedBluetoothDevice(result)
-                synchronized(provisionedDevices) {
-                    if (!provisionedDevices.contains(device)) {
-                        Log.d(tag, "Provisioned device discovered: ${result.device.address} ")
-                        provisionedDevices.add(device)
-                    }
+        if (record.bytes != null && record.serviceUuids != null) {
+            synchronized(devices) {
+                if (!devices.contains(device)) {
+                    Log.d(tag, "Provisioned device discovered: ${result.device.address} ")
+                    devices.add(device)
                 }
             }
         }
