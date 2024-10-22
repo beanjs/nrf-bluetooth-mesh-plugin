@@ -14,6 +14,7 @@ class ExtendedBluetoothDevice : Parcelable {
     var rssi: Int
     var beacon: MeshBeacon? = null
         private set
+    var provisioned: Boolean = false
 
     constructor(scanResult: ScanResult, beacon: MeshBeacon?) {
         this.scanResult = scanResult

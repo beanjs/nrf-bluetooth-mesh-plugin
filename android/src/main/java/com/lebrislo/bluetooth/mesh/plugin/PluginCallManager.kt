@@ -1,14 +1,18 @@
 package com.lebrislo.bluetooth.mesh.plugin
 
 import android.util.Log
+import com.getcapacitor.JSArray
+import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import com.lebrislo.bluetooth.mesh.NrfMeshPlugin
 import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.MESH_EVENT_STRING
+import com.lebrislo.bluetooth.mesh.models.BleMeshDevice
 import com.lebrislo.bluetooth.mesh.plugin.ConfigOperationPair.Companion.getConfigOperationPair
 import com.lebrislo.bluetooth.mesh.plugin.ConfigPluginCall.Companion.generateConfigPluginCallResponse
 import com.lebrislo.bluetooth.mesh.plugin.SigOperationPair.Companion.getSigOperationPair
 import com.lebrislo.bluetooth.mesh.plugin.SigPluginCall.Companion.generateSigPluginCallResponse
 import com.lebrislo.bluetooth.mesh.plugin.VendorPluginCall.Companion.generateVendorPluginCallResponse
+import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.MeshMessage
 
 /**
@@ -21,6 +25,9 @@ class PluginCallManager private constructor() {
     private val pluginCalls: MutableList<BasePluginCall> = mutableListOf()
 
     companion object {
+        const val ELEMENT_NONE_ADDRESS = 0x08000000;
+        const val MESH_NODE_IDENTIFY = 0x08000001;
+        const val MESH_NODE_PROVISION = 0x08000002;
 
         @Volatile
         private var instance: PluginCallManager? = null
@@ -101,6 +108,65 @@ class PluginCallManager private constructor() {
         } else {
             pluginCall as ConfigPluginCall
             pluginCall.resolve(callResponse)
+            pluginCalls.remove(pluginCall)
+        }
+    }
+
+    fun addMeshPluginCall(meshOperation: Int, call: PluginCall) {
+        pluginCalls.add(ConfigPluginCall(meshOperation, ELEMENT_NONE_ADDRESS, call))
+    }
+
+    fun resolveMeshIndetifyPluginCall(meshNode: UnprovisionedMeshNode){
+        val pluginCall = pluginCalls.find { it is ConfigPluginCall && it.meshOperationCallback == MESH_NODE_IDENTIFY }
+
+        val result = JSObject().apply {
+            put("numberOfElements", meshNode.provisioningCapabilities.numberOfElements)
+            val oobTypeArray = JSArray().apply {
+                meshNode.provisioningCapabilities.availableOOBTypes.forEach {
+                    put(it)
+                }
+            }
+            put("availableOOBTypes", oobTypeArray)
+            put("algorithms", meshNode.provisioningCapabilities.rawAlgorithm)
+            put("publicKeyType", meshNode.provisioningCapabilities.rawPublicKeyType)
+            put("staticOobTypes", meshNode.provisioningCapabilities.rawStaticOOBType)
+            put("outputOobSize", meshNode.provisioningCapabilities.outputOOBSize)
+            put("outputOobActions", meshNode.provisioningCapabilities.rawOutputOOBAction)
+            put("inputOobSize", meshNode.provisioningCapabilities.inputOOBSize)
+            put("inputOobActions", meshNode.provisioningCapabilities.rawInputOOBAction)
+        }
+
+        if (pluginCall == null) {
+            plugin.sendNotification(MESH_EVENT_STRING, result)
+        } else {
+            pluginCall as ConfigPluginCall
+            pluginCall.resolve(result)
+            pluginCalls.remove(pluginCall)
+        }
+    }
+
+    fun resolveMeshProvisionPluginCall(meshDevice: BleMeshDevice){
+        val pluginCall = pluginCalls.find { it is ConfigPluginCall && it.meshOperationCallback == MESH_NODE_PROVISION }
+
+        val result = JSObject().apply {
+            when (meshDevice) {
+                is BleMeshDevice.Provisioned -> {
+                    put("provisioningComplete", true)
+                    put("uuid", meshDevice.node.uuid)
+                    put("unicastAddress", meshDevice.node.unicastAddress)
+                }
+                is BleMeshDevice.Unprovisioned ->{
+                    put("provisioningComplete", false)
+                    put("uuid", meshDevice.node.deviceUuid)
+                }
+            }
+        }
+
+        if (pluginCall == null) {
+            plugin.sendNotification(MESH_EVENT_STRING, result)
+        } else {
+            pluginCall as ConfigPluginCall
+            pluginCall.resolve(result)
             pluginCalls.remove(pluginCall)
         }
     }
