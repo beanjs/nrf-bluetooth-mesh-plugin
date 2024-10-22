@@ -66,7 +66,6 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   // async bindApplicationKeyToModel(): Promise<void> {
   //   console.log('bindApplicationKeyToModel');
   // }
-
   // async sendGenericOnOffSet(): Promise<ModelMessageStatus | PluginCallRejection> {
   //   console.log('sendGenericOnOffSet');
   //   return { src: 1, dst: 2, opcode: 3, data: {} };

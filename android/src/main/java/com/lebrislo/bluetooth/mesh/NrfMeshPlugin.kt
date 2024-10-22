@@ -423,9 +423,9 @@ class NrfMeshPlugin : Plugin() {
             }
 
             PluginCallManager.getInstance()
-                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NODE_RESET, unicastAddress, call)
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call)
 
-            implementation.unprovisionDevice(unicastAddress)
+            implementation.provisionDevice(UUID.fromString(uuid))
         }
     }
 
