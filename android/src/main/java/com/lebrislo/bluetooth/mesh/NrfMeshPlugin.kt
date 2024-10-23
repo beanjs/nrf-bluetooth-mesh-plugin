@@ -301,20 +301,20 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun createApplicationKey(call: PluginCall) {
+    fun createAppKey(call: PluginCall) {
         if(!implementation.assertMeshNetwork(call)) return
 
-        call.resolve(implementation.createApplicationKey())
+        call.resolve(implementation.createAppKey())
     }
 
     @PluginMethod
-    fun removeApplicationKey(call: PluginCall){
+    fun removeAppKey(call: PluginCall){
         if(!implementation.assertMeshNetwork(call)) return
 
         val appKeyIndex = call.getInt("index")
                 ?: return call.reject("index is required")
 
-        implementation.removeApplicationKey(appKeyIndex)
+        implementation.removeAppKey(appKeyIndex)
         call.resolve()
     }
 

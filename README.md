@@ -21,8 +21,8 @@ npx cap sync
 * [`exportMeshNetwork()`](#exportmeshnetwork)
 * [`importMeshNetwork(...)`](#importmeshnetwork)
 * [`getMeshNetwork()`](#getmeshnetwork)
-* [`createApplicationKey()`](#createapplicationkey)
-* [`removeApplicationKey(...)`](#removeapplicationkey)
+* [`createAppKey()`](#createappkey)
+* [`removeAppKey(...)`](#removeappkey)
 * [`scanMeshDevices(...)`](#scanmeshdevices)
 * [`getProvisioningCapabilities(...)`](#getprovisioningcapabilities)
 * [`provisionDevice(...)`](#provisiondevice)
@@ -134,10 +134,10 @@ getMeshNetwork() => Promise<MeshNetwork>
 --------------------
 
 
-### createApplicationKey()
+### createAppKey()
 
 ```typescript
-createApplicationKey() => Promise<MeshAppKey>
+createAppKey() => Promise<MeshAppKey>
 ```
 
 **Returns:** <code>Promise&lt;<a href="#meshappkey">MeshAppKey</a>&gt;</code>
@@ -145,10 +145,10 @@ createApplicationKey() => Promise<MeshAppKey>
 --------------------
 
 
-### removeApplicationKey(...)
+### removeAppKey(...)
 
 ```typescript
-removeApplicationKey(options: { index: number; }) => Promise<void>
+removeAppKey(options: { index: number; }) => Promise<void>
 ```
 
 | Param         | Type                            |
@@ -479,14 +479,14 @@ removeAllListeners() => Promise<void>
 
 #### MeshProvisioner
 
-| Prop                 | Type                                                                                                  |
-| -------------------- | ----------------------------------------------------------------------------------------------------- |
-| **`name`**           | <code>string</code>                                                                                   |
-| **`ttl`**            | <code>number</code>                                                                                   |
-| **`unicastAddress`** | <code>number</code>                                                                                   |
-| **`unicast`**        | <code>[{ lowerAddress: number; highAddress: number; lowerBound: number; upperBound: number; }]</code> |
-| **`group`**          | <code>[{ lowerAddress: number; highAddress: number; lowerBound: number; upperBound: number; }]</code> |
-| **`scene`**          | <code>[{ firstScene: number; lastScene: number; lowerBound: number; upperBound: number; }]</code>     |
+| Prop                 | Type                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| **`name`**           | <code>string</code>                                           |
+| **`ttl`**            | <code>number</code>                                           |
+| **`unicastAddress`** | <code>number</code>                                           |
+| **`unicast`**        | <code>[{ lowerAddress: number; highAddress: number; }]</code> |
+| **`group`**          | <code>[{ lowerAddress: number; highAddress: number; }]</code> |
+| **`scene`**          | <code>[{ firstScene: number; lastScene: number; }]</code>     |
 
 
 #### MeshNetKey

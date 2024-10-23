@@ -34,24 +34,18 @@ export interface MeshProvisioner {
     {
       lowerAddress: number;
       highAddress: number;
-      lowerBound: number;
-      upperBound: number;
     },
   ];
   group: [
     {
       lowerAddress: number;
       highAddress: number;
-      lowerBound: number;
-      upperBound: number;
     },
   ];
   scene: [
     {
       firstScene: number;
       lastScene: number;
-      lowerBound: number;
-      upperBound: number;
     },
   ];
 }
@@ -277,8 +271,8 @@ export interface NrfMeshPlugin {
 
   // getProvisioners(): Promise<Array<MeshProvisioner>>;
   getMeshNetwork(): Promise<MeshNetwork>;
-  createApplicationKey(): Promise<MeshAppKey>;
-  removeApplicationKey(options: { index: number }): Promise<void>;
+  createAppKey(): Promise<MeshAppKey>;
+  removeAppKey(options: { index: number }): Promise<void>;
 
   scanMeshDevices(options: { timeout: number }): Promise<ScanMeshDevices>;
   getProvisioningCapabilities(options: {

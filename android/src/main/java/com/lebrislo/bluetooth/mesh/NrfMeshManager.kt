@@ -293,7 +293,7 @@ class NrfMeshManager(private val context: Context) {
         }
     }
 
-    fun createApplicationKey(): JSObject {
+    fun createAppKey(): JSObject {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.createAppKey()
         network.addAppKey(appkey)
@@ -309,7 +309,7 @@ class NrfMeshManager(private val context: Context) {
         }
     }
 
-    fun removeApplicationKey(appKeyIndex: Int) {
+    fun removeAppKey(appKeyIndex: Int) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex) ?: return
 
