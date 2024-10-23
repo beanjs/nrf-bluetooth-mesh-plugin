@@ -71,7 +71,7 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                             put("elementAddress",it.elementAddress)
                             put("sigModelCount",it.sigModelCount)
                             put("vendorModelCount",it.vendorModelCount)
-                            put("locationDescriptor",it.locationDescriptor)
+                            put("location",it.locationDescriptor)
                             put("models",JSArray().apply {
                                 it.meshModels.values.forEach {
                                     put(JSObject().apply {

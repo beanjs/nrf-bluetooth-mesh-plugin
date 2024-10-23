@@ -50,6 +50,7 @@ import no.nordicsemi.android.mesh.transport.MeshMessage
 import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
 import no.nordicsemi.android.mesh.transport.VendorModelMessageAcked
 import no.nordicsemi.android.mesh.transport.VendorModelMessageUnacked
+import no.nordicsemi.android.mesh.utils.CompositionDataParser
 import no.nordicsemi.android.mesh.utils.MeshParserUtils
 import java.text.DateFormat
 import java.util.UUID
@@ -136,65 +137,17 @@ class NrfMeshManager(private val context: Context) {
         return JSObject().apply {
             put("name",network.meshName)
             put("lastModified", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(network.timestamp))
-            put("provisioners",JSArray().apply {
-                network.provisioners.forEach {
-                    put(JSObject().apply {
-                        put("name",it.provisionerName)
-                        put("ttl",it.globalTtl)
-                        if (it.provisionerAddress != null) {
-                            put("unicastAddress", it.provisionerAddress)
-                        }
-
-                        it.allocatedUnicastRanges.forEach {
-                            put("unicast",JSArray().apply {
-                                put(JSObject().apply {
-                                    put("lowerAddress",it.lowAddress)
-                                    put("highAddress",it.highAddress)
-                                    put("lowerBound",it.lowerBound)
-                                    put("upperBound",it.upperBound)
-                                })
-                            })
-                        }
-
-                        it.allocatedGroupRanges.forEach {
-                            put("group",JSArray().apply {
-                                put(JSObject().apply {
-                                    put("lowerAddress",it.lowAddress)
-                                    put("highAddress",it.highAddress)
-                                    put("lowerBound",it.lowerBound)
-                                    put("upperBound",it.upperBound)
-                                })
-                            })
-                        }
-
-                        it.allocatedSceneRanges.forEach {
-                            put("scene",JSArray().apply {
-                                put(JSObject().apply {
-                                    put("firstScene",it.firstScene)
-                                    put("lastScene",it.lastScene)
-                                    put("lowerBound",it.lowerBound)
-                                    put("upperBound",it.upperBound)
-                                })
-                            })
-                        }
-                    })
-                }
-            })
             put("netKeys",JSArray().apply {
                 network.netKeys.forEach {
                     put(JSObject().apply {
                         put("name",it.name)
+                        put("index",it.keyIndex)
+                        put("phase",it.phaseDescription)
                         put("key", MeshParserUtils.bytesToHex(it.key,false))
                         if (it.oldKey != null) {
                             put("oldKey", MeshParserUtils.bytesToHex(it.oldKey, false))
                         }
-                        put("index",it.keyIndex)
-                        put("phase",it.phaseDescription)
-                        if(it.isMinSecurity){
-                            put("security","secure")
-                        }else{
-                            put("security","insecure")
-                        }
+                        put("security",if(it.isMinSecurity) "secure" else "insecure")
                         put("lastModified", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(it.timestamp))
                     })
                 }
@@ -212,14 +165,129 @@ class NrfMeshManager(private val context: Context) {
                     })
                 }
             })
-//            put("nodes",JSArray().apply {
-//                network.nodes.forEach {
-//                    put(JSObject().apply {
-//                        put("",it.)
-//                    })
-//                }
-//            })
+            put("provisioners",JSArray().apply {
+                network.provisioners.forEach {
+                    put(JSObject().apply {
+                        put("name",it.provisionerName)
+                        it.allocatedUnicastRanges.forEach {
+                            put("unicast",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("lowerAddress",it.lowAddress)
+                                    put("highAddress",it.highAddress)
+                                })
+                            })
+                        }
 
+                        it.allocatedGroupRanges.forEach {
+                            put("group",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("lowerAddress",it.lowAddress)
+                                    put("highAddress",it.highAddress)
+                                })
+                            })
+                        }
+
+                        it.allocatedSceneRanges.forEach {
+                            put("scene",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("firstScene",it.firstScene)
+                                    put("lastScene",it.lastScene)
+                                })
+                            })
+                        }
+                    })
+                }
+            })
+            put("nodes",JSArray().apply {
+                network.nodes.forEach {
+                    put(JSObject().apply {
+                        put("name",it.nodeName)
+                        put("deviceKey",MeshParserUtils.bytesToHex(it.deviceKey,false))
+                        put("unicastAddress",it.unicastAddress)
+                        put("security",if(it.security == 1) "secure" else "insecure")
+                        put("ttl",it.ttl)
+                        put("excluded",it.isExcluded)
+                        put("features",JSObject().apply {
+                            put("friend",it.nodeFeatures.friend)
+                            put("lowPower",it.nodeFeatures.lowPower)
+                            put("proxy",it.nodeFeatures.proxy)
+                            put("relay",it.nodeFeatures.relay)
+                        })
+                        put("netKeys",JSArray().apply {
+                            it.addedNetKeys.forEach {
+                                put(JSObject().apply {
+                                    put("index",it.index)
+                                    put("updated",it.isUpdated)
+                                })
+                            }
+                        })
+                        put("appKeys",JSArray().apply {
+                            it.addedAppKeys.forEach {
+                                put(JSObject().apply {
+                                    put("index",it.index)
+                                    put("updated",it.isUpdated)
+                                })
+                            }
+                        })
+                        put("elements",JSArray().apply {
+                            it.elements.values.forEach {
+                                put(JSObject().apply {
+                                    put("name",it.name)
+                                    put("elementAddress",it.elementAddress)
+                                    put("location",it.locationDescriptor)
+                                    put("models",JSArray().apply {
+                                        it.meshModels.values.forEach {
+                                            put(JSObject().apply {
+                                                put("modelId",it.modelId)
+                                                put("bind",JSArray().apply {
+                                                    it.boundAppKeyIndexes.forEach {
+                                                        put(it)
+                                                    }
+                                                })
+                                                put("subscribe",JSArray().apply {
+                                                    it.subscribedAddresses.forEach {
+                                                        put(it)
+                                                    }
+                                                })
+                                            })
+                                        }
+                                    })
+                                })
+                            }
+                        })
+
+                        if (it.networkTransmitSettings != null) {
+                            put("networkTransmit", JSObject().apply {
+                                put("count", it.networkTransmitSettings.networkTransmitCount)
+                                put("interval", it.networkTransmitSettings.networkTransmissionInterval)
+                                put("steps", it.networkTransmitSettings.networkIntervalSteps)
+                            })
+                        }
+                        if (it.companyIdentifier != null){
+                            put("cid", CompositionDataParser.formatCompanyIdentifier(it.companyIdentifier,false))
+                        }
+                        if (it.productIdentifier != null){
+                            put("pid", CompositionDataParser.formatProductIdentifier(it.productIdentifier,false))
+                        }
+                        if (it.versionIdentifier != null){
+                            put("vid", CompositionDataParser.formatVersionIdentifier(it.versionIdentifier,false))
+                        }
+                        if(it.crpl != null){
+                            put("crpl",CompositionDataParser.formatReplayProtectionCount(it.crpl,false))
+                        }
+                    })
+                }
+            })
+            put("networkExclusions",JSArray().apply {
+                network.networkExclusions.forEach { (ivIndex, address) ->
+                    put("ivIndex",ivIndex)
+                    put(JSArray().apply {
+                        address.forEach {
+                            put(it)
+                        }
+                    })
+                }
+            })
         }
     }
 
