@@ -8,6 +8,7 @@ export declare class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     initMeshNetwork(): Promise<void>;
     getMeshNetwork(): Promise<MeshNetwork>;
     exportMeshNetwork(): Promise<MeshNetworkExport>;
+    importMeshNetwork(): Promise<void>;
     createApplicationKey(): Promise<MeshAppKey>;
     removeApplicationKey(): Promise<void>;
     scanMeshDevices(): Promise<ScanMeshDevices>;

@@ -27,6 +27,9 @@ export class NrfMeshWeb extends WebPlugin {
         console.log('exportMeshNetwork');
         return {};
     }
+    async importMeshNetwork() {
+        console.log('importMeshNetwork');
+    }
     async createApplicationKey() {
         console.log('createApplicationKey');
         return {};

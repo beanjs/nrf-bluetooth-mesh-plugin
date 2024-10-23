@@ -125,6 +125,10 @@ class NrfMeshManager(private val context: Context) {
         return meshManagerApi.exportMeshNetwork()
     }
 
+    fun importMeshNetwork(json: String) {
+        meshManagerApi.importMeshNetworkJson(json)
+    }
+
     @SuppressLint("RestrictedApi")
     fun getMeshNetwork():JSObject {
         val network = meshManagerApi.meshNetwork!!
@@ -425,15 +429,6 @@ class NrfMeshManager(private val context: Context) {
     fun unbindAppKey(unicastAddress:Int,elementAddress: Int,modelId: Int,appKeyIndex:Int){
         val configModelAppUnbind = ConfigModelAppUnbind(elementAddress,modelId,appKeyIndex)
         meshManagerApi.createMeshPdu(unicastAddress,configModelAppUnbind)
-    }
-
-    /**
-     * Import a mesh network from a json string
-     *
-     * @param json json string of the mesh network
-     */
-    fun importMeshNetwork(json: String) {
-        meshManagerApi.importMeshNetworkJson(json)
     }
 
     /**

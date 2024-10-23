@@ -19,6 +19,7 @@ npx cap sync
 * [`requestBluetoothEnable()`](#requestbluetoothenable)
 * [`initMeshNetwork()`](#initmeshnetwork)
 * [`exportMeshNetwork()`](#exportmeshnetwork)
+* [`importMeshNetwork(...)`](#importmeshnetwork)
 * [`getMeshNetwork()`](#getmeshnetwork)
 * [`createApplicationKey()`](#createapplicationkey)
 * [`removeApplicationKey(...)`](#removeapplicationkey)
@@ -105,6 +106,19 @@ exportMeshNetwork() => Promise<MeshNetworkExport>
 ```
 
 **Returns:** <code>Promise&lt;<a href="#meshnetworkexport">MeshNetworkExport</a>&gt;</code>
+
+--------------------
+
+
+### importMeshNetwork(...)
+
+```typescript
+importMeshNetwork(network: MeshNetworkExport) => Promise<void>
+```
+
+| Param         | Type                                                            |
+| ------------- | --------------------------------------------------------------- |
+| **`network`** | <code><a href="#meshnetworkexport">MeshNetworkExport</a></code> |
 
 --------------------
 

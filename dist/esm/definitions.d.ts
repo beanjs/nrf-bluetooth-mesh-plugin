@@ -202,6 +202,7 @@ export interface NrfMeshPlugin {
     requestBluetoothEnable(): Promise<BluetoothState>;
     initMeshNetwork(): Promise<void>;
     exportMeshNetwork(): Promise<MeshNetworkExport>;
+    importMeshNetwork(network: MeshNetworkExport): Promise<void>;
     getMeshNetwork(): Promise<MeshNetwork>;
     createApplicationKey(): Promise<MeshAppKey>;
     removeApplicationKey(options: {

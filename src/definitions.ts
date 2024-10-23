@@ -224,6 +224,7 @@ export interface NrfMeshPlugin {
   requestBluetoothEnable(): Promise<BluetoothState>;
   initMeshNetwork(): Promise<void>;
   exportMeshNetwork(): Promise<MeshNetworkExport>;
+  importMeshNetwork(network: MeshNetworkExport): Promise<void>;
 
   // getProvisioners(): Promise<Array<MeshProvisioner>>;
   getMeshNetwork(): Promise<MeshNetwork>;

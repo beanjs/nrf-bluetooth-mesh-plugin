@@ -287,6 +287,19 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
+
+    @PluginMethod
+    fun importMeshNetwork(call: PluginCall) {
+        if(!implementation.assertMeshNetwork(call)) return
+
+        val meshNetwork = call.getString("meshNetwork")
+                ?: return call.reject("meshNetwork is required")
+
+        implementation.importMeshNetwork(meshNetwork)
+
+        call.resolve()
+    }
+
     @PluginMethod
     fun createApplicationKey(call: PluginCall) {
         if(!implementation.assertMeshNetwork(call)) return
@@ -1069,20 +1082,7 @@ class NrfMeshPlugin : Plugin() {
 //    }
 
 
-//
-//    @PluginMethod
-//    fun importMeshNetwork(call: PluginCall) {
-//        val meshNetwork = call.getString("meshNetwork")
-//
-//        if (meshNetwork == null) {
-//            call.reject("meshNetwork is required")
-//            return
-//        }
-//
-//        val result = implementation.importMeshNetwork(meshNetwork)
-//
-//        call.resolve()
-//    }
+
 //
 //    @PluginMethod
 //    fun initMeshNetwork(call: PluginCall) {

@@ -33,6 +33,9 @@ var capacitorNrfMesh = (function (exports, core) {
             console.log('exportMeshNetwork');
             return {};
         }
+        async importMeshNetwork() {
+            console.log('importMeshNetwork');
+        }
         async createApplicationKey() {
             console.log('createApplicationKey');
             return {};

@@ -76,6 +76,24 @@
         "slug": "exportmeshnetwork"
       },
       {
+        "name": "importMeshNetwork",
+        "signature": "(network: MeshNetworkExport) => Promise<void>",
+        "parameters": [
+          {
+            "name": "network",
+            "docs": "",
+            "type": "MeshNetworkExport"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "MeshNetworkExport"
+        ],
+        "slug": "importmeshnetwork"
+      },
+      {
         "name": "getMeshNetwork",
         "signature": "() => Promise<MeshNetwork>",
         "parameters": [],
