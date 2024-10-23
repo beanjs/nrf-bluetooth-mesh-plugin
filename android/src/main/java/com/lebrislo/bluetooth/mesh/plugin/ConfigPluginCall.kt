@@ -3,6 +3,7 @@ package com.lebrislo.bluetooth.mesh.plugin
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
+import no.nordicsemi.android.mesh.transport.ConfigAppKeyList
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlStatus
@@ -35,6 +36,7 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                     is ConfigDefaultTtlStatus -> configDefaultTtlStatusResponse(meshMessage)
                     is ConfigNetworkTransmitStatus -> configNetworkTransmitStatusResponse(meshMessage)
                     is ConfigAppKeyStatus -> configAppKeyStatusResponse(meshMessage)
+                    is ConfigAppKeyList -> configAppKeyListResponse(meshMessage)
                     is ConfigModelAppStatus -> configModelAppStatusResponse(meshMessage)
                     else -> JSObject()
                     }
@@ -75,7 +77,11 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                                     put(JSObject().apply {
                                         put("modelId",it.modelId)
                                         put("modelName",it.modelName)
-                                        put("boundAppKeyIndexes",it.boundAppKeyIndexes)
+                                        put("boundAppKeyIndexes",JSArray().apply {
+                                            it.boundAppKeyIndexes.forEach {
+                                                put(it)
+                                            }
+                                        })
 //                                        put("subscribedAddresses",it.subscribedAddresses)
 //                                        put("",it.publicationSettings.)
                                     })
@@ -105,20 +111,35 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
         }
 
         private fun configAppKeyStatusResponse(meshMessage: ConfigAppKeyStatus): JSObject {
-            val data = JSObject()
-            data.put("status", meshMessage.statusCode)
-            data.put("netKeyIndex", meshMessage.netKeyIndex)
-            data.put("appKeyIndex", meshMessage.appKeyIndex)
-            return data
+            return JSObject().apply {
+                put("status", meshMessage.statusCode)
+                put("statusName", meshMessage.statusCodeName)
+                put("netKeyIndex", meshMessage.netKeyIndex)
+                put("appKeyIndex", meshMessage.appKeyIndex)
+            }
+        }
+
+        private fun configAppKeyListResponse(meshMessage: ConfigAppKeyList):JSObject{
+            return JSObject().apply {
+                put("status", meshMessage.statusCode)
+                put("statusName", meshMessage.statusCodeName)
+                put("netKeyIndex",meshMessage.netKeyIndex)
+                put("appKeyIndexes",JSArray().apply {
+                    meshMessage.keyIndexes.forEach {
+                        put(it)
+                    }
+                })
+            }
         }
 
         private fun configModelAppStatusResponse(meshMessage: ConfigModelAppStatus): JSObject {
-            val data = JSObject()
-            data.put("status", meshMessage.statusCode)
-            data.put("elementAddress", meshMessage.elementAddress)
-            data.put("modelId", meshMessage.modelIdentifier)
-            data.put("appKeyIndex", meshMessage.appKeyIndex)
-            return data
+            return JSObject().apply {
+                put("status", meshMessage.statusCode)
+                put("statusName", meshMessage.statusCodeName)
+                put("elementAddress", meshMessage.elementAddress)
+                put("modelId", meshMessage.modelIdentifier)
+                put("appKeyIndex", meshMessage.appKeyIndex)
+            }
         }
     }
 }

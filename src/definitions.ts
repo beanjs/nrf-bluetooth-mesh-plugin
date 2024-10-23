@@ -8,50 +8,64 @@ export interface Permissions {
   [key: string]: string;
 }
 
+export interface MeshAppKey {
+  name: string;
+  index: number;
+  key: string;
+  oldKey?: string;
+  boundNetKeyIndex: number;
+}
+
+export interface MeshNetKey {
+  name: string;
+  key: string;
+  oldKey?: string;
+  index: number;
+  phase: number;
+  security: 'secure' | 'insecure';
+  lastModified: string;
+}
+
+export interface MeshProvisioner {
+  name: string;
+  ttl: number;
+  unicastAddress?: number;
+  unicast: [
+    {
+      lowerAddress: number;
+      highAddress: number;
+      lowerBound: number;
+      upperBound: number;
+    },
+  ];
+  group: [
+    {
+      lowerAddress: number;
+      highAddress: number;
+      lowerBound: number;
+      upperBound: number;
+    },
+  ];
+  scene: [
+    {
+      firstScene: number;
+      lastScene: number;
+      lowerBound: number;
+      upperBound: number;
+    },
+  ];
+}
+
 export interface MeshNetwork {
   name: string;
-  provisioners: [
-    {
-      name: string;
-      ttl: number;
-      unicastAddress?: number;
-      unicast: [
-        {
-          lowerAddress: number;
-          highAddress: number;
-          lowerBound: number;
-          upperBound: number;
-        },
-      ];
-      group: [
-        {
-          lowerAddress: number;
-          highAddress: number;
-          lowerBound: number;
-          upperBound: number;
-        },
-      ];
-      scene: [
-        {
-          firstScene: number;
-          lastScene: number;
-          lowerBound: number;
-          upperBound: number;
-        },
-      ];
-    },
-  ];
-  netKeys: [
-    {
-      name: string;
-      key: string;
-      oldKey?: string;
-      index: number;
-      phase: number;
-      security: 'secure' | 'insecure';
-      lastModified: string;
-    },
-  ];
+  lastModified: string;
+  provisioners: Array<MeshProvisioner>;
+  netKeys: Array<MeshNetKey>;
+  appKeys: Array<MeshAppKey>;
+}
+
+export interface MeshNetworkExport {
+  meshNetwork: string;
 }
 
 export interface UnprovisionedDevice {
@@ -141,22 +155,20 @@ export interface CompositionDataStatus extends Status {
       friend: boolean;
       lowPower: boolean;
     };
-    elements: [
-      {
-        name: string;
-        elementAddress: number;
-        sigModelCount: number;
-        vendorModelCount: number;
-        locationDescriptor: number;
-        models: [
-          {
-            modelId: number;
-            modelName: string;
-            boundAppKeyIndexes: [];
-          },
-        ];
-      },
-    ];
+    elements: Array<{
+      name: string;
+      elementAddress: number;
+      sigModelCount: number;
+      vendorModelCount: number;
+      locationDescriptor: number;
+      models: [
+        {
+          modelId: number;
+          modelName: string;
+          boundAppKeyIndexes: [];
+        },
+      ];
+    }>;
   };
 }
 
@@ -177,35 +189,33 @@ export interface NetworkTransmitStatus extends Status {
   };
 }
 
-// export interface PluginCallRejection {
-//   message: string;
-//   data: {
-//     methodName: string;
-//     [key: string]: any;
-//   };
-// }
+export interface AppKeyStatus extends Status {
+  data: {
+    status: number;
+    statusName: string;
+    netKeyIndex: number;
+    appKeyIndex: number;
+  };
+}
 
-// export type Data = DataView | string;
+export interface AppKeyListStatus extends Status {
+  data: {
+    status: number;
+    statusName: string;
+    netKeyIndex: number;
+    appKeyIndexes: Array<number>;
+  };
+}
 
-// export interface ReadResult {
-//   value?: Data;
-// }
-
-// export interface ModelMessageStatus {
-//   src: number;
-//   dst: number;
-//   opcode: number;
-//   vendorModelId?: number;
-//   data: any;
-// }
-
-// export interface AddAppKeyStatus {
-//   success: boolean;
-// }
-
-// export interface MeshNetworkObject {
-//   meshNetwork: string;
-// }
+export interface ModelAppStatus extends Status {
+  data: {
+    status: number;
+    statusName: string;
+    elementAddress: number;
+    modelId: number;
+    appKeyIndex: number;
+  };
+}
 
 export interface NrfMeshPlugin {
   checkPermissions(): Promise<Permissions>;
@@ -213,8 +223,12 @@ export interface NrfMeshPlugin {
   isBluetoothEnabled(): Promise<BluetoothState>;
   requestBluetoothEnable(): Promise<BluetoothState>;
   initMeshNetwork(): Promise<void>;
+  exportMeshNetwork(): Promise<MeshNetworkExport>;
 
+  // getProvisioners(): Promise<Array<MeshProvisioner>>;
   getMeshNetwork(): Promise<MeshNetwork>;
+  createApplicationKey(): Promise<MeshAppKey>;
+  removeApplicationKey(options: { index: number }): Promise<void>;
 
   scanMeshDevices(options: { timeout: number }): Promise<ScanMeshDevices>;
   getProvisioningCapabilities(options: {
@@ -245,18 +259,28 @@ export interface NrfMeshPlugin {
     networkTransmitCount: number;
     networkTransmitIntervalSteps: number;
   }): Promise<NetworkTransmitStatus>;
+  addAppKey(options: {
+    unicastAddress: number;
+    appKeyIndex: number;
+  }): Promise<AppKeyStatus>;
+  deleteAppKey(options: {
+    unicastAddress: number;
+    appKeyIndex: number;
+  }): Promise<AppKeyStatus>;
+  getAppKeys(options: { unicastAddress: number }): Promise<AppKeyListStatus>;
+  bindAppKey(options: {
+    unicastAddress: number;
+    elementAddress: number;
+    modelId: number;
+    appKeyIndex: number;
+  }): Promise<ModelAppStatus>;
+  unbindAppKey(options: {
+    unicastAddress: number;
+    elementAddress: number;
+    modelId: number;
+    appKeyIndex: number;
+  }): Promise<ModelAppStatus>;
 
-  // createApplicationKey(): Promise<void>;
-  // removeApplicationKey(options: { appKeyIndex: number }): Promise<void>;
-  // addApplicationKeyToNode(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  // }): Promise<AddAppKeyStatus>;
-  // bindApplicationKeyToModel(options: {
-  //   elementAddress: number;
-  //   appKeyIndex: number;
-  //   modelId: number;
-  // }): Promise<void>;
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;
   //   appKeyIndex: number;

@@ -21,12 +21,19 @@ class MeshCallbacksManager(val bleMeshManager: BleMeshManager) : MeshManagerCall
 
         Log.d(tag, "Mesh network UUID Loaded : " + meshNetwork.meshUUID)
 
-        PluginCallManager.getInstance().setNetwork(meshNetwork)
         this.meshNetwork = meshNetwork
 
         if (!this.meshNetwork!!.isProvisionerSelected()) {
             val provisioner = this.meshNetwork!!.provisioners[0]
             this.meshNetwork!!.selectProvisioner(provisioner)
+        }
+
+        PluginCallManager.getInstance().setNetwork(meshNetwork)
+
+        if (this.meshNetwork!!.appKeys.isEmpty()){
+            val defaultAppKey = this.meshNetwork!!.createAppKey()
+            defaultAppKey.name = "Application Key 1"
+            this.meshNetwork!!.addAppKey(defaultAppKey)
         }
     }
 

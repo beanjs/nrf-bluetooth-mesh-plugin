@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.util.Log
+import com.getcapacitor.JSArray
+import com.getcapacitor.JSObject
+import com.getcapacitor.PluginCall
 import com.lebrislo.bluetooth.mesh.ble.BleCallbacksManager
 import com.lebrislo.bluetooth.mesh.ble.BleMeshManager
 import com.lebrislo.bluetooth.mesh.models.BleMeshDevice
@@ -19,11 +22,16 @@ import no.nordicsemi.android.ble.DisconnectRequest
 import no.nordicsemi.android.mesh.MeshManagerApi
 import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyAdd
+import no.nordicsemi.android.mesh.transport.ConfigAppKeyDelete
+import no.nordicsemi.android.mesh.transport.ConfigAppKeyGet
+import no.nordicsemi.android.mesh.transport.ConfigAppKeyList
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
+import no.nordicsemi.android.mesh.transport.ConfigAppKeyUpdate
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataGet
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlSet
 import no.nordicsemi.android.mesh.transport.ConfigModelAppBind
+import no.nordicsemi.android.mesh.transport.ConfigModelAppUnbind
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitGet
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitSet
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
@@ -42,6 +50,8 @@ import no.nordicsemi.android.mesh.transport.MeshMessage
 import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
 import no.nordicsemi.android.mesh.transport.VendorModelMessageAcked
 import no.nordicsemi.android.mesh.transport.VendorModelMessageUnacked
+import no.nordicsemi.android.mesh.utils.MeshParserUtils
+import java.text.DateFormat
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -56,8 +66,6 @@ class NrfMeshManager(private val context: Context) {
 
     private var bleMeshManager: BleMeshManager = BleMeshManager(context)
     var meshManagerApi: MeshManagerApi = MeshManagerApi(context)
-
-    private val addAppKeyStatusMap = ConcurrentHashMap<Int, CompletableDeferred<Boolean>>()
 
     init {
         meshCallbacksManager = MeshCallbacksManager(bleMeshManager)
@@ -99,6 +107,139 @@ class NrfMeshManager(private val context: Context) {
 
     fun getNodes(): List<ProvisionedMeshNode>{
         return meshManagerApi.meshNetwork?.nodes ?: listOf()
+    }
+
+    fun assertMeshNetwork(call: PluginCall):Boolean{
+        if (meshManagerApi.meshNetwork == null){
+            call.reject("meshNetwork not initialized.")
+            return  false
+        }
+        return true
+    }
+
+    fun initMeshNetwork() {
+        meshManagerApi.loadMeshNetwork()
+    }
+
+    fun exportMeshNetwork(): String? {
+        return meshManagerApi.exportMeshNetwork()
+    }
+
+    @SuppressLint("RestrictedApi")
+    fun getMeshNetwork():JSObject {
+        val network = meshManagerApi.meshNetwork!!
+
+        return JSObject().apply {
+            put("name",network.meshName)
+            put("lastModified", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(network.timestamp))
+            put("provisioners",JSArray().apply {
+                network.provisioners.forEach {
+                    put(JSObject().apply {
+                        put("name",it.provisionerName)
+                        put("ttl",it.globalTtl)
+                        if (it.provisionerAddress != null) {
+                            put("unicastAddress", it.provisionerAddress)
+                        }
+
+                        it.allocatedUnicastRanges.forEach {
+                            put("unicast",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("lowerAddress",it.lowAddress)
+                                    put("highAddress",it.highAddress)
+                                    put("lowerBound",it.lowerBound)
+                                    put("upperBound",it.upperBound)
+                                })
+                            })
+                        }
+
+                        it.allocatedGroupRanges.forEach {
+                            put("group",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("lowerAddress",it.lowAddress)
+                                    put("highAddress",it.highAddress)
+                                    put("lowerBound",it.lowerBound)
+                                    put("upperBound",it.upperBound)
+                                })
+                            })
+                        }
+
+                        it.allocatedSceneRanges.forEach {
+                            put("scene",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("firstScene",it.firstScene)
+                                    put("lastScene",it.lastScene)
+                                    put("lowerBound",it.lowerBound)
+                                    put("upperBound",it.upperBound)
+                                })
+                            })
+                        }
+                    })
+                }
+            })
+            put("netKeys",JSArray().apply {
+                network.netKeys.forEach {
+                    put(JSObject().apply {
+                        put("name",it.name)
+                        put("key", MeshParserUtils.bytesToHex(it.key,false))
+                        if (it.oldKey != null) {
+                            put("oldKey", MeshParserUtils.bytesToHex(it.oldKey, false))
+                        }
+                        put("index",it.keyIndex)
+                        put("phase",it.phaseDescription)
+                        if(it.isMinSecurity){
+                            put("security","secure")
+                        }else{
+                            put("security","insecure")
+                        }
+                        put("lastModified", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(it.timestamp))
+                    })
+                }
+            })
+            put("appKeys",JSArray().apply {
+                network.appKeys.forEach {
+                    put(JSObject().apply {
+                        put("name",it.name)
+                        put("index",it.keyIndex)
+                        put("key", MeshParserUtils.bytesToHex(it.key,false))
+                        if (it.oldKey != null) {
+                            put("oldKey", MeshParserUtils.bytesToHex(it.oldKey,false))
+                        }
+                        put("boundNetKeyIndex",it.boundNetKeyIndex)
+                    })
+                }
+            })
+//            put("nodes",JSArray().apply {
+//                network.nodes.forEach {
+//                    put(JSObject().apply {
+//                        put("",it.)
+//                    })
+//                }
+//            })
+
+        }
+    }
+
+    fun createApplicationKey(): JSObject {
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.createAppKey()
+        network.addAppKey(appkey)
+
+        return  JSObject().apply {
+            put("name",appkey.name)
+            put("index",appkey.keyIndex)
+            put("key", MeshParserUtils.bytesToHex(appkey.key,false))
+            if (appkey.oldKey != null) {
+                put("oldKey", MeshParserUtils.bytesToHex(appkey.oldKey,false))
+            }
+            put("boundNetKeyIndex",appkey.boundNetKeyIndex)
+        }
+    }
+
+    fun removeApplicationKey(appKeyIndex: Int) {
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex) ?: return
+
+        network.removeAppKey(appkey)
     }
 
     @SuppressLint("MissingPermission")
@@ -250,111 +391,40 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(unicastAddress, configNetworkTransmitSet)
     }
 
-//    fun onCompositionDataStatusReceived(meshMessage: ConfigNetworkTransmitStatus) {
-//        Log.d(tag, "onCompositionDataStatusReceived")
-//        val unicastAddress = meshMessage.src
-//        val operationSucceeded = meshMessage.statusCode == 0
-//
-//        if (operationSucceeded) {
-//            compositionDataStatusMap[unicastAddress]?.complete(true)
-//            compositionDataStatusMap.remove(unicastAddress)
-//        }
-//    }
+    fun addAppKey(unicastAddress: Int,appKeyIndex: Int){
+        val network = meshManagerApi.meshNetwork!!
+        val netkey = network.primaryNetworkKey
+        val appkey = network.getAppKey(appKeyIndex)
 
-    /**
-     * Create an application key
-     *
-     * @return Boolean whether the application key was created successfully
-     */
-    fun createApplicationKey(): Boolean {
-        val applicationKey = meshManagerApi.meshNetwork?.createAppKey()
-        return meshManagerApi.meshNetwork?.addAppKey(applicationKey!!) ?: false
+        val configAppKeyAdd = ConfigAppKeyAdd(netkey,appkey)
+        meshManagerApi.createMeshPdu(unicastAddress,configAppKeyAdd)
     }
 
-    /**
-     * Remove an application key from the mesh network
-     *
-     * @param appKeyIndex index of the application key
-     *
-     * @return Boolean whether the application key was removed successfully
-     */
-    fun removeApplicationKey(appKeyIndex: Int): Boolean {
-        return meshManagerApi.meshNetwork?.getAppKey(appKeyIndex)?.let {
-            meshManagerApi.meshNetwork?.removeAppKey(it)
-        } ?: false
+    fun deleteAppKey(unicastAddress: Int,appKeyIndex: Int){
+        val network = meshManagerApi.meshNetwork!!
+        val netkey = network.primaryNetworkKey
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val configAppKeyDelete = ConfigAppKeyDelete(netkey,appkey)
+        meshManagerApi.createMeshPdu(unicastAddress,configAppKeyDelete)
     }
 
-    /**
-     * Add an application key to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param elementAddress unicast address of the node's element
-     * @param appKeyIndex index of the application key
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun addApplicationKeyToNode(elementAddress: Int, appKeyIndex: Int): CompletableDeferred<Boolean> {
-        val deferred = CompletableDeferred<Boolean>()
-        addAppKeyStatusMap[appKeyIndex] = deferred
+    fun getAppKeys(unicastAddress: Int){
+        val network = meshManagerApi.meshNetwork!!
+        val netkey = network.primaryNetworkKey
 
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            deferred.cancel()
-            return deferred
-        }
-
-        val netKey = meshManagerApi.meshNetwork?.primaryNetworkKey
-        val appKey = meshManagerApi.meshNetwork?.getAppKey(appKeyIndex)
-
-        val configModelAppBind = ConfigAppKeyAdd(netKey!!, appKey!!)
-        meshManagerApi.createMeshPdu(elementAddress, configModelAppBind)
-
-        return deferred
+        val configAppKeyGet = ConfigAppKeyGet(netkey)
+        meshManagerApi.createMeshPdu(unicastAddress,configAppKeyGet)
     }
 
-    fun onAppKeyAddStatusReceived(meshMessage: ConfigAppKeyStatus) {
-        val appKeyIndex = meshMessage.appKeyIndex
-        val operationSucceeded = meshMessage.statusCode == 0
-
-        addAppKeyStatusMap[appKeyIndex]?.complete(operationSucceeded)
-        addAppKeyStatusMap.remove(appKeyIndex)
+    fun bindAppKey(unicastAddress:Int,elementAddress: Int,modelId: Int,appKeyIndex:Int ){
+        val configModelAppBind = ConfigModelAppBind(elementAddress,modelId,appKeyIndex)
+        meshManagerApi.createMeshPdu(unicastAddress,configModelAppBind)
     }
 
-    /**
-     * Bind an application key to a model
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param elementAddress unicast address of the node's element
-     * @param appKeyIndex index of the application key
-     * @param modelId model id
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun bindApplicationKeyToModel(elementAddress: Int, appKeyIndex: Int, modelId: Int): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        val configModelAppBind = ConfigModelAppBind(elementAddress, modelId, appKeyIndex)
-        meshManagerApi.createMeshPdu(elementAddress, configModelAppBind)
-
-        return true
-    }
-
-    fun initMeshNetwork() {
-        meshManagerApi.loadMeshNetwork()
-    }
-
-    /**
-     * Export the mesh network to a json string
-     *
-     * @return String
-     */
-    fun exportMeshNetwork(): String? {
-        return meshManagerApi.exportMeshNetwork()
+    fun unbindAppKey(unicastAddress:Int,elementAddress: Int,modelId: Int,appKeyIndex:Int){
+        val configModelAppUnbind = ConfigModelAppUnbind(elementAddress,modelId,appKeyIndex)
+        meshManagerApi.createMeshPdu(unicastAddress,configModelAppUnbind)
     }
 
     /**

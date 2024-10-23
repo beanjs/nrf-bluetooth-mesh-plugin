@@ -2,6 +2,8 @@ package com.lebrislo.bluetooth.mesh.plugin
 
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_APPKEY_ADD
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_APPKEY_DELETE
+import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_APPKEY_GET
+import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_APPKEY_LIST
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_APPKEY_STATUS
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_APPKEY_UPDATE
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_COMPOSITION_DATA_GET
@@ -13,6 +15,7 @@ import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NODE_RESET
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NODE_RESET_STATUS
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_APP_STATUS
+import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_APP_UNBIND
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_GET
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_SET
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_STATUS
@@ -34,7 +37,8 @@ class ConfigOperationPair {
                 CONFIG_NETWORK_TRANSMIT_GET, CONFIG_NETWORK_TRANSMIT_SET -> CONFIG_NETWORK_TRANSMIT_STATUS
                 CONFIG_COMPOSITION_DATA_GET -> CONFIG_COMPOSITION_DATA_STATUS.toInt()
                 CONFIG_NODE_RESET -> CONFIG_NODE_RESET_STATUS
-                CONFIG_MODEL_APP_BIND -> CONFIG_MODEL_APP_STATUS
+                CONFIG_APPKEY_GET -> CONFIG_APPKEY_LIST
+                CONFIG_MODEL_APP_BIND, CONFIG_MODEL_APP_UNBIND -> CONFIG_MODEL_APP_STATUS
                 else -> 0
             }
         }

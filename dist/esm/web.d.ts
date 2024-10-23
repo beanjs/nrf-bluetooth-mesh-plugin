@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import type { BluetoothState, NrfMeshPlugin, Permissions, MeshNetwork, ProvisioningCapabilities, ProvisioningStatus, ScanMeshDevices, NodeResetStatus, CompositionDataStatus, DefaultTTLStatus, NetworkTransmitStatus } from './definitions';
+import type { BluetoothState, NrfMeshPlugin, Permissions, MeshNetwork, MeshNetworkExport, MeshAppKey, ProvisioningCapabilities, ProvisioningStatus, ScanMeshDevices, NodeResetStatus, CompositionDataStatus, DefaultTTLStatus, NetworkTransmitStatus, AppKeyStatus, AppKeyListStatus, ModelAppStatus } from './definitions';
 export declare class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     checkPermissions(): Promise<Permissions>;
     requestPermissions(): Promise<any>;
@@ -7,6 +7,9 @@ export declare class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     requestBluetoothEnable(): Promise<BluetoothState>;
     initMeshNetwork(): Promise<void>;
     getMeshNetwork(): Promise<MeshNetwork>;
+    exportMeshNetwork(): Promise<MeshNetworkExport>;
+    createApplicationKey(): Promise<MeshAppKey>;
+    removeApplicationKey(): Promise<void>;
     scanMeshDevices(): Promise<ScanMeshDevices>;
     getProvisioningCapabilities(): Promise<ProvisioningCapabilities>;
     provisionDevice(): Promise<ProvisioningStatus>;
@@ -16,4 +19,9 @@ export declare class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     setDefaultTTL(): Promise<DefaultTTLStatus>;
     getNetworkTransmit(): Promise<NetworkTransmitStatus>;
     setNetworkTransmit(): Promise<NetworkTransmitStatus>;
+    addAppKey(): Promise<AppKeyStatus>;
+    deleteAppKey(): Promise<AppKeyStatus>;
+    getAppKeys(): Promise<AppKeyListStatus>;
+    bindAppKey(): Promise<ModelAppStatus>;
+    unbindAppKey(): Promise<ModelAppStatus>;
 }

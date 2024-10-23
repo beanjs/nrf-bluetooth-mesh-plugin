@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import no.nordicsemi.android.mesh.sensorutils.Bool
 
 /**
  * BasePluginCall is a class that provides a base implementation for plugin calls.
@@ -16,7 +17,8 @@ import kotlinx.coroutines.launch
  */
 abstract class BasePluginCall(val call: PluginCall, val timeout: Int = 10000) {
 
-    private var isResolved: Boolean = false
+    var isResolved: Boolean = false
+    var isTimeout: Boolean = false
 
     /**
      * Initializes the BasePluginCall with a timeout.
@@ -34,6 +36,7 @@ abstract class BasePluginCall(val call: PluginCall, val timeout: Int = 10000) {
                 }
                 reject("Operation timed out", rejectObject)
             }
+            isTimeout = true
         }
     }
 

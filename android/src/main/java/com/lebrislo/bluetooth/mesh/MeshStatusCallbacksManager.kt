@@ -3,6 +3,7 @@ package com.lebrislo.bluetooth.mesh
 import android.util.Log
 import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import no.nordicsemi.android.mesh.MeshStatusCallbacks
+import no.nordicsemi.android.mesh.transport.ConfigAppKeyList
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
@@ -50,7 +51,6 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
         } else if (meshMessage is ConfigModelAppStatus) {
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigAppKeyStatus) {
-//            nrfMeshManager.onAppKeyAddStatusReceived(meshMessage)
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigCompositionDataStatus) {
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
@@ -58,8 +58,8 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigNetworkTransmitStatus){
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-        } else if (meshMessage is GenericOnOffStatus) {
-            PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+        } else if (meshMessage is ConfigAppKeyList){
+            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         }
 
 

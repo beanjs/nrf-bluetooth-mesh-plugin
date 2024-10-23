@@ -23,6 +23,17 @@ export class NrfMeshWeb extends WebPlugin {
         console.log('getMeshNetwork');
         return {};
     }
+    async exportMeshNetwork() {
+        console.log('exportMeshNetwork');
+        return {};
+    }
+    async createApplicationKey() {
+        console.log('createApplicationKey');
+        return {};
+    }
+    async removeApplicationKey() {
+        console.log('removeApplicationKey');
+    }
     async scanMeshDevices() {
         console.log('scanMeshDevices');
         return { unprovisioned: [], provisioned: [], proxy: [] };
@@ -57,6 +68,26 @@ export class NrfMeshWeb extends WebPlugin {
     }
     async setNetworkTransmit() {
         console.log('setNetworkTransmit');
+        return {};
+    }
+    async addAppKey() {
+        console.log('addAppKey');
+        return {};
+    }
+    async deleteAppKey() {
+        console.log('deleteAppKey');
+        return {};
+    }
+    async getAppKeys() {
+        console.log('getAppKeys');
+        return {};
+    }
+    async bindAppKey() {
+        console.log('bindAppKey');
+        return {};
+    }
+    async unbindAppKey() {
+        console.log('unbindAppKey');
         return {};
     }
 }

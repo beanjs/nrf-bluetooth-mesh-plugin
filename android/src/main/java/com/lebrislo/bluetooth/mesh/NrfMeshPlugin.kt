@@ -267,89 +267,42 @@ class NrfMeshPlugin : Plugin() {
         call.resolve()
     }
 
-    @SuppressLint("RestrictedApi")
     @PluginMethod
     fun getMeshNetwork(call: PluginCall){
-        val network = implementation.meshManagerApi.meshNetwork!!
-        call.resolve(JSObject().apply {
-            put("name",network.meshName)
-            put("provisioners",JSArray().apply {
-                network.provisioners.forEach {
-                    put(JSObject().apply {
-                        put("name",it.provisionerName)
-                        put("ttl",it.globalTtl)
-                        if (it.provisionerAddress != null) {
-                            put("unicastAddress", it.provisionerAddress)
-                        }
+        if(!implementation.assertMeshNetwork(call)) return
 
-                        it.allocatedUnicastRanges.forEach {
-                            put("unicast",JSArray().apply {
-                                put(JSObject().apply {
-                                    put("lowerAddress",it.lowAddress)
-                                    put("highAddress",it.highAddress)
-                                    put("lowerBound",it.lowerBound)
-                                    put("upperBound",it.upperBound)
-                                })
-                            })
-                        }
+        call.resolve(implementation.getMeshNetwork())
+    }
 
-                        it.allocatedGroupRanges.forEach {
-                            put("group",JSArray().apply {
-                                put(JSObject().apply {
-                                    put("lowerAddress",it.lowAddress)
-                                    put("highAddress",it.highAddress)
-                                    put("lowerBound",it.lowerBound)
-                                    put("upperBound",it.upperBound)
-                                })
-                            })
-                        }
+    @PluginMethod
+    fun exportMeshNetwork(call: PluginCall) {
+        if(!implementation.assertMeshNetwork(call)) return
 
-                        it.allocatedSceneRanges.forEach {
-                            put("scene",JSArray().apply {
-                                put(JSObject().apply {
-                                    put("firstScene",it.firstScene)
-                                    put("lastScene",it.lastScene)
-                                    put("lowerBound",it.lowerBound)
-                                    put("upperBound",it.upperBound)
-                                })
-                            })
-                        }
-                    })
-                }
-            })
-            put("netKeys",JSArray().apply {
-                network.netKeys.forEach {
-                    put(JSObject().apply {
-                        put("name",it.name)
-                        put("key",MeshParserUtils.bytesToHex(it.key,false))
-                        if (it.oldKey != null) {
-                            put("oldKey", MeshParserUtils.bytesToHex(it.oldKey, false))
-                        }
-                        put("index",it.keyIndex)
-                        put("phase",it.phaseDescription)
-                        if(it.isMinSecurity){
-                            put("security","secure")
-                        }else{
-                            put("security","insecure")
-                        }
-                        put("lastModified",DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.LONG).format(it.timestamp))
-                    })
-                }
-            })
-            put("appKeys",JSArray().apply {
-                network.appKeys.forEach {
-                    put(JSObject().apply {
-                        put("name",it.name)
-                        put("index",it.keyIndex)
-                        put("key",MeshParserUtils.bytesToHex(it.key,false))
-                        if (it.oldKey != null) {
-                            put("oldKey",MeshParserUtils.bytesToHex(it.oldKey,false))
-                        }
-                        put("boundNetKeyIndex",it.boundNetKeyIndex)
-                    })
-                }
-            })
-        })
+        val result = implementation.exportMeshNetwork()
+
+        if (result != null) {
+            call.resolve(JSObject().put("meshNetwork", result))
+        } else {
+            call.reject("Failed to export mesh network")
+        }
+    }
+
+    @PluginMethod
+    fun createApplicationKey(call: PluginCall) {
+        if(!implementation.assertMeshNetwork(call)) return
+
+        call.resolve(implementation.createApplicationKey())
+    }
+
+    @PluginMethod
+    fun removeApplicationKey(call: PluginCall){
+        if(!implementation.assertMeshNetwork(call)) return
+
+        val appKeyIndex = call.getInt("index")
+                ?: return call.reject("index is required")
+
+        implementation.removeApplicationKey(appKeyIndex)
+        call.resolve()
     }
 
     @PluginMethod
@@ -617,33 +570,122 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
-//    @PluginMethod
-//    fun createApplicationKey(call: PluginCall) {
-//        val result = implementation.createApplicationKey()
-//
-//        if (result) {
-//            call.resolve()
-//        } else {
-//            call.reject("Failed to add application key")
-//        }
-//    }
+    @PluginMethod
+    fun addAppKey(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
 
-//    @PluginMethod
-//    fun removeApplicationKey(call: PluginCall) {
-//        val appKeyIndex = call.getInt("appKeyIndex")
-//
-//        if (appKeyIndex == null) {
-//            call.reject("appKeyIndex is required")
-//        }
-//
-//        val result = implementation.removeApplicationKey(appKeyIndex!!)
-//
-//        if (result) {
-//            call.resolve()
-//        } else {
-//            call.reject("Failed to remove application key")
-//        }
-//    }
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD.toInt(), unicastAddress, call)
+
+            implementation.addAppKey(unicastAddress,appKeyIndex)
+        }
+    }
+
+    @PluginMethod
+    fun deleteAppKey(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_DELETE, unicastAddress, call)
+
+            implementation.deleteAppKey(unicastAddress,appKeyIndex)
+        }
+    }
+
+    @PluginMethod
+    fun getAppKeys(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_GET, unicastAddress, call)
+
+            implementation.getAppKeys(unicastAddress)
+        }
+    }
+
+    @PluginMethod
+    fun bindAppKey(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val modelId = call.getInt("modelId")
+                ?: return call.reject("modelId is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND, unicastAddress, call)
+
+            implementation.bindAppKey(unicastAddress,elementAddress,modelId,appKeyIndex)
+        }
+    }
+
+    @PluginMethod
+    fun unbindAppKey(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val modelId = call.getInt("modelId")
+                ?: return call.reject("modelId is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_UNBIND, unicastAddress, call)
+
+            implementation.unbindAppKey(unicastAddress,elementAddress,modelId,appKeyIndex)
+        }
+    }
+
 
 //    @PluginMethod
 //    fun addApplicationKeyToNode(call: PluginCall) {
@@ -1026,16 +1068,7 @@ class NrfMeshPlugin : Plugin() {
 //        }
 //    }
 
-//    @PluginMethod
-//    fun exportMeshNetwork(call: PluginCall) {
-//        val result = implementation.exportMeshNetwork()
-//
-//        if (result != null) {
-//            call.resolve(JSObject().put("meshNetwork", result))
-//        } else {
-//            call.reject("Failed to export mesh network")
-//        }
-//    }
+
 //
 //    @PluginMethod
 //    fun importMeshNetwork(call: PluginCall) {

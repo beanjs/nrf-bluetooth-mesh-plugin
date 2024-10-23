@@ -40,6 +40,16 @@ class PluginCallManager private constructor() {
             }
     }
 
+    private fun clearTimeout(){
+        val timeouts = pluginCalls.filter {
+            it.isTimeout
+        }
+
+        timeouts.forEach{
+            pluginCalls.remove(it)
+        }
+    }
+
     /**
      * Set the plugin, must be called before any other method.
      *
@@ -61,6 +71,7 @@ class PluginCallManager private constructor() {
      * @param call Plugin call.
      */
     fun addSigPluginCall(meshOperation: Int, meshAddress: Int, call: PluginCall) {
+        this.clearTimeout()
         val operationPair = getSigOperationPair(meshOperation)
         pluginCalls.add(SigPluginCall(operationPair, meshAddress, call))
     }
@@ -72,6 +83,7 @@ class PluginCallManager private constructor() {
      * @param meshMessage Mesh message.
      */
     fun resolveSigPluginCall(meshMessage: MeshMessage) {
+        this.clearTimeout()
         val callResponse = generateSigPluginCallResponse(meshMessage)
 
         val pluginCall =
@@ -93,6 +105,7 @@ class PluginCallManager private constructor() {
      * @param call Plugin call.
      */
     fun addConfigPluginCall(meshOperation: Int, meshAddress: Int, call: PluginCall) {
+        this.clearTimeout()
         val operationPair = getConfigOperationPair(meshOperation)
         pluginCalls.add(ConfigPluginCall(operationPair, meshAddress, call))
     }
@@ -104,6 +117,7 @@ class PluginCallManager private constructor() {
      * @param meshMessage Mesh message.
      */
     fun resolveConfigPluginCall(meshMessage: MeshMessage) {
+        this.clearTimeout()
         val callResponse = generateConfigPluginCallResponse(meshMessage)
 
         val pluginCall =
@@ -119,10 +133,12 @@ class PluginCallManager private constructor() {
     }
 
     fun addMeshPluginCall(meshOperation: Int, call: PluginCall) {
+        this.clearTimeout()
         pluginCalls.add(ConfigPluginCall(meshOperation, ELEMENT_NONE_ADDRESS, call))
     }
 
     fun resolveMeshIndetifyPluginCall(meshNode: UnprovisionedMeshNode){
+        this.clearTimeout()
         val pluginCall = pluginCalls.find { it is ConfigPluginCall && it.meshOperationCallback == MESH_NODE_IDENTIFY }
 
         val result = JSObject().apply {
@@ -152,6 +168,7 @@ class PluginCallManager private constructor() {
     }
 
     fun resolveMeshProvisionPluginCall(meshDevice: BleMeshDevice){
+        this.clearTimeout()
         val pluginCall = pluginCalls.find { it is ConfigPluginCall && it.meshOperationCallback == MESH_NODE_PROVISION }
 
         val result = JSObject().apply {
@@ -187,6 +204,7 @@ class PluginCallManager private constructor() {
      * @param call Plugin call.
      */
     fun addVendorPluginCall(modelId: Int, opCode: Int, opPairCode: Int, meshAddress: Int, call: PluginCall) {
+        this.clearTimeout()
         pluginCalls.add(VendorPluginCall(modelId, opCode, opPairCode, meshAddress, call))
     }
 
@@ -197,6 +215,7 @@ class PluginCallManager private constructor() {
      * @param meshMessage Mesh message.
      */
     fun resolveVendorPluginCall(meshMessage: MeshMessage) {
+        this.clearTimeout()
         Log.d(tag, "resolveVendorPluginCall ${meshMessage.opCode} from ${meshMessage.src}")
         val callResponse = generateVendorPluginCallResponse(meshMessage)
 

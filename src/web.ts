@@ -5,6 +5,8 @@ import type {
   NrfMeshPlugin,
   Permissions,
   MeshNetwork,
+  MeshNetworkExport,
+  MeshAppKey,
   ProvisioningCapabilities,
   ProvisioningStatus,
   ScanMeshDevices,
@@ -12,6 +14,9 @@ import type {
   CompositionDataStatus,
   DefaultTTLStatus,
   NetworkTransmitStatus,
+  AppKeyStatus,
+  AppKeyListStatus,
+  ModelAppStatus,
 } from './definitions';
 
 export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
@@ -39,6 +44,17 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     console.log('getMeshNetwork');
     return {} as MeshNetwork;
   }
+  async exportMeshNetwork (): Promise<MeshNetworkExport> {
+    console.log('exportMeshNetwork');
+    return {} as MeshNetworkExport;
+  }
+  async createApplicationKey (): Promise<MeshAppKey> {
+    console.log('createApplicationKey');
+    return {} as MeshAppKey;
+  }
+  async removeApplicationKey (): Promise<void> {
+    console.log('removeApplicationKey');
+  }
 
   async scanMeshDevices (): Promise<ScanMeshDevices> {
     console.log('scanMeshDevices');
@@ -56,6 +72,7 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     console.log('unprovisionDevice');
     return {} as NodeResetStatus;
   }
+
   async getCompositionData (): Promise<CompositionDataStatus> {
     console.log('getCompositionData');
     return {} as CompositionDataStatus;
@@ -75,6 +92,26 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async setNetworkTransmit (): Promise<NetworkTransmitStatus> {
     console.log('setNetworkTransmit');
     return {} as NetworkTransmitStatus;
+  }
+  async addAppKey (): Promise<AppKeyStatus> {
+    console.log('addAppKey');
+    return {} as AppKeyStatus;
+  }
+  async deleteAppKey (): Promise<AppKeyStatus> {
+    console.log('deleteAppKey');
+    return {} as AppKeyStatus;
+  }
+  async getAppKeys (): Promise<AppKeyListStatus> {
+    console.log('getAppKeys');
+    return {} as AppKeyListStatus;
+  }
+  async bindAppKey (): Promise<ModelAppStatus> {
+    console.log('bindAppKey');
+    return {} as ModelAppStatus;
+  }
+  async unbindAppKey (): Promise<ModelAppStatus> {
+    console.log('unbindAppKey');
+    return {} as ModelAppStatus;
   }
 
   // async createApplicationKey(): Promise<void> {
