@@ -127,7 +127,7 @@ class NrfMeshPlugin : Plugin() {
 
         if (implementation.isBleConnected()) {
             CoroutineScope(Dispatchers.IO).launch {
-                implementation.disconnectBle()
+                implementation.disconnectBle().await()
             }
         }
         implementation.stopScan()
@@ -144,7 +144,7 @@ class NrfMeshPlugin : Plugin() {
 
         if (implementation.isBleConnected()) {
             CoroutineScope(Dispatchers.IO).launch {
-                implementation.disconnectBle()
+                implementation.disconnectBle().await()
             }
         }
         implementation.stopScan()
@@ -186,7 +186,7 @@ class NrfMeshPlugin : Plugin() {
             if (!connectedToUnprovisionedDestinations(destinationMacAddress)) {
                 if (implementation.isBleConnected()) {
                     withContext(Dispatchers.IO) {
-                        implementation.disconnectBle()
+                        implementation.disconnectBle().await()
                     }
                 }
 
@@ -267,6 +267,90 @@ class NrfMeshPlugin : Plugin() {
         call.resolve()
     }
 
+    @SuppressLint("RestrictedApi")
+    @PluginMethod
+    fun getMeshNetwork(call: PluginCall){
+        val network = implementation.meshManagerApi.meshNetwork!!
+        call.resolve(JSObject().apply {
+            put("name",network.meshName)
+            put("provisioners",JSArray().apply {
+                network.provisioners.forEach {
+                    put(JSObject().apply {
+                        put("name",it.provisionerName)
+                        put("ttl",it.globalTtl)
+                        if (it.provisionerAddress != null) {
+                            put("unicastAddress", it.provisionerAddress)
+                        }
+
+                        it.allocatedUnicastRanges.forEach {
+                            put("unicast",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("lowerAddress",it.lowAddress)
+                                    put("highAddress",it.highAddress)
+                                    put("lowerBound",it.lowerBound)
+                                    put("upperBound",it.upperBound)
+                                })
+                            })
+                        }
+
+                        it.allocatedGroupRanges.forEach {
+                            put("group",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("lowerAddress",it.lowAddress)
+                                    put("highAddress",it.highAddress)
+                                    put("lowerBound",it.lowerBound)
+                                    put("upperBound",it.upperBound)
+                                })
+                            })
+                        }
+
+                        it.allocatedSceneRanges.forEach {
+                            put("scene",JSArray().apply {
+                                put(JSObject().apply {
+                                    put("firstScene",it.firstScene)
+                                    put("lastScene",it.lastScene)
+                                    put("lowerBound",it.lowerBound)
+                                    put("upperBound",it.upperBound)
+                                })
+                            })
+                        }
+                    })
+                }
+            })
+            put("netKeys",JSArray().apply {
+                network.netKeys.forEach {
+                    put(JSObject().apply {
+                        put("name",it.name)
+                        put("key",MeshParserUtils.bytesToHex(it.key,false))
+                        if (it.oldKey != null) {
+                            put("oldKey", MeshParserUtils.bytesToHex(it.oldKey, false))
+                        }
+                        put("index",it.keyIndex)
+                        put("phase",it.phaseDescription)
+                        if(it.isMinSecurity){
+                            put("security","secure")
+                        }else{
+                            put("security","insecure")
+                        }
+                        put("lastModified",DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.LONG).format(it.timestamp))
+                    })
+                }
+            })
+            put("appKeys",JSArray().apply {
+                network.appKeys.forEach {
+                    put(JSObject().apply {
+                        put("name",it.name)
+                        put("index",it.keyIndex)
+                        put("key",MeshParserUtils.bytesToHex(it.key,false))
+                        if (it.oldKey != null) {
+                            put("oldKey",MeshParserUtils.bytesToHex(it.oldKey,false))
+                        }
+                        put("boundNetKeyIndex",it.boundNetKeyIndex)
+                    })
+                }
+            })
+        })
+    }
 
     @PluginMethod
     fun scanMeshDevices(call: PluginCall) {
@@ -362,14 +446,12 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
-
     @PluginMethod
     fun getProvisioningCapabilities(call: PluginCall) {
         val macAddress = call.getString("macAddress")
+                ?: return call.reject("macAddress is required")
         val uuid = call.getString("uuid")
-        if (macAddress == null || uuid == null) {
-            return call.reject("macAddress and uuid are required")
-        }
+                ?: return call.reject("uuid is required")
 
         CoroutineScope(Dispatchers.Main).launch {
             val connected = connectionToUnprovisionedDevice(macAddress, uuid)
@@ -387,11 +469,9 @@ class NrfMeshPlugin : Plugin() {
     @PluginMethod
     fun provisionDevice(call: PluginCall) {
         val macAddress = call.getString("macAddress")
+                ?: return call.reject("macAddress is required")
         val uuid = call.getString("uuid")
-
-        if (macAddress == null || uuid == null) {
-            return call.reject("macAddress and uuid are required")
-        }
+                ?: return call.reject("uuid is required")
 
         CoroutineScope(Dispatchers.Main).launch {
             val connected = connectionToUnprovisionedDevice(macAddress, uuid)
@@ -423,9 +503,9 @@ class NrfMeshPlugin : Plugin() {
             }
 
             PluginCallManager.getInstance()
-                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call)
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NODE_RESET, unicastAddress, call)
 
-            implementation.provisionDevice(UUID.fromString(uuid))
+            implementation.unprovisionDevice(unicastAddress)
         }
     }
 
@@ -446,6 +526,94 @@ class NrfMeshPlugin : Plugin() {
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_COMPOSITION_DATA_GET, unicastAddress, call)
 
             implementation.getCompositionData(unicastAddress)
+        }
+    }
+
+    @PluginMethod
+    fun getDefaultTTL(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_DEFAULT_TTL_GET, unicastAddress, call)
+
+            implementation.getDefaultTTL(unicastAddress)
+        }
+    }
+
+    @PluginMethod
+    fun setDefaultTTL(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+
+        val ttl = call.getInt("ttl")
+                ?: return call.reject("ttl is required")
+
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_DEFAULT_TTL_SET, unicastAddress, call)
+
+            implementation.setDefaultTTL(unicastAddress,ttl)
+        }
+    }
+
+    @PluginMethod
+    fun getNetworkTransmit(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_GET, unicastAddress, call)
+
+            implementation.getNetworkTransmit(unicastAddress)
+        }
+    }
+
+    @PluginMethod
+    fun setNetworkTransmit(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val networkTransmitCount = call.getInt("networkTransmitCount")
+                ?: return call.reject("networkTransmitCount is required")
+        val networkTransmitIntervalSteps = call.getInt("networkTransmitIntervalSteps")
+                ?: return call.reject("networkTransmitIntervalSteps is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_SET, unicastAddress, call)
+
+            implementation.setNetworkTransmit(unicastAddress,networkTransmitCount,networkTransmitIntervalSteps)
         }
     }
 

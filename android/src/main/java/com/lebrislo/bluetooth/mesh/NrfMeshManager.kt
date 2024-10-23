@@ -8,18 +8,24 @@ import com.lebrislo.bluetooth.mesh.ble.BleCallbacksManager
 import com.lebrislo.bluetooth.mesh.ble.BleMeshManager
 import com.lebrislo.bluetooth.mesh.models.BleMeshDevice
 import com.lebrislo.bluetooth.mesh.models.ExtendedBluetoothDevice
+import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import com.lebrislo.bluetooth.mesh.scanner.ScannerRepository
 import com.lebrislo.bluetooth.mesh.utils.Utils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import no.nordicsemi.android.ble.DisconnectRequest
 import no.nordicsemi.android.mesh.MeshManagerApi
 import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyAdd
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataGet
+import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
+import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlSet
 import no.nordicsemi.android.mesh.transport.ConfigModelAppBind
+import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitGet
+import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitSet
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeReset
 import no.nordicsemi.android.mesh.transport.GenericLevelSet
@@ -71,8 +77,8 @@ class NrfMeshManager(private val context: Context) {
         return bleMeshManager.isConnected
     }
 
-    fun disconnectBle() {
-        bleMeshManager.disconnect().await()
+    fun disconnectBle(): DisconnectRequest {
+        return bleMeshManager.disconnect()
     }
 
     fun isBleConnected(): Boolean {
@@ -114,7 +120,7 @@ class NrfMeshManager(private val context: Context) {
             }
 
             withContext(Dispatchers.IO) {
-                disconnectBle()
+                disconnectBle().await()
             }
         }
 
@@ -150,7 +156,7 @@ class NrfMeshManager(private val context: Context) {
             }
 
             withContext(Dispatchers.IO) {
-                disconnectBle()
+                disconnectBle().await()
             }
         }
 
@@ -222,6 +228,26 @@ class NrfMeshManager(private val context: Context) {
     fun getCompositionData(unicastAddress: Int) {
         val configCompositionDataGet = ConfigCompositionDataGet()
         meshManagerApi.createMeshPdu(unicastAddress, configCompositionDataGet)
+    }
+
+    fun getDefaultTTL(unicastAddress: Int){
+        val configDefaultTtlGet = ConfigDefaultTtlGet()
+        meshManagerApi.createMeshPdu(unicastAddress,configDefaultTtlGet)
+    }
+
+    fun setDefaultTTL(unicastAddress: Int,ttl: Int){
+        val configDefaultTtlSet = ConfigDefaultTtlSet(ttl)
+        meshManagerApi.createMeshPdu(unicastAddress,configDefaultTtlSet)
+    }
+
+    fun getNetworkTransmit(unicastAddress: Int){
+        val configNetworkTransmitGet = ConfigNetworkTransmitGet()
+        meshManagerApi.createMeshPdu(unicastAddress,configNetworkTransmitGet)
+    }
+
+    fun setNetworkTransmit(unicastAddress: Int,networkTransmitCount: Int, networkTransmitIntervalSteps: Int){
+        val configNetworkTransmitSet = ConfigNetworkTransmitSet(networkTransmitCount,networkTransmitIntervalSteps)
+        meshManagerApi.createMeshPdu(unicastAddress, configNetworkTransmitSet)
     }
 
 //    fun onCompositionDataStatusReceived(meshMessage: ConfigNetworkTransmitStatus) {

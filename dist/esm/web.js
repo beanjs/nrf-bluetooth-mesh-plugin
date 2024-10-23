@@ -19,6 +19,10 @@ export class NrfMeshWeb extends WebPlugin {
     async initMeshNetwork() {
         console.log('initMeshNetwork');
     }
+    async getMeshNetwork() {
+        console.log('getMeshNetwork');
+        return {};
+    }
     async scanMeshDevices() {
         console.log('scanMeshDevices');
         return { unprovisioned: [], provisioned: [], proxy: [] };
@@ -33,9 +37,27 @@ export class NrfMeshWeb extends WebPlugin {
     }
     async unprovisionDevice() {
         console.log('unprovisionDevice');
+        return {};
     }
     async getCompositionData() {
-        console.log('compositionDataGet');
+        console.log('getCompositionData');
+        return {};
+    }
+    async getDefaultTTL() {
+        console.log('getDefaultTTL');
+        return {};
+    }
+    async setDefaultTTL() {
+        console.log('setDefaultTTL');
+        return {};
+    }
+    async getNetworkTransmit() {
+        console.log('getNetworkTransmit');
+        return {};
+    }
+    async setNetworkTransmit() {
+        console.log('setNetworkTransmit');
+        return {};
     }
 }
 //# sourceMappingURL=web.js.map

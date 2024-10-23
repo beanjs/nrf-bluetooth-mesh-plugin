@@ -12,6 +12,7 @@ import com.lebrislo.bluetooth.mesh.plugin.ConfigPluginCall.Companion.generateCon
 import com.lebrislo.bluetooth.mesh.plugin.SigOperationPair.Companion.getSigOperationPair
 import com.lebrislo.bluetooth.mesh.plugin.SigPluginCall.Companion.generateSigPluginCallResponse
 import com.lebrislo.bluetooth.mesh.plugin.VendorPluginCall.Companion.generateVendorPluginCallResponse
+import no.nordicsemi.android.mesh.MeshNetwork
 import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.MeshMessage
 
@@ -22,6 +23,7 @@ class PluginCallManager private constructor() {
     private val tag: String = PluginCallManager::class.java.simpleName
 
     private lateinit var plugin: NrfMeshPlugin
+    private lateinit var network: MeshNetwork
     private val pluginCalls: MutableList<BasePluginCall> = mutableListOf()
 
     companion object {
@@ -45,6 +47,10 @@ class PluginCallManager private constructor() {
      */
     fun setPlugin(plugin: NrfMeshPlugin) {
         this.plugin = plugin
+    }
+
+    fun setNetwork(network: MeshNetwork){
+        this.network = network
     }
 
     /**
@@ -155,7 +161,7 @@ class PluginCallManager private constructor() {
                     put("uuid", meshDevice.node.uuid)
                     put("unicastAddress", meshDevice.node.unicastAddress)
                 }
-                is BleMeshDevice.Unprovisioned ->{
+                is BleMeshDevice.Unprovisioned -> {
                     put("provisioningComplete", false)
                     put("uuid", meshDevice.node.deviceUuid)
                 }

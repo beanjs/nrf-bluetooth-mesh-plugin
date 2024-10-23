@@ -64,6 +64,18 @@
         "slug": "initmeshnetwork"
       },
       {
+        "name": "getMeshNetwork",
+        "signature": "() => Promise<MeshNetwork>",
+        "parameters": [],
+        "returns": "Promise<MeshNetwork>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "MeshNetwork"
+        ],
+        "slug": "getmeshnetwork"
+      },
+      {
         "name": "scanMeshDevices",
         "signature": "(options: { timeout: number; }) => Promise<ScanMeshDevices>",
         "parameters": [
@@ -119,7 +131,7 @@
       },
       {
         "name": "unprovisionDevice",
-        "signature": "(options: { unicastAddress: number; }) => Promise<void>",
+        "signature": "(options: { unicastAddress: number; }) => Promise<NodeResetStatus>",
         "parameters": [
           {
             "name": "options",
@@ -127,15 +139,17 @@
             "type": "{ unicastAddress: number; }"
           }
         ],
-        "returns": "Promise<void>",
+        "returns": "Promise<NodeResetStatus>",
         "tags": [],
         "docs": "",
-        "complexTypes": [],
+        "complexTypes": [
+          "NodeResetStatus"
+        ],
         "slug": "unprovisiondevice"
       },
       {
         "name": "getCompositionData",
-        "signature": "(options: { unicastAddress: number; }) => Promise<any>",
+        "signature": "(options: { unicastAddress: number; }) => Promise<CompositionDataStatus>",
         "parameters": [
           {
             "name": "options",
@@ -143,11 +157,85 @@
             "type": "{ unicastAddress: number; }"
           }
         ],
-        "returns": "Promise<any>",
+        "returns": "Promise<CompositionDataStatus>",
         "tags": [],
         "docs": "",
-        "complexTypes": [],
+        "complexTypes": [
+          "CompositionDataStatus"
+        ],
         "slug": "getcompositiondata"
+      },
+      {
+        "name": "getDefaultTTL",
+        "signature": "(options: { unicastAddress: number; }) => Promise<DefaultTTLStatus>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ unicastAddress: number; }"
+          }
+        ],
+        "returns": "Promise<DefaultTTLStatus>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "DefaultTTLStatus"
+        ],
+        "slug": "getdefaultttl"
+      },
+      {
+        "name": "setDefaultTTL",
+        "signature": "(options: { unicastAddress: number; ttl: number; }) => Promise<DefaultTTLStatus>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ unicastAddress: number; ttl: number; }"
+          }
+        ],
+        "returns": "Promise<DefaultTTLStatus>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "DefaultTTLStatus"
+        ],
+        "slug": "setdefaultttl"
+      },
+      {
+        "name": "getNetworkTransmit",
+        "signature": "(options: { unicastAddress: number; }) => Promise<NetworkTransmitStatus>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ unicastAddress: number; }"
+          }
+        ],
+        "returns": "Promise<NetworkTransmitStatus>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "NetworkTransmitStatus"
+        ],
+        "slug": "getnetworktransmit"
+      },
+      {
+        "name": "setNetworkTransmit",
+        "signature": "(options: { unicastAddress: number; networkTransmitCount: number; networkTransmitIntervalSteps: number; }) => Promise<NetworkTransmitStatus>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ unicastAddress: number; networkTransmitCount: number; networkTransmitIntervalSteps: number; }"
+          }
+        ],
+        "returns": "Promise<NetworkTransmitStatus>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "NetworkTransmitStatus"
+        ],
+        "slug": "setnetworktransmit"
       },
       {
         "name": "addListener",
@@ -207,6 +295,36 @@
           "docs": "",
           "complexTypes": [],
           "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "MeshNetwork",
+      "slug": "meshnetwork",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "name",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "provisioners",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "[{ name: string; ttl: number; unicastAddress?: number | undefined; unicast: [{ lowerAddress: number; highAddress: number; lowerBound: number; upperBound: number; }]; group: [{ lowerAddress: number; highAddress: number; lowerBound: number; upperBound: number; }]; scene: [{ firstScene: number; lastScene: number; lowerBound: number; upperBound: number; }]; }]"
+        },
+        {
+          "name": "netKeys",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "[{ name: string; key: string; oldKey?: string | undefined; index: number; phase: number; security: 'secure' | 'insecure'; lastModified: string; }]"
         }
       ]
     },
@@ -498,6 +616,70 @@
           "docs": "",
           "complexTypes": [],
           "type": "number | undefined"
+        }
+      ]
+    },
+    {
+      "name": "NodeResetStatus",
+      "slug": "noderesetstatus",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "data",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ status: number; statusName: string; }"
+        }
+      ]
+    },
+    {
+      "name": "CompositionDataStatus",
+      "slug": "compositiondatastatus",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "data",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: [{ name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; locationDescriptor: number; models: [{ modelId: number; modelName: string; boundAppKeyIndexes: []; }]; }]; }"
+        }
+      ]
+    },
+    {
+      "name": "DefaultTTLStatus",
+      "slug": "defaultttlstatus",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "data",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ status: number; statusName: string; ttl: number; }"
+        }
+      ]
+    },
+    {
+      "name": "NetworkTransmitStatus",
+      "slug": "networktransmitstatus",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "data",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ status: number; statusName: string; networkTransmitCount: number; networkTransmitIntervalSteps: number; }"
         }
       ]
     },

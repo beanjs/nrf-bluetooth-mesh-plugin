@@ -18,11 +18,16 @@ npx cap sync
 * [`isBluetoothEnabled()`](#isbluetoothenabled)
 * [`requestBluetoothEnable()`](#requestbluetoothenable)
 * [`initMeshNetwork()`](#initmeshnetwork)
+* [`getMeshNetwork()`](#getmeshnetwork)
 * [`scanMeshDevices(...)`](#scanmeshdevices)
 * [`getProvisioningCapabilities(...)`](#getprovisioningcapabilities)
 * [`provisionDevice(...)`](#provisiondevice)
 * [`unprovisionDevice(...)`](#unprovisiondevice)
 * [`getCompositionData(...)`](#getcompositiondata)
+* [`getDefaultTTL(...)`](#getdefaultttl)
+* [`setDefaultTTL(...)`](#setdefaultttl)
+* [`getNetworkTransmit(...)`](#getnetworktransmit)
+* [`setNetworkTransmit(...)`](#setnetworktransmit)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -85,6 +90,17 @@ initMeshNetwork() => Promise<void>
 --------------------
 
 
+### getMeshNetwork()
+
+```typescript
+getMeshNetwork() => Promise<MeshNetwork>
+```
+
+**Returns:** <code>Promise&lt;<a href="#meshnetwork">MeshNetwork</a>&gt;</code>
+
+--------------------
+
+
 ### scanMeshDevices(...)
 
 ```typescript
@@ -133,12 +149,14 @@ provisionDevice(options: { macAddress: string; uuid: string; }) => Promise<Provi
 ### unprovisionDevice(...)
 
 ```typescript
-unprovisionDevice(options: { unicastAddress: number; }) => Promise<void>
+unprovisionDevice(options: { unicastAddress: number; }) => Promise<NodeResetStatus>
 ```
 
 | Param         | Type                                     |
 | ------------- | ---------------------------------------- |
 | **`options`** | <code>{ unicastAddress: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#noderesetstatus">NodeResetStatus</a>&gt;</code>
 
 --------------------
 
@@ -146,14 +164,74 @@ unprovisionDevice(options: { unicastAddress: number; }) => Promise<void>
 ### getCompositionData(...)
 
 ```typescript
-getCompositionData(options: { unicastAddress: number; }) => Promise<any>
+getCompositionData(options: { unicastAddress: number; }) => Promise<CompositionDataStatus>
 ```
 
 | Param         | Type                                     |
 | ------------- | ---------------------------------------- |
 | **`options`** | <code>{ unicastAddress: number; }</code> |
 
-**Returns:** <code>Promise&lt;any&gt;</code>
+**Returns:** <code>Promise&lt;<a href="#compositiondatastatus">CompositionDataStatus</a>&gt;</code>
+
+--------------------
+
+
+### getDefaultTTL(...)
+
+```typescript
+getDefaultTTL(options: { unicastAddress: number; }) => Promise<DefaultTTLStatus>
+```
+
+| Param         | Type                                     |
+| ------------- | ---------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#defaultttlstatus">DefaultTTLStatus</a>&gt;</code>
+
+--------------------
+
+
+### setDefaultTTL(...)
+
+```typescript
+setDefaultTTL(options: { unicastAddress: number; ttl: number; }) => Promise<DefaultTTLStatus>
+```
+
+| Param         | Type                                                  |
+| ------------- | ----------------------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; ttl: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#defaultttlstatus">DefaultTTLStatus</a>&gt;</code>
+
+--------------------
+
+
+### getNetworkTransmit(...)
+
+```typescript
+getNetworkTransmit(options: { unicastAddress: number; }) => Promise<NetworkTransmitStatus>
+```
+
+| Param         | Type                                     |
+| ------------- | ---------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#networktransmitstatus">NetworkTransmitStatus</a>&gt;</code>
+
+--------------------
+
+
+### setNetworkTransmit(...)
+
+```typescript
+setNetworkTransmit(options: { unicastAddress: number; networkTransmitCount: number; networkTransmitIntervalSteps: number; }) => Promise<NetworkTransmitStatus>
+```
+
+| Param         | Type                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| **`options`** | <code>{ unicastAddress: number; networkTransmitCount: number; networkTransmitIntervalSteps: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#networktransmitstatus">NetworkTransmitStatus</a>&gt;</code>
 
 --------------------
 
@@ -194,6 +272,15 @@ removeAllListeners() => Promise<void>
 | Prop          | Type                 |
 | ------------- | -------------------- |
 | **`enabled`** | <code>boolean</code> |
+
+
+#### MeshNetwork
+
+| Prop               | Type                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`name`**         | <code>string</code>                                                                                                                                                                                                                                                                                                                                                     |
+| **`provisioners`** | <code>[{ name: string; ttl: number; unicastAddress?: number; unicast: [{ lowerAddress: number; highAddress: number; lowerBound: number; upperBound: number; }]; group: [{ lowerAddress: number; highAddress: number; lowerBound: number; upperBound: number; }]; scene: [{ firstScene: number; lastScene: number; lowerBound: number; upperBound: number; }]; }]</code> |
+| **`netKeys`**      | <code>[{ name: string; key: string; oldKey?: string; index: number; phase: number; security: 'secure' \| 'insecure'; lastModified: string; }]</code>                                                                                                                                                                                                                    |
 
 
 #### ScanMeshDevices
@@ -263,6 +350,34 @@ removeAllListeners() => Promise<void>
 | **`provisioningComplete`** | <code>boolean</code> |
 | **`uuid`**                 | <code>string</code>  |
 | **`unicastAddress`**       | <code>number</code>  |
+
+
+#### NodeResetStatus
+
+| Prop       | Type                                                 |
+| ---------- | ---------------------------------------------------- |
+| **`data`** | <code>{ status: number; statusName: string; }</code> |
+
+
+#### CompositionDataStatus
+
+| Prop       | Type                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: [{ name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; locationDescriptor: number; models: [{ modelId: number; modelName: string; boundAppKeyIndexes: []; }]; }]; }</code> |
+
+
+#### DefaultTTLStatus
+
+| Prop       | Type                                                              |
+| ---------- | ----------------------------------------------------------------- |
+| **`data`** | <code>{ status: number; statusName: string; ttl: number; }</code> |
+
+
+#### NetworkTransmitStatus
+
+| Prop       | Type                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **`data`** | <code>{ status: number; statusName: string; networkTransmitCount: number; networkTransmitIntervalSteps: number; }</code> |
 
 
 #### PluginListenerHandle

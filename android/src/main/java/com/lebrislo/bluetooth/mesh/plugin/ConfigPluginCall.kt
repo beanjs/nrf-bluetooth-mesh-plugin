@@ -1,9 +1,11 @@
 package com.lebrislo.bluetooth.mesh.plugin
 
+import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
+import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelAppStatus
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeResetStatus
@@ -30,6 +32,8 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                 put("data", when (meshMessage) {
                     is ConfigNodeResetStatus -> configNodeResetStatusResponse(meshMessage)
                     is ConfigCompositionDataStatus -> configCompositionDataStatusResponse(meshMessage)
+                    is ConfigDefaultTtlStatus -> configDefaultTtlStatusResponse(meshMessage)
+                    is ConfigNetworkTransmitStatus -> configNetworkTransmitStatusResponse(meshMessage)
                     is ConfigAppKeyStatus -> configAppKeyStatusResponse(meshMessage)
                     is ConfigModelAppStatus -> configModelAppStatusResponse(meshMessage)
                     else -> JSObject()
@@ -58,24 +62,45 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                     put("friend", meshMessage.isFriendFeatureSupported)
                     put("lowPower", meshMessage.isLowPowerFeatureSupported)
                 })
-                put("elements",JSObject().apply {
+                put("elements",JSArray().apply {
                     meshMessage.elements.values.forEach{
-                        put("name",it.name)
-                        put("elementAddress",it.elementAddress)
-                        put("sigModelCount",it.sigModelCount)
-                        put("vendorModelCount",it.vendorModelCount)
-                        put("locationDescriptor",it.locationDescriptor)
-                        put("models",JSObject().apply {
-                            it.meshModels.values.forEach {
-                                put("modelId",it.modelId)
-                                put("modelName",it.modelName)
-                                put("boundAppKeyIndexes",it.boundAppKeyIndexes)
-//                                put("subscribedAddresses",it.subscribedAddresses)
-//                                put("",it.publicationSettings.)
-                            }
+                        put(JSObject().apply {
+                            put("name",it.name)
+                            put("elementAddress",it.elementAddress)
+                            put("sigModelCount",it.sigModelCount)
+                            put("vendorModelCount",it.vendorModelCount)
+                            put("locationDescriptor",it.locationDescriptor)
+                            put("models",JSArray().apply {
+                                it.meshModels.values.forEach {
+                                    put(JSObject().apply {
+                                        put("modelId",it.modelId)
+                                        put("modelName",it.modelName)
+                                        put("boundAppKeyIndexes",it.boundAppKeyIndexes)
+//                                        put("subscribedAddresses",it.subscribedAddresses)
+//                                        put("",it.publicationSettings.)
+                                    })
+                                }
+                            })
                         })
                     }
                 })
+            }
+        }
+
+        private fun configDefaultTtlStatusResponse(meshMessage: ConfigDefaultTtlStatus):JSObject{
+            return  JSObject().apply {
+                put("status", meshMessage.statusCode)
+                put("statusName", meshMessage.statusCodeName)
+                put("ttl",meshMessage.ttl)
+            }
+        }
+
+        private fun configNetworkTransmitStatusResponse(meshMessage: ConfigNetworkTransmitStatus):JSObject{
+            return  JSObject().apply {
+                put("status", meshMessage.statusCode)
+                put("statusName", meshMessage.statusCodeName)
+                put("networkTransmitCount",meshMessage.networkTransmitCount)
+                put("networkTransmitIntervalSteps",meshMessage.networkTransmitIntervalSteps)
             }
         }
 

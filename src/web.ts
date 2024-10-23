@@ -1,16 +1,17 @@
 import { WebPlugin } from '@capacitor/core';
 
 import type {
-  // AddAppKeyStatus,
   BluetoothState,
-  // MeshNetworkObject,
-  // ModelMessageStatus,
   NrfMeshPlugin,
   Permissions,
-  // PluginCallRejection,
+  MeshNetwork,
   ProvisioningCapabilities,
   ProvisioningStatus,
   ScanMeshDevices,
+  NodeResetStatus,
+  CompositionDataStatus,
+  DefaultTTLStatus,
+  NetworkTransmitStatus,
 } from './definitions';
 
 export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
@@ -34,6 +35,10 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async initMeshNetwork (): Promise<void> {
     console.log('initMeshNetwork');
   }
+  async getMeshNetwork (): Promise<MeshNetwork> {
+    console.log('getMeshNetwork');
+    return {} as MeshNetwork;
+  }
 
   async scanMeshDevices (): Promise<ScanMeshDevices> {
     console.log('scanMeshDevices');
@@ -47,12 +52,31 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     console.log('provisionDevice');
     return { provisioningComplete: true, uuid: '1234' };
   }
-  async unprovisionDevice (): Promise<void> {
+  async unprovisionDevice (): Promise<NodeResetStatus> {
     console.log('unprovisionDevice');
+    return {} as NodeResetStatus;
   }
-  async getCompositionData (): Promise<any> {
-    console.log('compositionDataGet');
+  async getCompositionData (): Promise<CompositionDataStatus> {
+    console.log('getCompositionData');
+    return {} as CompositionDataStatus;
   }
+  async getDefaultTTL (): Promise<DefaultTTLStatus> {
+    console.log('getDefaultTTL');
+    return {} as DefaultTTLStatus;
+  }
+  async setDefaultTTL (): Promise<DefaultTTLStatus> {
+    console.log('setDefaultTTL');
+    return {} as DefaultTTLStatus;
+  }
+  async getNetworkTransmit (): Promise<NetworkTransmitStatus> {
+    console.log('getNetworkTransmit');
+    return {} as NetworkTransmitStatus;
+  }
+  async setNetworkTransmit (): Promise<NetworkTransmitStatus> {
+    console.log('setNetworkTransmit');
+    return {} as NetworkTransmitStatus;
+  }
+
   // async createApplicationKey(): Promise<void> {
   //   console.log('createApplicationKey');
   // }

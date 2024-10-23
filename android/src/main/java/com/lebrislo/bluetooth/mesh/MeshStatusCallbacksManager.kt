@@ -13,7 +13,6 @@ import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeResetStatus
 import no.nordicsemi.android.mesh.transport.ControlMessage
 import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
-//import no.nordicsemi.android.mesh.transport.GenericPowerLevelStatus
 import no.nordicsemi.android.mesh.transport.LightCtlStatus
 import no.nordicsemi.android.mesh.transport.LightHslStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
@@ -44,25 +43,21 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
 
     override fun onMeshMessageReceived(src: Int, meshMessage: MeshMessage) {
         Log.d(tag, "onMeshMessageReceived ${meshMessage.javaClass.simpleName}")
-        val meshManager = nrfMeshManager.meshManagerApi
+//        val meshManager = nrfMeshManager.meshManagerApi
 
         if (meshMessage is ConfigNodeResetStatus) {
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigModelAppStatus) {
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigAppKeyStatus) {
-            nrfMeshManager.onAppKeyAddStatusReceived(meshMessage)
+//            nrfMeshManager.onAppKeyAddStatusReceived(meshMessage)
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigCompositionDataStatus) {
             PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-//            val configDefaultTtlGet = ConfigDefaultTtlGet()
-//            meshManager.createMeshPdu(meshMessage.src,configDefaultTtlGet)
         } else if (meshMessage is ConfigDefaultTtlStatus){
-            val networkTransmitSet = ConfigNetworkTransmitSet(2,1)
-            meshManager.createMeshPdu(meshMessage.src,networkTransmitSet)
+            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is ConfigNetworkTransmitStatus){
-//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-//            nrfMeshManager.onCompositionDataStatusReceived(meshMessage)
+            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
         } else if (meshMessage is GenericOnOffStatus) {
             PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }

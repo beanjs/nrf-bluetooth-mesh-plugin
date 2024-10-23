@@ -2,6 +2,7 @@ package com.lebrislo.bluetooth.mesh
 
 import android.util.Log
 import com.lebrislo.bluetooth.mesh.ble.BleMeshManager
+import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import no.nordicsemi.android.mesh.MeshManagerCallbacks
 import no.nordicsemi.android.mesh.MeshNetwork
 import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
@@ -20,6 +21,7 @@ class MeshCallbacksManager(val bleMeshManager: BleMeshManager) : MeshManagerCall
 
         Log.d(tag, "Mesh network UUID Loaded : " + meshNetwork.meshUUID)
 
+        PluginCallManager.getInstance().setNetwork(meshNetwork)
         this.meshNetwork = meshNetwork
 
         if (!this.meshNetwork!!.isProvisionerSelected()) {

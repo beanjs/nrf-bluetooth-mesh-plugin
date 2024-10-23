@@ -34,7 +34,7 @@ class MeshProvisioningCallbacksManager(
     ) {
         Log.d(tag, "onProvisioningFailed : " + meshNode?.deviceUuid)
         if (state == ProvisioningState.States.PROVISIONING_FAILED) {
-            nrfMeshManager.disconnectBle()
+            nrfMeshManager.disconnectBle().enqueue()
             PluginCallManager.getInstance().resolveMeshProvisionPluginCall(BleMeshDevice.Unprovisioned(meshNode!!))
         }
     }
@@ -46,7 +46,7 @@ class MeshProvisioningCallbacksManager(
     ) {
         Log.d(tag, "onProvisioningCompleted : " + meshNode?.uuid)
         if (state == ProvisioningState.States.PROVISIONING_COMPLETE) {
-            nrfMeshManager.disconnectBle()
+            nrfMeshManager.disconnectBle().enqueue()
             PluginCallManager.getInstance().resolveMeshProvisionPluginCall(BleMeshDevice.Provisioned(meshNode!!))
         }
     }
