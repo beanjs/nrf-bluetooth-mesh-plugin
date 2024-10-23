@@ -281,7 +281,7 @@ class NrfMeshManager(private val context: Context) {
             put("networkExclusions",JSArray().apply {
                 network.networkExclusions.forEach { (ivIndex, address) ->
                     put("ivIndex",ivIndex)
-                    put(JSArray().apply {
+                    put("addresses",JSArray().apply {
                         address.forEach {
                             put(it)
                         }

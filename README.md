@@ -415,13 +415,15 @@ removeAllListeners() => Promise<void>
 
 #### MeshNetwork
 
-| Prop               | Type                                                                                          |
-| ------------------ | --------------------------------------------------------------------------------------------- |
-| **`name`**         | <code>string</code>                                                                           |
-| **`lastModified`** | <code>string</code>                                                                           |
-| **`provisioners`** | <code><a href="#array">Array</a>&lt;<a href="#meshprovisioner">MeshProvisioner</a>&gt;</code> |
-| **`netKeys`**      | <code><a href="#array">Array</a>&lt;<a href="#meshnetkey">MeshNetKey</a>&gt;</code>           |
-| **`appKeys`**      | <code><a href="#array">Array</a>&lt;<a href="#meshappkey">MeshAppKey</a>&gt;</code>           |
+| Prop                    | Type                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **`name`**              | <code>string</code>                                                                                                      |
+| **`lastModified`**      | <code>string</code>                                                                                                      |
+| **`provisioners`**      | <code><a href="#array">Array</a>&lt;<a href="#meshprovisioner">MeshProvisioner</a>&gt;</code>                            |
+| **`netKeys`**           | <code><a href="#array">Array</a>&lt;<a href="#meshnetkey">MeshNetKey</a>&gt;</code>                                      |
+| **`appKeys`**           | <code><a href="#array">Array</a>&lt;<a href="#meshappkey">MeshAppKey</a>&gt;</code>                                      |
+| **`nodes`**             | <code><a href="#array">Array</a>&lt;<a href="#meshnode">MeshNode</a>&gt;</code>                                          |
+| **`networkExclusions`** | <code><a href="#array">Array</a>&lt;{ ivIndex: number; addresses: <a href="#array">Array</a>&lt;number&gt;; }&gt;</code> |
 
 
 #### Array
@@ -511,13 +513,34 @@ removeAllListeners() => Promise<void>
 | **`boundNetKeyIndex`** | <code>number</code> |
 
 
+#### MeshNode
+
+| Prop                  | Type                                                                                                                                                                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`name`**            | <code>string</code>                                                                                                                                                                                                                                                             |
+| **`deviceKey`**       | <code>string</code>                                                                                                                                                                                                                                                             |
+| **`unicastAddress`**  | <code>number</code>                                                                                                                                                                                                                                                             |
+| **`security`**        | <code>string</code>                                                                                                                                                                                                                                                             |
+| **`ttl`**             | <code>number</code>                                                                                                                                                                                                                                                             |
+| **`excluded`**        | <code>boolean</code>                                                                                                                                                                                                                                                            |
+| **`features`**        | <code>{ friend: number; lowPower: number; proxy: number; relay: number; }</code>                                                                                                                                                                                                |
+| **`netKeys`**         | <code><a href="#array">Array</a>&lt;{ index: number; updated: boolean; }&gt;</code>                                                                                                                                                                                             |
+| **`appKeys`**         | <code><a href="#array">Array</a>&lt;{ index: number; updated: boolean; }&gt;</code>                                                                                                                                                                                             |
+| **`elements`**        | <code><a href="#array">Array</a>&lt;{ name: string; elementAddress: number; location: number; models: <a href="#array">Array</a>&lt;{ modelId: number; bind: <a href="#array">Array</a>&lt;number&gt;; subscribe: <a href="#array">Array</a>&lt;number&gt;; }&gt;; }&gt;</code> |
+| **`networkTransmit`** | <code>{ count: number; interval: number; steps: number; }</code>                                                                                                                                                                                                                |
+| **`cid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
+| **`pid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
+| **`vid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
+| **`crpl`**            | <code>string</code>                                                                                                                                                                                                                                                             |
+
+
 #### ScanMeshDevices
 
-| Prop                | Type                               |
-| ------------------- | ---------------------------------- |
-| **`unprovisioned`** | <code>UnprovisionedDevice[]</code> |
-| **`provisioned`**   | <code>ProvisionedDevice[]</code>   |
-| **`proxy`**         | <code>ProxyDevice[]</code>         |
+| Prop                | Type                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| **`unprovisioned`** | <code><a href="#array">Array</a>&lt;<a href="#unprovisioneddevice">UnprovisionedDevice</a>&gt;</code> |
+| **`provisioned`**   | <code><a href="#array">Array</a>&lt;<a href="#provisioneddevice">ProvisionedDevice</a>&gt;</code>     |
+| **`proxy`**         | <code><a href="#array">Array</a>&lt;<a href="#proxydevice">ProxyDevice</a>&gt;</code>                 |
 
 
 #### UnprovisionedDevice
@@ -558,17 +581,17 @@ removeAllListeners() => Promise<void>
 
 #### ProvisioningCapabilities
 
-| Prop                    | Type                  |
-| ----------------------- | --------------------- |
-| **`numberOfElements`**  | <code>number</code>   |
-| **`availableOOBTypes`** | <code>string[]</code> |
-| **`algorithms`**        | <code>number</code>   |
-| **`publicKeyType`**     | <code>number</code>   |
-| **`staticOobTypes`**    | <code>number</code>   |
-| **`outputOobSize`**     | <code>number</code>   |
-| **`outputOobActions`**  | <code>number</code>   |
-| **`inputOobSize`**      | <code>number</code>   |
-| **`inputOobActions`**   | <code>number</code>   |
+| Prop                    | Type                                                  |
+| ----------------------- | ----------------------------------------------------- |
+| **`numberOfElements`**  | <code>number</code>                                   |
+| **`availableOOBTypes`** | <code><a href="#array">Array</a>&lt;string&gt;</code> |
+| **`algorithms`**        | <code>number</code>                                   |
+| **`publicKeyType`**     | <code>number</code>                                   |
+| **`staticOobTypes`**    | <code>number</code>                                   |
+| **`outputOobSize`**     | <code>number</code>                                   |
+| **`outputOobActions`**  | <code>number</code>                                   |
+| **`inputOobSize`**      | <code>number</code>                                   |
+| **`inputOobActions`**   | <code>number</code>                                   |
 
 
 #### ProvisioningStatus
@@ -589,9 +612,9 @@ removeAllListeners() => Promise<void>
 
 #### CompositionDataStatus
 
-| Prop       | Type                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`data`** | <code>{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: { name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; locationDescriptor: number; models: [{ modelId: number; modelName: string; boundAppKeyIndexes: []; }]; }[]; }</code> |
+| Prop       | Type                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: { name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; location: number; models: [{ modelId: number; modelName: string; boundAppKeyIndexes: number[]; }]; }[]; }</code> |
 
 
 #### DefaultTTLStatus

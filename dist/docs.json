@@ -512,6 +512,25 @@
             "MeshAppKey"
           ],
           "type": "Array<MeshAppKey>"
+        },
+        {
+          "name": "nodes",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "Array",
+            "MeshNode"
+          ],
+          "type": "Array<MeshNode>"
+        },
+        {
+          "name": "networkExclusions",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "Array"
+          ],
+          "type": "Array<{\n    ivIndex: number;\n    addresses: Array<number>;\n  }>"
         }
       ]
     },
@@ -1506,6 +1525,126 @@
       ]
     },
     {
+      "name": "MeshNode",
+      "slug": "meshnode",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "name",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "deviceKey",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "unicastAddress",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "security",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "ttl",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "excluded",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "features",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ friend: number; lowPower: number; proxy: number; relay: number; }"
+        },
+        {
+          "name": "netKeys",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "Array"
+          ],
+          "type": "Array<{\n    index: number;\n    updated: boolean;\n  }>"
+        },
+        {
+          "name": "appKeys",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "Array"
+          ],
+          "type": "Array<{\n    index: number;\n    updated: boolean;\n  }>"
+        },
+        {
+          "name": "elements",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "Array"
+          ],
+          "type": "Array<{\n    name: string;\n    elementAddress: number;\n    location: number;\n    models: Array<{\n      modelId: number;\n      bind: Array<number>;\n      subscribe: Array<number>;\n    }>;\n  }>"
+        },
+        {
+          "name": "networkTransmit",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ count: number; interval: number; steps: number; } | undefined"
+        },
+        {
+          "name": "cid",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "pid",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "vid",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "crpl",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
       "name": "ScanMeshDevices",
       "slug": "scanmeshdevices",
       "docs": "",
@@ -1517,27 +1656,30 @@
           "tags": [],
           "docs": "",
           "complexTypes": [
+            "Array",
             "UnprovisionedDevice"
           ],
-          "type": "UnprovisionedDevice[]"
+          "type": "Array<UnprovisionedDevice>"
         },
         {
           "name": "provisioned",
           "tags": [],
           "docs": "",
           "complexTypes": [
+            "Array",
             "ProvisionedDevice"
           ],
-          "type": "ProvisionedDevice[]"
+          "type": "Array<ProvisionedDevice>"
         },
         {
           "name": "proxy",
           "tags": [],
           "docs": "",
           "complexTypes": [
+            "Array",
             "ProxyDevice"
           ],
-          "type": "ProxyDevice[]"
+          "type": "Array<ProxyDevice>"
         }
       ]
     },
@@ -1712,8 +1854,10 @@
           "name": "availableOOBTypes",
           "tags": [],
           "docs": "",
-          "complexTypes": [],
-          "type": "string[]"
+          "complexTypes": [
+            "Array"
+          ],
+          "type": "Array<string>"
         },
         {
           "name": "algorithms",
@@ -1826,7 +1970,7 @@
           "complexTypes": [
             "Array"
           ],
-          "type": "{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: { name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; locationDescriptor: number; models: [{ modelId: number; modelName: string; boundAppKeyIndexes: []; }]; }[]; }"
+          "type": "{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: { name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; location: number; models: [{ modelId: number; modelName: string; boundAppKeyIndexes: number[]; }]; }[]; }"
         }
       ]
     },

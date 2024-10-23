@@ -50,12 +50,58 @@ export interface MeshProvisioner {
         }
     ];
 }
+export interface MeshNode {
+    name: string;
+    deviceKey: string;
+    unicastAddress: number;
+    security: string;
+    ttl: number;
+    excluded: boolean;
+    features: {
+        friend: number;
+        lowPower: number;
+        proxy: number;
+        relay: number;
+    };
+    netKeys: Array<{
+        index: number;
+        updated: boolean;
+    }>;
+    appKeys: Array<{
+        index: number;
+        updated: boolean;
+    }>;
+    elements: Array<{
+        name: string;
+        elementAddress: number;
+        location: number;
+        models: Array<{
+            modelId: number;
+            bind: Array<number>;
+            subscribe: Array<number>;
+        }>;
+    }>;
+    networkTransmit?: {
+        count: number;
+        interval: number;
+        steps: number;
+    };
+    cid?: string;
+    pid?: string;
+    vid?: string;
+    crpl?: string;
+}
 export interface MeshNetwork {
     name: string;
     lastModified: string;
     provisioners: Array<MeshProvisioner>;
     netKeys: Array<MeshNetKey>;
     appKeys: Array<MeshAppKey>;
+    nodes: Array<MeshNode>;
+    networkExclusions: Array<{
+        ivIndex: number;
+        addresses: Array<number>;
+    }>;
 }
 export interface MeshNetworkExport {
     meshNetwork: string;
@@ -95,13 +141,13 @@ export interface ProvisionedDevice {
     };
 }
 export interface ScanMeshDevices {
-    unprovisioned: UnprovisionedDevice[];
-    provisioned: ProvisionedDevice[];
-    proxy: ProxyDevice[];
+    unprovisioned: Array<UnprovisionedDevice>;
+    provisioned: Array<ProvisionedDevice>;
+    proxy: Array<ProxyDevice>;
 }
 export interface ProvisioningCapabilities {
     numberOfElements: number;
-    availableOOBTypes: string[];
+    availableOOBTypes: Array<string>;
     algorithms: number;
     publicKeyType: number;
     staticOobTypes: number;
@@ -144,12 +190,12 @@ export interface CompositionDataStatus extends Status {
             elementAddress: number;
             sigModelCount: number;
             vendorModelCount: number;
-            locationDescriptor: number;
+            location: number;
             models: [
                 {
                     modelId: number;
                     modelName: string;
-                    boundAppKeyIndexes: [];
+                    boundAppKeyIndexes: Array<number>;
                 }
             ];
         }>;
