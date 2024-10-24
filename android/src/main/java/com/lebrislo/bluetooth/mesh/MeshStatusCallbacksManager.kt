@@ -44,23 +44,33 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
 
     override fun onMeshMessageReceived(src: Int, meshMessage: MeshMessage) {
         Log.d(tag, "onMeshMessageReceived ${meshMessage.javaClass.simpleName}")
-//        val meshManager = nrfMeshManager.meshManagerApi
-
-        if (meshMessage is ConfigNodeResetStatus) {
-            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-        } else if (meshMessage is ConfigModelAppStatus) {
-            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-        } else if (meshMessage is ConfigAppKeyStatus) {
-            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-        } else if (meshMessage is ConfigCompositionDataStatus) {
-            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-        } else if (meshMessage is ConfigDefaultTtlStatus){
-            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-        } else if (meshMessage is ConfigNetworkTransmitStatus){
-            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-        } else if (meshMessage is ConfigAppKeyList){
-            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+        when(meshMessage){
+            is ConfigNodeResetStatus,
+            is ConfigModelAppStatus,
+            is ConfigAppKeyStatus,
+            is ConfigCompositionDataStatus,
+            is ConfigDefaultTtlStatus,
+            is ConfigNetworkTransmitStatus,
+            is ConfigAppKeyList -> PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+            is GenericOnOffStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }
+
+//        val meshManager = nrfMeshManager.meshManagerApi
+//        if (meshMessage is ConfigNodeResetStatus) {
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//        } else if (meshMessage is ConfigModelAppStatus) {
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//        } else if (meshMessage is ConfigAppKeyStatus) {
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//        } else if (meshMessage is ConfigCompositionDataStatus) {
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//        } else if (meshMessage is ConfigDefaultTtlStatus){
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//        } else if (meshMessage is ConfigNetworkTransmitStatus){
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//        } else if (meshMessage is ConfigAppKeyList){
+//            PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+//        }
 
 
 

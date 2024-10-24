@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nordicsemi.android.mesh.Features
 import no.nordicsemi.android.mesh.MeshManagerApi
+import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes
 import no.nordicsemi.android.mesh.utils.CompanyIdentifiers
 import no.nordicsemi.android.mesh.utils.CompositionDataParser
@@ -263,6 +264,7 @@ class NrfMeshPlugin : Plugin() {
         context.registerReceiver(bluetoothStateReceiver, filter)
 
         implementation.initMeshNetwork()
+//        delay(500)
         implementation.startScan()
         call.resolve()
     }
@@ -272,6 +274,16 @@ class NrfMeshPlugin : Plugin() {
         if(!implementation.assertMeshNetwork(call)) return
 
         call.resolve(implementation.getMeshNetwork())
+    }
+
+    @PluginMethod
+    fun getNode(call: PluginCall){
+        if(!implementation.assertMeshNetwork(call)) return
+
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+
+        call.resolve(implementation.getNode(unicastAddress))
     }
 
     @PluginMethod
@@ -699,64 +711,27 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun getOnOff(call: PluginCall){
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
 
-//    @PluginMethod
-//    fun addApplicationKeyToNode(call: PluginCall) {
-//        val unicastAddress = call.getInt("unicastAddress")
-//        val appKeyIndex = call.getInt("appKeyIndex")
-//
-//        if (appKeyIndex == null || unicastAddress == null) {
-//            call.reject("appKeyIndex and unicastAddress are required")
-//            return
-//        }
-//
-//        CoroutineScope(Dispatchers.Main).launch {
-//            val connected = connectionToProvisionedDevice()
-//            if (!connected) {
-//                call.reject("Failed to connect to Mesh proxy")
-//                return@launch
-//            }
-//
-//            PluginCallManager.getInstance()
-//                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD.toInt(), unicastAddress, call)
-//
-//            val deferred = implementation.addApplicationKeyToNode(unicastAddress, appKeyIndex)
-//            val result = deferred.await()
-//
-//            if (!result) {
-//                call.reject("Failed to bind application key to Node")
-//            }
-//        }
-//    }
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
 
-//    @PluginMethod
-//    fun bindApplicationKeyToModel(call: PluginCall) {
-//        val elementAddress = call.getInt("elementAddress")
-//        val appKeyIndex = call.getInt("appKeyIndex")
-//        val modelId = call.getInt("modelId")
-//
-//        if (elementAddress == null || appKeyIndex == null || modelId == null) {
-//            call.reject("elementAddress, appKeyIndex and modelId are required")
-//            return
-//        }
-//
-//        CoroutineScope(Dispatchers.Main).launch {
-//            val connected = connectionToProvisionedDevice()
-//            if (!connected) {
-//                call.reject("Failed to connect to Mesh proxy")
-//                return@launch
-//            }
-//
-//            PluginCallManager.getInstance()
-//                .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND, elementAddress, call)
-//
-//            val result = implementation.bindApplicationKeyToModel(elementAddress, appKeyIndex, modelId)
-//
-//            if (!result) {
-//                call.reject("Failed to bind application key")
-//            }
-//        }
-//    }
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_GET, elementAddress, call)
+
+            implementation.getOnOff(elementAddress,appKeyIndex)
+        }
+    }
 
 //    @PluginMethod
 //    fun sendGenericOnOffSet(call: PluginCall) {

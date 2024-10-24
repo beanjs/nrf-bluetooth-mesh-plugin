@@ -39,8 +39,7 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                     is ConfigAppKeyList -> configAppKeyListResponse(meshMessage)
                     is ConfigModelAppStatus -> configModelAppStatusResponse(meshMessage)
                     else -> JSObject()
-                    }
-                )
+                })
             }
         }
 

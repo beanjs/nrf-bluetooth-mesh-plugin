@@ -81,6 +81,86 @@ class NrfMeshManager(private val context: Context) {
         bleMeshManager.setGattCallbacks(bleCallbacksManager)
     }
 
+    @SuppressLint("RestrictedApi")
+    private fun formatNode(node: ProvisionedMeshNode):JSObject{
+        return JSObject().apply {
+            put("name",node.nodeName)
+            put("deviceKey",MeshParserUtils.bytesToHex(node.deviceKey,false))
+            put("unicastAddress",node.unicastAddress)
+            put("security",if(node.security == 1) "secure" else "insecure")
+            put("ttl",node.ttl)
+            put("excluded",node.isExcluded)
+            put("features",JSObject().apply {
+                put("friend",node.nodeFeatures.friend)
+                put("lowPower",node.nodeFeatures.lowPower)
+                put("proxy",node.nodeFeatures.proxy)
+                put("relay",node.nodeFeatures.relay)
+            })
+            put("netKeys",JSArray().apply {
+                node.addedNetKeys.forEach {
+                    put(JSObject().apply {
+                        put("index",it.index)
+                        put("updated",it.isUpdated)
+                    })
+                }
+            })
+            put("appKeys",JSArray().apply {
+                node.addedAppKeys.forEach {
+                    put(JSObject().apply {
+                        put("index",it.index)
+                        put("updated",it.isUpdated)
+                    })
+                }
+            })
+            put("elements",JSArray().apply {
+                node.elements.values.forEach {
+                    put(JSObject().apply {
+                        put("name",it.name)
+                        put("elementAddress",it.elementAddress)
+                        put("location",it.locationDescriptor)
+                        put("models",JSArray().apply {
+                            it.meshModels.values.forEach {
+                                put(JSObject().apply {
+                                    put("modelId",it.modelId)
+                                    put("bind",JSArray().apply {
+                                        it.boundAppKeyIndexes.forEach {
+                                            put(it)
+                                        }
+                                    })
+                                    put("subscribe",JSArray().apply {
+                                        it.subscribedAddresses.forEach {
+                                            put(it)
+                                        }
+                                    })
+                                })
+                            }
+                        })
+                    })
+                }
+            })
+
+            if (node.networkTransmitSettings != null) {
+                put("networkTransmit", JSObject().apply {
+                    put("count", node.networkTransmitSettings.networkTransmitCount)
+                    put("interval", node.networkTransmitSettings.networkTransmissionInterval)
+                    put("steps", node.networkTransmitSettings.networkIntervalSteps)
+                })
+            }
+            if (node.companyIdentifier != null){
+                put("cid", CompositionDataParser.formatCompanyIdentifier(node.companyIdentifier,false))
+            }
+            if (node.productIdentifier != null){
+                put("pid", CompositionDataParser.formatProductIdentifier(node.productIdentifier,false))
+            }
+            if (node.versionIdentifier != null){
+                put("vid", CompositionDataParser.formatVersionIdentifier(node.versionIdentifier,false))
+            }
+            if(node.crpl != null){
+                put("crpl",CompositionDataParser.formatReplayProtectionCount(node.crpl,false))
+            }
+        }
+    }
+
     fun connectBle(bluetoothDevice: BluetoothDevice): Boolean {
         bleMeshManager.connect(bluetoothDevice).retry(3, 200).await()
         return bleMeshManager.isConnected
@@ -200,82 +280,7 @@ class NrfMeshManager(private val context: Context) {
             })
             put("nodes",JSArray().apply {
                 network.nodes.forEach {
-                    put(JSObject().apply {
-                        put("name",it.nodeName)
-                        put("deviceKey",MeshParserUtils.bytesToHex(it.deviceKey,false))
-                        put("unicastAddress",it.unicastAddress)
-                        put("security",if(it.security == 1) "secure" else "insecure")
-                        put("ttl",it.ttl)
-                        put("excluded",it.isExcluded)
-                        put("features",JSObject().apply {
-                            put("friend",it.nodeFeatures.friend)
-                            put("lowPower",it.nodeFeatures.lowPower)
-                            put("proxy",it.nodeFeatures.proxy)
-                            put("relay",it.nodeFeatures.relay)
-                        })
-                        put("netKeys",JSArray().apply {
-                            it.addedNetKeys.forEach {
-                                put(JSObject().apply {
-                                    put("index",it.index)
-                                    put("updated",it.isUpdated)
-                                })
-                            }
-                        })
-                        put("appKeys",JSArray().apply {
-                            it.addedAppKeys.forEach {
-                                put(JSObject().apply {
-                                    put("index",it.index)
-                                    put("updated",it.isUpdated)
-                                })
-                            }
-                        })
-                        put("elements",JSArray().apply {
-                            it.elements.values.forEach {
-                                put(JSObject().apply {
-                                    put("name",it.name)
-                                    put("elementAddress",it.elementAddress)
-                                    put("location",it.locationDescriptor)
-                                    put("models",JSArray().apply {
-                                        it.meshModels.values.forEach {
-                                            put(JSObject().apply {
-                                                put("modelId",it.modelId)
-                                                put("bind",JSArray().apply {
-                                                    it.boundAppKeyIndexes.forEach {
-                                                        put(it)
-                                                    }
-                                                })
-                                                put("subscribe",JSArray().apply {
-                                                    it.subscribedAddresses.forEach {
-                                                        put(it)
-                                                    }
-                                                })
-                                            })
-                                        }
-                                    })
-                                })
-                            }
-                        })
-
-                        if (it.networkTransmitSettings != null) {
-                            put("networkTransmit", JSObject().apply {
-                                put("count", it.networkTransmitSettings.networkTransmitCount)
-                                put("interval", it.networkTransmitSettings.networkTransmissionInterval)
-                                put("steps", it.networkTransmitSettings.networkIntervalSteps)
-                            })
-                        }
-                        if (it.companyIdentifier != null){
-                            put("cid", CompositionDataParser.formatCompanyIdentifier(it.companyIdentifier,false))
-                        }
-                        if (it.productIdentifier != null){
-                            put("pid", CompositionDataParser.formatProductIdentifier(it.productIdentifier,false))
-                        }
-                        if (it.versionIdentifier != null){
-                            put("vid", CompositionDataParser.formatVersionIdentifier(it.versionIdentifier,false))
-                        }
-                        if(it.crpl != null){
-                            put("crpl",CompositionDataParser.formatReplayProtectionCount(it.crpl,false))
-                        }
-                    })
+                    put(formatNode(it))
                 }
             })
             put("networkExclusions",JSArray().apply {
@@ -291,6 +296,12 @@ class NrfMeshManager(private val context: Context) {
                 }
             })
         }
+    }
+
+    fun getNode(unicastAddress: Int): JSObject?{
+        val network = meshManagerApi.meshNetwork!!
+        val node = network.getNode(unicastAddress) ?: return null
+        return formatNode(node)
     }
 
     fun createAppKey(): JSObject {
@@ -501,6 +512,14 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(unicastAddress,configModelAppUnbind)
     }
 
+    fun getOnOff(elementAddress: Int, appKeyIndex: Int){
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val configGenericOnOffGet = GenericOnOffGet(appkey)
+        meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffGet)
+    }
+
     /**
      * Create a new mesh network
      *
@@ -569,33 +588,33 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(address, meshMessage)
         return true
     }
-
-    /**
-     * Send Generic OnOff Get message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendGenericOnOffGet(
-        address: Int,
-        appKeyIndex: Int
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        val meshMessage = GenericOnOffGet(
-            meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-        )
-
-        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
+//
+//    /**
+//     * Send Generic OnOff Get message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendGenericOnOffGet(
+//        address: Int,
+//        appKeyIndex: Int
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        val meshMessage = GenericOnOffGet(
+//            meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//        )
+//
+//        meshManagerApi.createMeshPdu(address, meshMessage)
+//        return true
+//    }
 
     /**
      * Send a Generic Level Set message to a node

@@ -204,13 +204,11 @@ export interface CompositionDataStatus extends Status {
       sigModelCount: number;
       vendorModelCount: number;
       location: number;
-      models: [
-        {
-          modelId: number;
-          modelName: string;
-          boundAppKeyIndexes: Array<number>;
-        },
-      ];
+      models: Array<{
+        modelId: number;
+        modelName: string;
+        boundAppKeyIndexes: Array<number>;
+      }>;
     }>;
   };
 }
@@ -260,6 +258,12 @@ export interface ModelAppStatus extends Status {
   };
 }
 
+export interface OnOffStatus extends Status {
+  data: {
+    onOff: boolean;
+  };
+}
+
 export interface NrfMeshPlugin {
   checkPermissions(): Promise<Permissions>;
   requestPermissions(): Promise<Permissions>;
@@ -273,6 +277,7 @@ export interface NrfMeshPlugin {
   getMeshNetwork(): Promise<MeshNetwork>;
   createAppKey(): Promise<MeshAppKey>;
   removeAppKey(options: { index: number }): Promise<void>;
+  getNode(options: { unicastAddress: number }): Promise<MeshNode | undefined>;
 
   scanMeshDevices(options: { timeout: number }): Promise<ScanMeshDevices>;
   getProvisioningCapabilities(options: {
@@ -324,6 +329,11 @@ export interface NrfMeshPlugin {
     modelId: number;
     appKeyIndex: number;
   }): Promise<ModelAppStatus>;
+
+  getOnOff(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+  }): Promise<OnOffStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;

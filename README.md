@@ -23,6 +23,7 @@ npx cap sync
 * [`getMeshNetwork()`](#getmeshnetwork)
 * [`createAppKey()`](#createappkey)
 * [`removeAppKey(...)`](#removeappkey)
+* [`getNode(...)`](#getnode)
 * [`scanMeshDevices(...)`](#scanmeshdevices)
 * [`getProvisioningCapabilities(...)`](#getprovisioningcapabilities)
 * [`provisionDevice(...)`](#provisiondevice)
@@ -37,6 +38,7 @@ npx cap sync
 * [`getAppKeys(...)`](#getappkeys)
 * [`bindAppKey(...)`](#bindappkey)
 * [`unbindAppKey(...)`](#unbindappkey)
+* [`getOnOff(...)`](#getonoff)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -154,6 +156,21 @@ removeAppKey(options: { index: number; }) => Promise<void>
 | Param         | Type                            |
 | ------------- | ------------------------------- |
 | **`options`** | <code>{ index: number; }</code> |
+
+--------------------
+
+
+### getNode(...)
+
+```typescript
+getNode(options: { unicastAddress: number; }) => Promise<MeshNode | undefined>
+```
+
+| Param         | Type                                     |
+| ------------- | ---------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#meshnode">MeshNode</a>&gt;</code>
 
 --------------------
 
@@ -364,6 +381,21 @@ unbindAppKey(options: { unicastAddress: number; elementAddress: number; modelId:
 | **`options`** | <code>{ unicastAddress: number; elementAddress: number; modelId: number; appKeyIndex: number; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#modelappstatus">ModelAppStatus</a>&gt;</code>
+
+--------------------
+
+
+### getOnOff(...)
+
+```typescript
+getOnOff(options: { elementAddress: number; appKeyIndex: number; }) => Promise<OnOffStatus>
+```
+
+| Param         | Type                                                          |
+| ------------- | ------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#onoffstatus">OnOffStatus</a>&gt;</code>
 
 --------------------
 
@@ -614,7 +646,7 @@ removeAllListeners() => Promise<void>
 
 | Prop       | Type                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`data`** | <code>{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: { name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; location: number; models: [{ modelId: number; modelName: string; boundAppKeyIndexes: number[]; }]; }[]; }</code> |
+| **`data`** | <code>{ status: number; statusName: string; companyIdentifier: string; productIdentifier: string; productVersion: string; nodeFeaturesSupported: { relay: boolean; proxy: boolean; friend: boolean; lowPower: boolean; }; elements: { name: string; elementAddress: number; sigModelCount: number; vendorModelCount: number; location: number; models: { modelId: number; modelName: string; boundAppKeyIndexes: number[]; }[]; }[]; }</code> |
 
 
 #### DefaultTTLStatus
@@ -650,6 +682,13 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                                                                               |
 | ---------- | ------------------------------------------------------------------------------------------------------------------ |
 | **`data`** | <code>{ status: number; statusName: string; elementAddress: number; modelId: number; appKeyIndex: number; }</code> |
+
+
+#### OnOffStatus
+
+| Prop       | Type                             |
+| ---------- | -------------------------------- |
+| **`data`** | <code>{ onOff: boolean; }</code> |
 
 
 #### PluginListenerHandle

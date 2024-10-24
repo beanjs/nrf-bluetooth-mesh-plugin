@@ -21,34 +21,32 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
          */
         @JvmStatic
         fun generateSigPluginCallResponse(meshMessage: MeshMessage): JSObject {
-            val result = JSObject()
-            result.put("src", meshMessage.src)
-            result.put("dst", meshMessage.dst)
-            result.put("opcode", meshMessage.opCode)
-            result.put(
-                "data", when (meshMessage) {
-                    is GenericOnOffStatus -> genericOnOffStatusResponse(meshMessage)
-                    is GenericLevelStatus -> genericLevelStatusResponse(meshMessage)
+           return  JSObject().apply {
+               put("src", meshMessage.src)
+               put("dst", meshMessage.dst)
+               put("opcode", meshMessage.opCode)
+               put("data", when (meshMessage) {
+                   is GenericOnOffStatus -> genericOnOffStatusResponse(meshMessage)
+//                    is GenericLevelStatus -> genericLevelStatusResponse(meshMessage)
 //                    is GenericPowerLevelStatus -> genericPowerLevelStatusResponse(meshMessage)
-                    is LightHslStatus -> lightHslStatusResponse(meshMessage)
-                    is LightCtlStatus -> lightCtlStatusResponse(meshMessage)
-                    else -> JSObject()
-                }
-            )
-            return result
+//                    is LightHslStatus -> lightHslStatusResponse(meshMessage)
+//                    is LightCtlStatus -> lightCtlStatusResponse(meshMessage)
+                   else -> JSObject()
+               })
+           }
         }
 
         private fun genericOnOffStatusResponse(meshMessage: GenericOnOffStatus): JSObject {
-            val data = JSObject()
-            data.put("onOff", meshMessage.parameters[0].toInt() == 1)
-            return data
+            return JSObject().apply {
+                put("onOff",meshMessage.presentState)
+            }
         }
-
-        private fun genericLevelStatusResponse(meshMessage: GenericLevelStatus): JSObject {
-            val data = JSObject()
-            data.put("level", meshMessage.presentLevel)
-            return data
-        }
+//
+//        private fun genericLevelStatusResponse(meshMessage: GenericLevelStatus): JSObject {
+//            val data = JSObject()
+//            data.put("level", meshMessage.presentLevel)
+//            return data
+//        }
 
 //        private fun genericPowerLevelStatusResponse(meshMessage: GenericPowerLevelStatus): JSObject {
 //            val data = JSObject()
@@ -56,19 +54,19 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
 //            return data
 //        }
 
-        private fun lightHslStatusResponse(meshMessage: LightHslStatus): JSObject {
-            val data = JSObject()
-            data.put("hue", meshMessage.presentHue.toUShort().toInt())
-            data.put("saturation", meshMessage.presentSaturation.toUShort().toInt())
-            data.put("lightness", meshMessage.presentLightness.toUShort().toInt())
-            return data
-        }
-
-        private fun lightCtlStatusResponse(meshMessage: LightCtlStatus): JSObject {
-            val data = JSObject()
-            data.put("lightness", meshMessage.presentLightness.toUShort().toInt())
-            data.put("temperature", meshMessage.presentTemperature.toUShort().toInt())
-            return data
-        }
+//        private fun lightHslStatusResponse(meshMessage: LightHslStatus): JSObject {
+//            val data = JSObject()
+//            data.put("hue", meshMessage.presentHue.toUShort().toInt())
+//            data.put("saturation", meshMessage.presentSaturation.toUShort().toInt())
+//            data.put("lightness", meshMessage.presentLightness.toUShort().toInt())
+//            return data
+//        }
+//
+//        private fun lightCtlStatusResponse(meshMessage: LightCtlStatus): JSObject {
+//            val data = JSObject()
+//            data.put("lightness", meshMessage.presentLightness.toUShort().toInt())
+//            data.put("temperature", meshMessage.presentTemperature.toUShort().toInt())
+//            return data
+//        }
     }
 }

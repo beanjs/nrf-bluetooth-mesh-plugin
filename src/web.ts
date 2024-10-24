@@ -17,6 +17,8 @@ import type {
   AppKeyStatus,
   AppKeyListStatus,
   ModelAppStatus,
+  OnOffStatus,
+  MeshNode,
 } from './definitions';
 
 export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
@@ -57,6 +59,10 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   }
   async removeAppKey (): Promise<void> {
     console.log('removeKey');
+  }
+  async getNode (): Promise<MeshNode | undefined> {
+    console.log('getNode');
+    return {} as MeshNode;
   }
 
   async scanMeshDevices (): Promise<ScanMeshDevices> {
@@ -115,6 +121,11 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async unbindAppKey (): Promise<ModelAppStatus> {
     console.log('unbindAppKey');
     return {} as ModelAppStatus;
+  }
+
+  async getOnOff (): Promise<OnOffStatus> {
+    console.log('getOnOff');
+    return {} as OnOffStatus;
   }
 
   // async createApplicationKey(): Promise<void> {
