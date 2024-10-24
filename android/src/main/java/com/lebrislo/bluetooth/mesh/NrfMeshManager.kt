@@ -355,17 +355,15 @@ class NrfMeshManager(private val context: Context) {
             Log.d(tag, "searchProxyMesh : Provisioned devices: ${scannerRepository.devices.size}")
 
             if (scannerRepository.devices.isNotEmpty()) {
-                synchronized(scannerRepository.devices) {
-                    val devices = scannerRepository.devices.filter {
-                        it.provisioned
-                    }.toMutableList()
+                val devices = scannerRepository.devices.filter {
+                    it.provisioned
+                }.toMutableList()
 
-                    devices.sortBy { device -> device.scanResult?.rssi }
+                devices.sortBy { device -> device.scanResult?.rssi }
 
-                    val device =  devices.first().device
-                    Log.i(tag, "searchProxyMesh : Found a mesh proxy ${device!!.address}")
-                    return device
-                }
+                val device =  devices.first().device
+                Log.i(tag, "searchProxyMesh : Found a mesh proxy ${device!!.address}")
+                return device
             }
         }
 
