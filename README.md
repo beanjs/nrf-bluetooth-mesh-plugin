@@ -39,6 +39,7 @@ npx cap sync
 * [`bindAppKey(...)`](#bindappkey)
 * [`unbindAppKey(...)`](#unbindappkey)
 * [`getOnOff(...)`](#getonoff)
+* [`setOnOff(...)`](#setonoff)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -394,6 +395,21 @@ getOnOff(options: { elementAddress: number; appKeyIndex: number; }) => Promise<O
 | Param         | Type                                                          |
 | ------------- | ------------------------------------------------------------- |
 | **`options`** | <code>{ elementAddress: number; appKeyIndex: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#onoffstatus">OnOffStatus</a>&gt;</code>
+
+--------------------
+
+
+### setOnOff(...)
+
+```typescript
+setOnOff(options: { elementAddress: number; appKeyIndex: number; onOff?: boolean; acknowledgement?: boolean; }) => Promise<OnOffStatus>
+```
+
+| Param         | Type                                                                                                      |
+| ------------- | --------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; onOff?: boolean; acknowledgement?: boolean; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#onoffstatus">OnOffStatus</a>&gt;</code>
 

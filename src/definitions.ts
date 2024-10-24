@@ -334,6 +334,12 @@ export interface NrfMeshPlugin {
     elementAddress: number;
     appKeyIndex: number;
   }): Promise<OnOffStatus>;
+  setOnOff(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    onOff?: boolean; // default false
+    acknowledgement?: boolean; // default true
+  }): Promise<OnOffStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;

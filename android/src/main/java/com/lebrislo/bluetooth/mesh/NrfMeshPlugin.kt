@@ -733,6 +733,34 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun setOnOff(call: PluginCall){
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+        val onOff = call.getBoolean("onOff",false)
+        val acknowledgement = call.getBoolean("acknowledgement", true)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            if(acknowledgement == true){
+                PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_SET, elementAddress, call)
+                implementation.setOnOffAck(elementAddress,appKeyIndex,onOff==true)
+            }else{
+                val res =  implementation.setOnOff(elementAddress,appKeyIndex,onOff==true)
+                call.resolve(res)
+            }
+        }
+    }
+
 //    @PluginMethod
 //    fun sendGenericOnOffSet(call: PluginCall) {
 //        val unicastAddress = call.getInt("unicastAddress")

@@ -127,6 +127,10 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     console.log('getOnOff');
     return {} as OnOffStatus;
   }
+  async setOnOff (): Promise<OnOffStatus> {
+    console.log('setOnOff');
+    return {} as OnOffStatus;
+  }
 
   // async createApplicationKey(): Promise<void> {
   //   console.log('createApplicationKey');

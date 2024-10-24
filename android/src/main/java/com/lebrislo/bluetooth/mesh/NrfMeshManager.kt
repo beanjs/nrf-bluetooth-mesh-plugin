@@ -55,6 +55,7 @@ import no.nordicsemi.android.mesh.utils.MeshParserUtils
 import java.text.DateFormat
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
 
 class NrfMeshManager(private val context: Context) {
     private val tag: String = NrfMeshManager::class.java.simpleName
@@ -520,74 +521,99 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffGet)
     }
 
-    /**
-     * Create a new mesh network
-     *
-     * @param networkName name of the mesh network
-     *
-     * @return Unit
-     */
-    fun initMeshNetwork(networkName: String) {
-        meshManagerApi.resetMeshNetwork()
-        meshManagerApi.meshNetwork!!.meshName = networkName
+    fun setOnOffAck(elementAddress: Int, appKeyIndex: Int,onOff: Boolean){
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val configGenericOnOffSet = GenericOnOffSet(appkey,onOff, Random.nextInt())
+        meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffSet)
     }
 
-    /**
-     * Send a Generic OnOff Set message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     * @param onOffvalue on/off value to set
-     * @param tId transaction id
-     * @param transitionStep transition step
-     * @param transitionResolution transition resolution
-     * @param delay delay before the message is sent
-     * @param acknowledgement whether to send an acknowledgement
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendGenericOnOffSet(
-        address: Int,
-        appKeyIndex: Int,
-        onOffvalue: Boolean,
-        tId: Int,
-        transitionStep: Int? = 0,
-        transitionResolution: Int? = 0,
-        delay: Int = 0,
-        acknowledgement: Boolean = false
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
+    fun setOnOff(elementAddress: Int, appKeyIndex: Int,onOff: Boolean):JSObject{
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val configGenericOnOffSet = GenericOnOffSetUnacknowledged(appkey,onOff, Random.nextInt())
+        meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffSet)
+
+        return JSObject().apply {
+            put("src",configGenericOnOffSet.src)
+            put("dst",configGenericOnOffSet.dst)
+            put("opcode",configGenericOnOffSet.opCode)
+            put("data",JSObject().apply {
+                put("onOff",onOff)
+            })
         }
-
-        var meshMessage: MeshMessage? = null
-
-        if (acknowledgement) {
-            meshMessage = GenericOnOffSet(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                onOffvalue,
-                tId,
-                transitionStep,
-                transitionResolution,
-                delay
-            )
-        } else {
-            meshMessage = GenericOnOffSetUnacknowledged(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                onOffvalue,
-                tId,
-                transitionStep,
-                transitionResolution,
-                delay
-            )
-        }
-
-        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
     }
+
+//    /**
+//     * Create a new mesh network
+//     *
+//     * @param networkName name of the mesh network
+//     *
+//     * @return Unit
+//     */
+//    fun initMeshNetwork(networkName: String) {
+//        meshManagerApi.resetMeshNetwork()
+//        meshManagerApi.meshNetwork!!.meshName = networkName
+//    }
+
+//    /**
+//     * Send a Generic OnOff Set message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     * @param onOffvalue on/off value to set
+//     * @param tId transaction id
+//     * @param transitionStep transition step
+//     * @param transitionResolution transition resolution
+//     * @param delay delay before the message is sent
+//     * @param acknowledgement whether to send an acknowledgement
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendGenericOnOffSet(
+//        address: Int,
+//        appKeyIndex: Int,
+//        onOffvalue: Boolean,
+//        tId: Int,
+//        transitionStep: Int? = 0,
+//        transitionResolution: Int? = 0,
+//        delay: Int = 0,
+//        acknowledgement: Boolean = false
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        var meshMessage: MeshMessage? = null
+//
+//        if (acknowledgement) {
+//            meshMessage = GenericOnOffSet(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                onOffvalue,
+//                tId,
+//                transitionStep,
+//                transitionResolution,
+//                delay
+//            )
+//        } else {
+//            meshMessage = GenericOnOffSetUnacknowledged(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                onOffvalue,
+//                tId,
+//                transitionStep,
+//                transitionResolution,
+//                delay
+//            )
+//        }
+//
+//        meshManagerApi.createMeshPdu(address, meshMessage)
+//        return true
+//    }
 //
 //    /**
 //     * Send Generic OnOff Get message to a node
@@ -615,341 +641,341 @@ class NrfMeshManager(private val context: Context) {
 //        meshManagerApi.createMeshPdu(address, meshMessage)
 //        return true
 //    }
-
-    /**
-     * Send a Generic Level Set message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     * @param level level to set
-     * @param tId transaction id
-     * @param transitionStep transition step
-     * @param transitionResolution transition resolution
-     * @param delay delay before the message is sent
-     * @param acknowledgement whether to send an acknowledgement
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendGenericLevelSet(
-        address: Int,
-        appKeyIndex: Int,
-        level: Int,
-        tId: Int,
-        transitionStep: Int? = 0,
-        transitionResolution: Int? = 0,
-        delay: Int = 0,
-        acknowledgement: Boolean = false
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        var meshMessage: MeshMessage? = null
-
-        if (acknowledgement) {
-            meshMessage = GenericLevelSet(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                transitionStep,
-                transitionResolution,
-                delay,
-                level,
-                tId,
-            )
-        } else {
-            meshMessage = GenericLevelSetUnacknowledged(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                transitionStep,
-                transitionResolution,
-                delay,
-                level,
-                tId,
-            )
-        }
-
-        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
-
-    /**
-     * Send a Generic Power Level Set message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     * @param powerLevel power level to set
-     * @param tId transaction id
-     * @param transitionStep transition step
-     * @param transitionResolution transition resolution
-     * @param delay delay before the message is sent
-     * @param acknowledgement whether to send an acknowledgement
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendGenericPowerLevelSet(
-        address: Int,
-        appKeyIndex: Int,
-        powerLevel: Int,
-        tId: Int,
-        transitionStep: Int? = 0,
-        transitionResolution: Int? = 0,
-        delay: Int = 0,
-        acknowledgement: Boolean = false
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        var meshMessage: MeshMessage? = null
-
+//
+//    /**
+//     * Send a Generic Level Set message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     * @param level level to set
+//     * @param tId transaction id
+//     * @param transitionStep transition step
+//     * @param transitionResolution transition resolution
+//     * @param delay delay before the message is sent
+//     * @param acknowledgement whether to send an acknowledgement
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendGenericLevelSet(
+//        address: Int,
+//        appKeyIndex: Int,
+//        level: Int,
+//        tId: Int,
+//        transitionStep: Int? = 0,
+//        transitionResolution: Int? = 0,
+//        delay: Int = 0,
+//        acknowledgement: Boolean = false
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        var meshMessage: MeshMessage? = null
+//
 //        if (acknowledgement) {
-//            meshMessage = GenericPowerLevelSet(
+//            meshMessage = GenericLevelSet(
 //                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-//                tId,
 //                transitionStep,
 //                transitionResolution,
-//                powerLevel,
-//                delay
+//                delay,
+//                level,
+//                tId,
 //            )
 //        } else {
-//            meshMessage = GenericPowerLevelSetUnacknowledged(
+//            meshMessage = GenericLevelSetUnacknowledged(
 //                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-//                tId,
 //                transitionStep,
 //                transitionResolution,
-//                powerLevel,
-//                delay
+//                delay,
+//                level,
+//                tId,
+//            )
+//        }
+//
+//        meshManagerApi.createMeshPdu(address, meshMessage)
+//        return true
+//    }
+//
+//    /**
+//     * Send a Generic Power Level Set message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     * @param powerLevel power level to set
+//     * @param tId transaction id
+//     * @param transitionStep transition step
+//     * @param transitionResolution transition resolution
+//     * @param delay delay before the message is sent
+//     * @param acknowledgement whether to send an acknowledgement
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendGenericPowerLevelSet(
+//        address: Int,
+//        appKeyIndex: Int,
+//        powerLevel: Int,
+//        tId: Int,
+//        transitionStep: Int? = 0,
+//        transitionResolution: Int? = 0,
+//        delay: Int = 0,
+//        acknowledgement: Boolean = false
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        var meshMessage: MeshMessage? = null
+//
+////        if (acknowledgement) {
+////            meshMessage = GenericPowerLevelSet(
+////                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+////                tId,
+////                transitionStep,
+////                transitionResolution,
+////                powerLevel,
+////                delay
+////            )
+////        } else {
+////            meshMessage = GenericPowerLevelSetUnacknowledged(
+////                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+////                tId,
+////                transitionStep,
+////                transitionResolution,
+////                powerLevel,
+////                delay
+////            )
+////        }
+////        meshManagerApi.createMeshPdu(address, meshMessage)
+//        return true
+//    }
+//
+//    /**
+//     * Send a Generic Power Level Get message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendGenericPowerLevelGet(
+//        address: Int,
+//        appKeyIndex: Int
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+////        val meshMessage = GenericPowerLevelGet(
+////            meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+////        )
+////
+////        meshManagerApi.createMeshPdu(address, meshMessage)
+//        return true
+//    }
+//
+//    /**
+//     * Send a Light HSL Set message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     * @param hue hue value to set
+//     * @param saturation saturation value to set
+//     * @param lightness lightness value to set
+//     * @param tId transaction id
+//     * @param transitionStep transition step
+//     * @param transitionResolution transition resolution
+//     * @param delay delay before the message is sent
+//     * @param acknowledgement whether to send an acknowledgement
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendLightHslSet(
+//        address: Int,
+//        appKeyIndex: Int,
+//        hue: Int,
+//        saturation: Int,
+//        lightness: Int,
+//        tId: Int,
+//        transitionStep: Int? = 0,
+//        transitionResolution: Int? = 0,
+//        delay: Int = 0,
+//        acknowledgement: Boolean = false
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        var meshMessage: MeshMessage? = null
+//
+//        if (acknowledgement) {
+//            meshMessage = LightHslSet(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                transitionStep,
+//                transitionResolution,
+//                delay,
+//                lightness,
+//                hue,
+//                saturation,
+//                tId
+//            )
+//        } else {
+//            meshMessage = LightHslSetUnacknowledged(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                transitionStep,
+//                transitionResolution,
+//                delay,
+//                lightness,
+//                hue,
+//                saturation,
+//                tId
 //            )
 //        }
 //        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
-
-    /**
-     * Send a Generic Power Level Get message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendGenericPowerLevelGet(
-        address: Int,
-        appKeyIndex: Int
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-//        val meshMessage = GenericPowerLevelGet(
+//        return true
+//    }
+//
+//    fun sendLightHslGet(
+//        address: Int,
+//        appKeyIndex: Int
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        val meshMessage = LightHslGet(
 //            meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
 //        )
 //
 //        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
-
-    /**
-     * Send a Light HSL Set message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     * @param hue hue value to set
-     * @param saturation saturation value to set
-     * @param lightness lightness value to set
-     * @param tId transaction id
-     * @param transitionStep transition step
-     * @param transitionResolution transition resolution
-     * @param delay delay before the message is sent
-     * @param acknowledgement whether to send an acknowledgement
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendLightHslSet(
-        address: Int,
-        appKeyIndex: Int,
-        hue: Int,
-        saturation: Int,
-        lightness: Int,
-        tId: Int,
-        transitionStep: Int? = 0,
-        transitionResolution: Int? = 0,
-        delay: Int = 0,
-        acknowledgement: Boolean = false
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        var meshMessage: MeshMessage? = null
-
-        if (acknowledgement) {
-            meshMessage = LightHslSet(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                transitionStep,
-                transitionResolution,
-                delay,
-                lightness,
-                hue,
-                saturation,
-                tId
-            )
-        } else {
-            meshMessage = LightHslSetUnacknowledged(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                transitionStep,
-                transitionResolution,
-                delay,
-                lightness,
-                hue,
-                saturation,
-                tId
-            )
-        }
-        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
-
-    fun sendLightHslGet(
-        address: Int,
-        appKeyIndex: Int
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        val meshMessage = LightHslGet(
-            meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-        )
-
-        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
-
-    /**
-     * Send a Light CTL Set message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     * @param lightness lightness value to set
-     * @param temperature temperature value to set
-     * @param deltaUv delta uv value to set
-     * @param tId transaction id
-     * @param transitionStep transition step
-     * @param transitionResolution transition resolution
-     * @param delay delay before the message is sent
-     * @param acknowledgement whether to send an acknowledgement
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendLightCtlSet(
-        address: Int,
-        appKeyIndex: Int,
-        lightness: Int,
-        temperature: Int,
-        deltaUv: Int,
-        tId: Int,
-        transitionStep: Int? = 0,
-        transitionResolution: Int? = 0,
-        delay: Int = 0,
-        acknowledgement: Boolean = false
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        var meshMessage: MeshMessage? = null
-
-        if (acknowledgement) {
-            meshMessage = LightCtlSet(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                transitionStep,
-                transitionResolution,
-                delay,
-                lightness,
-                temperature,
-                deltaUv,
-                tId
-            )
-        } else {
-            meshMessage = LightCtlSetUnacknowledged(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                transitionStep,
-                transitionResolution,
-                delay,
-                lightness,
-                temperature,
-                deltaUv,
-                tId
-            )
-        }
-        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
-
-    /**
-     * Send a Vendor Model message to a node
-     *
-     * Note: The application must be connected to a mesh proxy before sending messages
-     *
-     * @param address unicast address of the node
-     * @param appKeyIndex index of the application key
-     * @param modelId model id
-     * @param companyIdentifier company identifier
-     * @param opCode operation code
-     * @param payload parameters of the message
-     * @param acknowledgement whether to send an acknowledgement
-     *
-     * @return Boolean whether the message was sent successfully
-     */
-    fun sendVendorModelMessage(
-        address: Int,
-        appKeyIndex: Int,
-        modelId: Int,
-        companyIdentifier: Int,
-        opCode: Int,
-        payload: ByteArray = byteArrayOf(),
-        acknowledgement: Boolean = false
-    ): Boolean {
-        if (!bleMeshManager.isConnected) {
-            Log.e(tag, "Not connected to a mesh proxy")
-            return false
-        }
-
-        var meshMessage: MeshMessage? = null
-
-        if (acknowledgement) {
-            meshMessage = VendorModelMessageAcked(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                modelId,
-                companyIdentifier,
-                opCode,
-                payload
-            )
-        } else {
-            meshMessage = VendorModelMessageUnacked(
-                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
-                modelId,
-                companyIdentifier,
-                opCode,
-                payload
-            )
-        }
-        meshManagerApi.createMeshPdu(address, meshMessage)
-        return true
-    }
+//        return true
+//    }
+//
+//    /**
+//     * Send a Light CTL Set message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     * @param lightness lightness value to set
+//     * @param temperature temperature value to set
+//     * @param deltaUv delta uv value to set
+//     * @param tId transaction id
+//     * @param transitionStep transition step
+//     * @param transitionResolution transition resolution
+//     * @param delay delay before the message is sent
+//     * @param acknowledgement whether to send an acknowledgement
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendLightCtlSet(
+//        address: Int,
+//        appKeyIndex: Int,
+//        lightness: Int,
+//        temperature: Int,
+//        deltaUv: Int,
+//        tId: Int,
+//        transitionStep: Int? = 0,
+//        transitionResolution: Int? = 0,
+//        delay: Int = 0,
+//        acknowledgement: Boolean = false
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        var meshMessage: MeshMessage? = null
+//
+//        if (acknowledgement) {
+//            meshMessage = LightCtlSet(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                transitionStep,
+//                transitionResolution,
+//                delay,
+//                lightness,
+//                temperature,
+//                deltaUv,
+//                tId
+//            )
+//        } else {
+//            meshMessage = LightCtlSetUnacknowledged(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                transitionStep,
+//                transitionResolution,
+//                delay,
+//                lightness,
+//                temperature,
+//                deltaUv,
+//                tId
+//            )
+//        }
+//        meshManagerApi.createMeshPdu(address, meshMessage)
+//        return true
+//    }
+//
+//    /**
+//     * Send a Vendor Model message to a node
+//     *
+//     * Note: The application must be connected to a mesh proxy before sending messages
+//     *
+//     * @param address unicast address of the node
+//     * @param appKeyIndex index of the application key
+//     * @param modelId model id
+//     * @param companyIdentifier company identifier
+//     * @param opCode operation code
+//     * @param payload parameters of the message
+//     * @param acknowledgement whether to send an acknowledgement
+//     *
+//     * @return Boolean whether the message was sent successfully
+//     */
+//    fun sendVendorModelMessage(
+//        address: Int,
+//        appKeyIndex: Int,
+//        modelId: Int,
+//        companyIdentifier: Int,
+//        opCode: Int,
+//        payload: ByteArray = byteArrayOf(),
+//        acknowledgement: Boolean = false
+//    ): Boolean {
+//        if (!bleMeshManager.isConnected) {
+//            Log.e(tag, "Not connected to a mesh proxy")
+//            return false
+//        }
+//
+//        var meshMessage: MeshMessage? = null
+//
+//        if (acknowledgement) {
+//            meshMessage = VendorModelMessageAcked(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                modelId,
+//                companyIdentifier,
+//                opCode,
+//                payload
+//            )
+//        } else {
+//            meshMessage = VendorModelMessageUnacked(
+//                meshManagerApi.meshNetwork!!.getAppKey(appKeyIndex),
+//                modelId,
+//                companyIdentifier,
+//                opCode,
+//                payload
+//            )
+//        }
+//        meshManagerApi.createMeshPdu(address, meshMessage)
+//        return true
+//    }
 }
