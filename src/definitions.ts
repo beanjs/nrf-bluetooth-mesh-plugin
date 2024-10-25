@@ -391,6 +391,9 @@ export interface NrfMeshPlugin {
     appKeyIndex: number;
     onOff?: boolean; // default false
     acknowledgement?: boolean; // default true
+    transitionSteps?: number;
+    transitionResolution?: number;
+    delay?: number;
   }): Promise<OnOffStatus>;
 
   // sendGenericOnOffSet(options: {

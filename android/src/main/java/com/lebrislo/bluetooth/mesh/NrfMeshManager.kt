@@ -609,19 +609,19 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffGet)
     }
 
-    fun setOnOffAck(elementAddress: Int, appKeyIndex: Int,onOff: Boolean){
+    fun setOnOffAck(elementAddress: Int, appKeyIndex: Int,onOff: Boolean,transitionSteps: Int?,transitionResolution: Int?,delay: Int?){
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configGenericOnOffSet = GenericOnOffSet(appkey,onOff, Random.nextInt())
+        val configGenericOnOffSet = GenericOnOffSet(appkey,onOff, Random.nextInt(),transitionSteps,transitionResolution,delay)
         meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffSet)
     }
 
-    fun setOnOff(elementAddress: Int, appKeyIndex: Int,onOff: Boolean):JSObject{
+    fun setOnOff(elementAddress: Int, appKeyIndex: Int,onOff: Boolean,transitionSteps: Int?,transitionResolution: Int?,delay: Int?):JSObject{
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configGenericOnOffSet = GenericOnOffSetUnacknowledged(appkey,onOff, Random.nextInt())
+        val configGenericOnOffSet = GenericOnOffSetUnacknowledged(appkey,onOff, Random.nextInt(),transitionSteps,transitionResolution,delay)
         meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffSet)
 
         return JSObject().apply {

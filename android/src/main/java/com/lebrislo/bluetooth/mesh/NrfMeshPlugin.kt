@@ -104,10 +104,10 @@ class NrfMeshPlugin : Plugin() {
             )
         } else {
             arrayOf(
-                    "ACCESS_COARSE_LOCATION",
-                    "ACCESS_FINE_LOCATION",
                     "BLUETOOTH",
                     "BLUETOOTH_ADMIN",
+                    "ACCESS_FINE_LOCATION",
+                    "ACCESS_COARSE_LOCATION",
             )
         }
     }
@@ -905,6 +905,9 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("appKeyIndex is required")
         val onOff = call.getBoolean("onOff",false)
         val acknowledgement = call.getBoolean("acknowledgement", true)
+        val transitionSteps = call.getInt("transitionSteps")
+        val transitionResolution = call.getInt("transitionResolution")
+        val delay = call.getInt("delay")
 
         CoroutineScope(Dispatchers.Main).launch {
             if (!assertBluetoothAdapter(call)) return@launch
@@ -917,9 +920,9 @@ class NrfMeshPlugin : Plugin() {
             if(acknowledgement == true){
                 PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_SET, elementAddress, call)
-                implementation.setOnOffAck(elementAddress,appKeyIndex,onOff==true)
+                implementation.setOnOffAck(elementAddress,appKeyIndex,onOff==true,transitionSteps,transitionResolution,delay)
             }else{
-                val res =  implementation.setOnOff(elementAddress,appKeyIndex,onOff==true)
+                val res =  implementation.setOnOff(elementAddress,appKeyIndex,onOff==true,transitionSteps,transitionResolution,delay)
                 call.resolve(res)
             }
         }
