@@ -41,6 +41,9 @@ npx cap sync
 * [`getAppKeys(...)`](#getappkeys)
 * [`bindAppKey(...)`](#bindappkey)
 * [`unbindAppKey(...)`](#unbindappkey)
+* [`subscribe(...)`](#subscribe)
+* [`unsubscribe(...)`](#unsubscribe)
+* [`unsubscribeAll(...)`](#unsubscribeall)
 * [`getOnOff(...)`](#getonoff)
 * [`setOnOff(...)`](#setonoff)
 * [`addListener(string, ...)`](#addlistenerstring-)
@@ -432,6 +435,51 @@ unbindAppKey(options: { unicastAddress: number; elementAddress: number; modelId:
 --------------------
 
 
+### subscribe(...)
+
+```typescript
+subscribe(options: { unicastAddress: number; elementAddress: number; subscriptionAddress: number; modelId: number; }) => Promise<ModelSubscribeStatus>
+```
+
+| Param         | Type                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; elementAddress: number; subscriptionAddress: number; modelId: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#modelsubscribestatus">ModelSubscribeStatus</a>&gt;</code>
+
+--------------------
+
+
+### unsubscribe(...)
+
+```typescript
+unsubscribe(options: { unicastAddress: number; elementAddress: number; subscriptionAddress: number; modelId: number; }) => Promise<ModelSubscribeStatus>
+```
+
+| Param         | Type                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; elementAddress: number; subscriptionAddress: number; modelId: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#modelsubscribestatus">ModelSubscribeStatus</a>&gt;</code>
+
+--------------------
+
+
+### unsubscribeAll(...)
+
+```typescript
+unsubscribeAll(options: { unicastAddress: number; elementAddress: number; subscriptionAddress: number; }) => Promise<ModelSubscribeStatus>
+```
+
+| Param         | Type                                                                                          |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; elementAddress: number; subscriptionAddress: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#modelsubscribestatus">ModelSubscribeStatus</a>&gt;</code>
+
+--------------------
+
+
 ### getOnOff(...)
 
 ```typescript
@@ -753,6 +801,13 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                                                                               |
 | ---------- | ------------------------------------------------------------------------------------------------------------------ |
 | **`data`** | <code>{ status: number; statusName: string; elementAddress: number; modelId: number; appKeyIndex: number; }</code> |
+
+
+#### ModelSubscribeStatus
+
+| Prop       | Type                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ status: number; statusName: string; elementAddress: number; subscriptionAddress: number; modelIdentifier: number; }</code> |
 
 
 #### OnOffStatus

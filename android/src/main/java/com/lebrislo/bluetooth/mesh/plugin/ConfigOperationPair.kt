@@ -16,6 +16,10 @@ import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NODE_RESET
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_APP_STATUS
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_APP_UNBIND
+import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_ADD
+import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_DELETE
+import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_DELETE_ALL
+import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_GET
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_SET
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_STATUS
@@ -39,6 +43,7 @@ class ConfigOperationPair {
                 CONFIG_NODE_RESET -> CONFIG_NODE_RESET_STATUS
                 CONFIG_APPKEY_GET -> CONFIG_APPKEY_LIST
                 CONFIG_MODEL_APP_BIND, CONFIG_MODEL_APP_UNBIND -> CONFIG_MODEL_APP_STATUS
+                CONFIG_MODEL_SUBSCRIPTION_ADD, CONFIG_MODEL_SUBSCRIPTION_DELETE, CONFIG_MODEL_SUBSCRIPTION_DELETE_ALL-> CONFIG_MODEL_SUBSCRIPTION_STATUS
                 else -> 0
             }
         }

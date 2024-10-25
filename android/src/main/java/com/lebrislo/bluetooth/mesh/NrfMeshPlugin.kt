@@ -763,6 +763,82 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
+    fun subscribe(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val subscriptionAddress = call.getInt("subscriptionAddress")
+                ?: return call.reject("subscriptionAddress is required")
+        val modelId = call.getInt("modelId")
+                ?: return call.reject("modelId is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
+
+            implementation.subscribe(unicastAddress,elementAddress,subscriptionAddress,modelId)
+        }
+    }
+
+    @PluginMethod
+    fun unsubscribe(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val subscriptionAddress = call.getInt("subscriptionAddress")
+                ?: return call.reject("subscriptionAddress is required")
+        val modelId = call.getInt("modelId")
+                ?: return call.reject("modelId is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
+
+            implementation.unsubscribe(unicastAddress,elementAddress,subscriptionAddress,modelId)
+        }
+    }
+
+    @PluginMethod
+    fun unsubscribeAll(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val subscriptionAddress = call.getInt("subscriptionAddress")
+                ?: return call.reject("subscriptionAddress is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
+
+            implementation.unsubscribeAll(unicastAddress,elementAddress,subscriptionAddress)
+        }
+    }
+
+    @PluginMethod
     fun getOnOff(call: PluginCall){
         val elementAddress = call.getInt("elementAddress")
                 ?: return call.reject("elementAddress is required")

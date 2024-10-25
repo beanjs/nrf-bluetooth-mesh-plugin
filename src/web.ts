@@ -17,6 +17,7 @@ import type {
   AppKeyStatus,
   AppKeyListStatus,
   ModelAppStatus,
+  ModelSubscribeStatus,
   OnOffStatus,
   MeshNode,
   MeshGroup,
@@ -133,6 +134,18 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async unbindAppKey (): Promise<ModelAppStatus> {
     console.log('unbindAppKey');
     return {} as ModelAppStatus;
+  }
+  async subscribe (): Promise<ModelSubscribeStatus> {
+    console.log('subscribe');
+    return {} as ModelSubscribeStatus;
+  }
+  async unsubscribe (): Promise<ModelSubscribeStatus> {
+    console.log('unsubscribe');
+    return {} as ModelSubscribeStatus;
+  }
+  async unsubscribeAll (): Promise<ModelSubscribeStatus> {
+    console.log('unsubscribeAll');
+    return {} as ModelSubscribeStatus;
   }
 
   async getOnOff (): Promise<OnOffStatus> {

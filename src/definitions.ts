@@ -264,6 +264,16 @@ export interface ModelAppStatus extends Status {
   };
 }
 
+export interface ModelSubscribeStatus extends Status {
+  data: {
+    status: number;
+    statusName: string;
+    elementAddress: number;
+    subscriptionAddress: number;
+    modelIdentifier: number;
+  };
+}
+
 export interface OnOffStatus extends Status {
   data: {
     onOff: boolean;
@@ -338,6 +348,23 @@ export interface NrfMeshPlugin {
     modelId: number;
     appKeyIndex: number;
   }): Promise<ModelAppStatus>;
+  subscribe(options: {
+    unicastAddress: number;
+    elementAddress: number;
+    subscriptionAddress: number;
+    modelId: number;
+  }): Promise<ModelSubscribeStatus>;
+  unsubscribe(options: {
+    unicastAddress: number;
+    elementAddress: number;
+    subscriptionAddress: number;
+    modelId: number;
+  }): Promise<ModelSubscribeStatus>;
+  unsubscribeAll(options: {
+    unicastAddress: number;
+    elementAddress: number;
+    subscriptionAddress: number;
+  }): Promise<ModelSubscribeStatus>;
 
   getOnOff(options: {
     elementAddress: number;

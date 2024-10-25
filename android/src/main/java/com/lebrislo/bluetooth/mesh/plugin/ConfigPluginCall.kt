@@ -8,6 +8,7 @@ import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelAppStatus
+import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionStatus
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeResetStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
@@ -38,6 +39,7 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                     is ConfigAppKeyStatus -> configAppKeyStatusResponse(meshMessage)
                     is ConfigAppKeyList -> configAppKeyListResponse(meshMessage)
                     is ConfigModelAppStatus -> configModelAppStatusResponse(meshMessage)
+                    is ConfigModelSubscriptionStatus ->configModelSubscriptionStatusResponse(meshMessage)
                     else -> JSObject()
                 })
             }
@@ -138,6 +140,16 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                 put("elementAddress", meshMessage.elementAddress)
                 put("modelId", meshMessage.modelIdentifier)
                 put("appKeyIndex", meshMessage.appKeyIndex)
+            }
+        }
+
+        private fun configModelSubscriptionStatusResponse(meshMessage: ConfigModelSubscriptionStatus):JSObject{
+            return JSObject().apply {
+                put("status", meshMessage.statusCode)
+                put("statusName", meshMessage.statusCodeName)
+                put("elementAddress",meshMessage.elementAddress)
+                put("subscriptionAddress",meshMessage.subscriptionAddress)
+                put("modelIdentifier", meshMessage.modelIdentifier)
             }
         }
     }

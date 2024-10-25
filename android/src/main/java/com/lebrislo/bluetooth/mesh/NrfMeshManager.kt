@@ -33,6 +33,9 @@ import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlSet
 import no.nordicsemi.android.mesh.transport.ConfigModelAppBind
 import no.nordicsemi.android.mesh.transport.ConfigModelAppUnbind
+import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionAdd
+import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionDelete
+import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionDeleteAll
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitGet
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitSet
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
@@ -167,8 +170,7 @@ class NrfMeshManager(private val context: Context) {
         val network = meshManagerApi.meshNetwork!!
         val models = network.getModels(group)
 
-        JSObject().apply {
-
+        return JSObject().apply {
             put("name",group.name)
             put("address",group.address)
             put("devices",models.size)
@@ -555,6 +557,21 @@ class NrfMeshManager(private val context: Context) {
     fun unbindAppKey(unicastAddress:Int,elementAddress: Int,modelId: Int,appKeyIndex:Int){
         val configModelAppUnbind = ConfigModelAppUnbind(elementAddress,modelId,appKeyIndex)
         meshManagerApi.createMeshPdu(unicastAddress,configModelAppUnbind)
+    }
+
+    fun subscribe(unicastAddress:Int,elementAddress: Int,subscriptionAddress: Int,modelId: Int){
+        val configModelSubscriptionAdd = ConfigModelSubscriptionAdd(elementAddress,subscriptionAddress,modelId)
+        meshManagerApi.createMeshPdu(unicastAddress,configModelSubscriptionAdd)
+    }
+
+    fun unsubscribe(unicastAddress:Int,elementAddress: Int,subscriptionAddress: Int,modelId: Int){
+        val configModelSubscriptionDelete = ConfigModelSubscriptionDelete(elementAddress,subscriptionAddress,modelId)
+        meshManagerApi.createMeshPdu(unicastAddress,configModelSubscriptionDelete)
+    }
+
+    fun unsubscribeAll(unicastAddress:Int,elementAddress: Int,subscriptionAddress: Int){
+        val configModelSubscriptionDeleteAll = ConfigModelSubscriptionDeleteAll(elementAddress,subscriptionAddress)
+        meshManagerApi.createMeshPdu(unicastAddress,configModelSubscriptionDeleteAll)
     }
 
     fun getOnOff(elementAddress: Int, appKeyIndex: Int){
