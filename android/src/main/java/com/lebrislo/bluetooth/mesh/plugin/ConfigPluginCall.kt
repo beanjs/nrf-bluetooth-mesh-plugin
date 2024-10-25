@@ -8,6 +8,7 @@ import no.nordicsemi.android.mesh.transport.ConfigAppKeyStatus
 import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelAppStatus
+import no.nordicsemi.android.mesh.transport.ConfigModelPublicationStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionStatus
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
 import no.nordicsemi.android.mesh.transport.ConfigNodeResetStatus
@@ -39,7 +40,8 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                     is ConfigAppKeyStatus -> configAppKeyStatusResponse(meshMessage)
                     is ConfigAppKeyList -> configAppKeyListResponse(meshMessage)
                     is ConfigModelAppStatus -> configModelAppStatusResponse(meshMessage)
-                    is ConfigModelSubscriptionStatus ->configModelSubscriptionStatusResponse(meshMessage)
+                    is ConfigModelSubscriptionStatus -> configModelSubscriptionStatusResponse(meshMessage)
+                    is ConfigModelPublicationStatus -> configModelPublicationStatusResponse(meshMessage)
                     else -> JSObject()
                 })
             }
@@ -150,6 +152,22 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                 put("elementAddress",meshMessage.elementAddress)
                 put("subscriptionAddress",meshMessage.subscriptionAddress)
                 put("modelIdentifier", meshMessage.modelIdentifier)
+            }
+        }
+
+        private fun configModelPublicationStatusResponse(meshMessage: ConfigModelPublicationStatus):JSObject{
+            return JSObject().apply {
+                put("status", meshMessage.statusCode)
+                put("statusName", meshMessage.statusCodeName)
+                put("elementAddress",meshMessage.elementAddress)
+                put("publishAddress",meshMessage.publishAddress)
+                put("appKeyIndex",meshMessage.appKeyIndex)
+                put("credentialFlag",meshMessage.credentialFlag)
+                put("publishTtl",meshMessage.publishTtl)
+                put("publicationSteps",meshMessage.publicationSteps)
+                put("publicationResolution",meshMessage.publicationResolution)
+                put("publishRetransmitCount",meshMessage.publishRetransmitCount)
+                put("modelId",meshMessage.modelIdentifier)
             }
         }
     }

@@ -85,6 +85,7 @@ export interface MeshNode {
       modelId: number;
       bind: Array<number>;
       subscribe: Array<number>;
+      publish: number;
     }>;
   }>;
 
@@ -274,6 +275,8 @@ export interface ModelSubscribeStatus extends Status {
   };
 }
 
+export interface ModelPublishStatus extends Status {}
+
 export interface OnOffStatus extends Status {
   data: {
     onOff: boolean;
@@ -331,7 +334,7 @@ export interface NrfMeshPlugin {
     unicastAddress: number;
     appKeyIndex: number;
   }): Promise<AppKeyStatus>;
-  deleteAppKey(options: {
+  delAppKey(options: {
     unicastAddress: number;
     appKeyIndex: number;
   }): Promise<AppKeyStatus>;
@@ -365,6 +368,19 @@ export interface NrfMeshPlugin {
     elementAddress: number;
     subscriptionAddress: number;
   }): Promise<ModelSubscribeStatus>;
+  publish(options: {
+    unicastAddress: number;
+    elementAddress: number;
+    modelId: number;
+    appKeyIndex?: number;
+    publishAddress?: number;
+    credentialFlag?: boolean;
+    publishTtl?: boolean;
+    publicationSteps?: boolean;
+    publicationResolution?: boolean;
+    retransmitCount?: boolean;
+    retransmitIntervalSteps?: boolean;
+  }): Promise<ModelPublishStatus>;
 
   getOnOff(options: {
     elementAddress: number;

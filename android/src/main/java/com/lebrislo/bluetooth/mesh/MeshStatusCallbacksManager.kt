@@ -9,6 +9,7 @@ import no.nordicsemi.android.mesh.transport.ConfigCompositionDataStatus
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelAppStatus
+import no.nordicsemi.android.mesh.transport.ConfigModelPublicationStatus
 import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionStatus
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitSet
 import no.nordicsemi.android.mesh.transport.ConfigNetworkTransmitStatus
@@ -53,6 +54,7 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             is ConfigDefaultTtlStatus,
             is ConfigNetworkTransmitStatus,
             is ConfigModelSubscriptionStatus,
+            is ConfigModelPublicationStatus,
             is ConfigAppKeyList -> PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
             is GenericOnOffStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }

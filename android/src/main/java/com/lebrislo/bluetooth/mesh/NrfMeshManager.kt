@@ -33,6 +33,8 @@ import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlGet
 import no.nordicsemi.android.mesh.transport.ConfigDefaultTtlSet
 import no.nordicsemi.android.mesh.transport.ConfigModelAppBind
 import no.nordicsemi.android.mesh.transport.ConfigModelAppUnbind
+import no.nordicsemi.android.mesh.transport.ConfigModelPublicationGet
+import no.nordicsemi.android.mesh.transport.ConfigModelPublicationSet
 import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionAdd
 import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionDelete
 import no.nordicsemi.android.mesh.transport.ConfigModelSubscriptionDeleteAll
@@ -137,6 +139,9 @@ class NrfMeshManager(private val context: Context) {
                                             put(it)
                                         }
                                     })
+                                    if(it.publicationSettings != null) {
+                                        put("publish", it.publicationSettings.publishAddress)
+                                    }
                                 })
                             }
                         })
@@ -532,7 +537,7 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(unicastAddress,configAppKeyAdd)
     }
 
-    fun deleteAppKey(unicastAddress: Int,appKeyIndex: Int){
+    fun delAppKey(unicastAddress: Int,appKeyIndex: Int){
         val network = meshManagerApi.meshNetwork!!
         val netkey = network.primaryNetworkKey
         val appkey = network.getAppKey(appKeyIndex)
@@ -572,6 +577,28 @@ class NrfMeshManager(private val context: Context) {
     fun unsubscribeAll(unicastAddress:Int,elementAddress: Int,subscriptionAddress: Int){
         val configModelSubscriptionDeleteAll = ConfigModelSubscriptionDeleteAll(elementAddress,subscriptionAddress)
         meshManagerApi.createMeshPdu(unicastAddress,configModelSubscriptionDeleteAll)
+    }
+
+    fun setPublish(unicastAddress:Int,
+                   elementAddress: Int,
+                   publishAddress: Int,
+                   appKeyIndex: Int,
+                   credentialFlag: Boolean,
+                   publishTtl: Int,
+                   publicationSteps: Int,
+                   publicationResolution: Int,
+                   retransmitCount: Int,
+                   retransmitIntervalSteps: Int,
+                   modelId: Int){
+        val configModelPublicationSet = ConfigModelPublicationSet(elementAddress,publishAddress,appKeyIndex, credentialFlag, publishTtl, publicationSteps, publicationResolution, retransmitCount, retransmitIntervalSteps, modelId)
+        meshManagerApi.createMeshPdu(unicastAddress,configModelPublicationSet)
+    }
+
+    fun delPublish(unicastAddress:Int,
+                   elementAddress: Int,
+                   modelId: Int){
+        val  configModelPublicationSet = ConfigModelPublicationSet(elementAddress,modelId)
+        meshManagerApi.createMeshPdu(unicastAddress,configModelPublicationSet)
     }
 
     fun getOnOff(elementAddress: Int, appKeyIndex: Int){

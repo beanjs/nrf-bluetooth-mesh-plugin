@@ -669,7 +669,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun deleteAppKey(call: PluginCall){
+    fun delAppKey(call: PluginCall){
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
@@ -686,7 +686,7 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_DELETE, unicastAddress, call)
 
-            implementation.deleteAppKey(unicastAddress,appKeyIndex)
+            implementation.delAppKey(unicastAddress,appKeyIndex)
         }
     }
 
@@ -835,6 +835,43 @@ class NrfMeshPlugin : Plugin() {
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
 
             implementation.unsubscribeAll(unicastAddress,elementAddress,subscriptionAddress)
+        }
+    }
+
+    @PluginMethod
+    fun publish(call: PluginCall){
+        val unicastAddress = call.getInt("unicastAddress")
+                ?: return call.reject("unicastAddress is required")
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val modelId = call.getInt("modelId")
+                ?: return call.reject("modelId is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_PUBLICATION_STATUS, unicastAddress, call)
+
+            if (appKeyIndex == null){
+                implementation.delPublish(unicastAddress,elementAddress,modelId)
+            }else{
+                val publishAddress = call.getInt("publishAddress")
+                        ?: return@launch call.reject("publishAddress is required")
+                val credentialFlag = call.getBoolean("credentialFlag",false)!!
+                val publishTtl = call.getInt("publishTtl",0xFF)!!
+                val publicationSteps = call.getInt("publicationSteps",0)!!
+                val publicationResolution = call.getInt("publicationResolution",0)!!
+                val retransmitCount = call.getInt("retransmitCount",1)!!
+                val retransmitIntervalSteps = call.getInt("retransmitIntervalSteps",1)!!
+                implementation.setPublish(unicastAddress,elementAddress,publishAddress,appKeyIndex,credentialFlag,publishTtl,publicationSteps,publicationResolution,retransmitCount,retransmitIntervalSteps,modelId)
+            }
         }
     }
 

@@ -37,13 +37,14 @@ npx cap sync
 * [`getNetworkTransmit(...)`](#getnetworktransmit)
 * [`setNetworkTransmit(...)`](#setnetworktransmit)
 * [`addAppKey(...)`](#addappkey)
-* [`deleteAppKey(...)`](#deleteappkey)
+* [`delAppKey(...)`](#delappkey)
 * [`getAppKeys(...)`](#getappkeys)
 * [`bindAppKey(...)`](#bindappkey)
 * [`unbindAppKey(...)`](#unbindappkey)
 * [`subscribe(...)`](#subscribe)
 * [`unsubscribe(...)`](#unsubscribe)
 * [`unsubscribeAll(...)`](#unsubscribeall)
+* [`publish(...)`](#publish)
 * [`getOnOff(...)`](#getonoff)
 * [`setOnOff(...)`](#setonoff)
 * [`addListener(string, ...)`](#addlistenerstring-)
@@ -375,10 +376,10 @@ addAppKey(options: { unicastAddress: number; appKeyIndex: number; }) => Promise<
 --------------------
 
 
-### deleteAppKey(...)
+### delAppKey(...)
 
 ```typescript
-deleteAppKey(options: { unicastAddress: number; appKeyIndex: number; }) => Promise<AppKeyStatus>
+delAppKey(options: { unicastAddress: number; appKeyIndex: number; }) => Promise<AppKeyStatus>
 ```
 
 | Param         | Type                                                          |
@@ -476,6 +477,21 @@ unsubscribeAll(options: { unicastAddress: number; elementAddress: number; subscr
 | **`options`** | <code>{ unicastAddress: number; elementAddress: number; subscriptionAddress: number; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#modelsubscribestatus">ModelSubscribeStatus</a>&gt;</code>
+
+--------------------
+
+
+### publish(...)
+
+```typescript
+publish(options: { unicastAddress: number; elementAddress: number; modelId: number; appKeyIndex?: number; publishAddress?: number; credentialFlag?: boolean; publishTtl?: boolean; publicationSteps?: boolean; publicationResolution?: boolean; retransmitCount?: boolean; retransmitIntervalSteps?: boolean; }) => Promise<ModelPublishStatus>
+```
+
+| Param         | Type                                                                                                                                                                                                                                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ unicastAddress: number; elementAddress: number; modelId: number; appKeyIndex?: number; publishAddress?: number; credentialFlag?: boolean; publishTtl?: boolean; publicationSteps?: boolean; publicationResolution?: boolean; retransmitCount?: boolean; retransmitIntervalSteps?: boolean; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#modelpublishstatus">ModelPublishStatus</a>&gt;</code>
 
 --------------------
 
@@ -657,23 +673,23 @@ removeAllListeners() => Promise<void>
 
 #### MeshNode
 
-| Prop                  | Type                                                                                                                                                                                                                                                                            |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`name`**            | <code>string</code>                                                                                                                                                                                                                                                             |
-| **`deviceKey`**       | <code>string</code>                                                                                                                                                                                                                                                             |
-| **`unicastAddress`**  | <code>number</code>                                                                                                                                                                                                                                                             |
-| **`security`**        | <code>string</code>                                                                                                                                                                                                                                                             |
-| **`ttl`**             | <code>number</code>                                                                                                                                                                                                                                                             |
-| **`excluded`**        | <code>boolean</code>                                                                                                                                                                                                                                                            |
-| **`features`**        | <code>{ friend: number; lowPower: number; proxy: number; relay: number; }</code>                                                                                                                                                                                                |
-| **`netKeys`**         | <code><a href="#array">Array</a>&lt;{ index: number; updated: boolean; }&gt;</code>                                                                                                                                                                                             |
-| **`appKeys`**         | <code><a href="#array">Array</a>&lt;{ index: number; updated: boolean; }&gt;</code>                                                                                                                                                                                             |
-| **`elements`**        | <code><a href="#array">Array</a>&lt;{ name: string; elementAddress: number; location: number; models: <a href="#array">Array</a>&lt;{ modelId: number; bind: <a href="#array">Array</a>&lt;number&gt;; subscribe: <a href="#array">Array</a>&lt;number&gt;; }&gt;; }&gt;</code> |
-| **`networkTransmit`** | <code>{ count: number; interval: number; steps: number; }</code>                                                                                                                                                                                                                |
-| **`cid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
-| **`pid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
-| **`vid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
-| **`crpl`**            | <code>string</code>                                                                                                                                                                                                                                                             |
+| Prop                  | Type                                                                                                                                                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`name`**            | <code>string</code>                                                                                                                                                                                                                                                                              |
+| **`deviceKey`**       | <code>string</code>                                                                                                                                                                                                                                                                              |
+| **`unicastAddress`**  | <code>number</code>                                                                                                                                                                                                                                                                              |
+| **`security`**        | <code>string</code>                                                                                                                                                                                                                                                                              |
+| **`ttl`**             | <code>number</code>                                                                                                                                                                                                                                                                              |
+| **`excluded`**        | <code>boolean</code>                                                                                                                                                                                                                                                                             |
+| **`features`**        | <code>{ friend: number; lowPower: number; proxy: number; relay: number; }</code>                                                                                                                                                                                                                 |
+| **`netKeys`**         | <code><a href="#array">Array</a>&lt;{ index: number; updated: boolean; }&gt;</code>                                                                                                                                                                                                              |
+| **`appKeys`**         | <code><a href="#array">Array</a>&lt;{ index: number; updated: boolean; }&gt;</code>                                                                                                                                                                                                              |
+| **`elements`**        | <code><a href="#array">Array</a>&lt;{ name: string; elementAddress: number; location: number; models: <a href="#array">Array</a>&lt;{ modelId: number; bind: <a href="#array">Array</a>&lt;number&gt;; subscribe: <a href="#array">Array</a>&lt;number&gt;; publish: number; }&gt;; }&gt;</code> |
+| **`networkTransmit`** | <code>{ count: number; interval: number; steps: number; }</code>                                                                                                                                                                                                                                 |
+| **`cid`**             | <code>string</code>                                                                                                                                                                                                                                                                              |
+| **`pid`**             | <code>string</code>                                                                                                                                                                                                                                                                              |
+| **`vid`**             | <code>string</code>                                                                                                                                                                                                                                                                              |
+| **`crpl`**            | <code>string</code>                                                                                                                                                                                                                                                                              |
 
 
 #### MeshGroup
@@ -808,6 +824,9 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                                                                                               |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | **`data`** | <code>{ status: number; statusName: string; elementAddress: number; subscriptionAddress: number; modelIdentifier: number; }</code> |
+
+
+#### ModelPublishStatus
 
 
 #### OnOffStatus

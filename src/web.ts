@@ -18,6 +18,7 @@ import type {
   AppKeyListStatus,
   ModelAppStatus,
   ModelSubscribeStatus,
+  ModelPublishStatus,
   OnOffStatus,
   MeshNode,
   MeshGroup,
@@ -119,8 +120,8 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     console.log('addAppKey');
     return {} as AppKeyStatus;
   }
-  async deleteAppKey (): Promise<AppKeyStatus> {
-    console.log('deleteAppKey');
+  async delAppKey (): Promise<AppKeyStatus> {
+    console.log('delAppKey');
     return {} as AppKeyStatus;
   }
   async getAppKeys (): Promise<AppKeyListStatus> {
@@ -146,6 +147,10 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async unsubscribeAll (): Promise<ModelSubscribeStatus> {
     console.log('unsubscribeAll');
     return {} as ModelSubscribeStatus;
+  }
+  async publish (): Promise<ModelPublishStatus> {
+    console.log('publish');
+    return {} as ModelPublishStatus;
   }
 
   async getOnOff (): Promise<OnOffStatus> {
