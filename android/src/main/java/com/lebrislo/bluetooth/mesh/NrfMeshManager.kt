@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import no.nordicsemi.android.ble.DisconnectRequest
+import no.nordicsemi.android.mesh.Group
 import no.nordicsemi.android.mesh.MeshManagerApi
 import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.ConfigAppKeyAdd
@@ -162,6 +163,18 @@ class NrfMeshManager(private val context: Context) {
         }
     }
 
+    private fun formatGroup(group:Group):JSObject{
+        val network = meshManagerApi.meshNetwork!!
+        val models = network.getModels(group)
+
+        JSObject().apply {
+
+            put("name",group.name)
+            put("address",group.address)
+            put("devices",models.size)
+        }
+    }
+
     fun connectBle(bluetoothDevice: BluetoothDevice): Boolean {
         bleMeshManager.connect(bluetoothDevice).retry(3, 200).await()
         return bleMeshManager.isConnected
@@ -284,6 +297,11 @@ class NrfMeshManager(private val context: Context) {
                     put(formatNode(it))
                 }
             })
+            put("groups",JSArray().apply {
+                network.groups.forEach {
+                    put(formatGroup(it))
+                }
+            })
             put("networkExclusions",JSArray().apply {
                 network.networkExclusions.forEach { (ivIndex, address) ->
                     put(JSObject().apply {
@@ -326,6 +344,34 @@ class NrfMeshManager(private val context: Context) {
         val appkey = network.getAppKey(appKeyIndex) ?: return
 
         network.removeAppKey(appkey)
+    }
+
+    fun createGroup(name: String):JSObject{
+        val network = meshManagerApi.meshNetwork!!
+        val provisioner = network.selectedProvisioner
+
+        val  group = network.createGroup(provisioner,name)
+        return  JSObject().apply {
+            put("name",group.name)
+            put("address",group.address)
+            put("devices",0)
+        }
+    }
+
+    fun removeGroup(groupAddress: Int){
+        val network = meshManagerApi.meshNetwork!!
+        val group = network.getGroup(groupAddress)?:return
+        val models = network.getModels(group)
+        if (models.size!=0) return
+
+        network.removeGroup(group)
+    }
+
+    fun getGroup(groupAddress: Int):JSObject?{
+        val network = meshManagerApi.meshNetwork!!
+        val group = network.getGroup(groupAddress)?:return null
+
+        return formatGroup(group)
     }
 
     @SuppressLint("MissingPermission")

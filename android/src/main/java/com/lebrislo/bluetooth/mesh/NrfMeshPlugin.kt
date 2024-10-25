@@ -264,70 +264,121 @@ class NrfMeshPlugin : Plugin() {
         context.registerReceiver(bluetoothStateReceiver, filter)
 
         implementation.initMeshNetwork()
+        CoroutineScope(Dispatchers.IO).launch {
 //        delay(500)
-        implementation.startScan()
-        call.resolve()
+            implementation.startScan()
+            call.resolve()
+        }
     }
 
     @PluginMethod
     fun getMeshNetwork(call: PluginCall){
-        if(!implementation.assertMeshNetwork(call)) return
+        if (!implementation.assertMeshNetwork(call)) return
 
-        call.resolve(implementation.getMeshNetwork())
+        CoroutineScope(Dispatchers.IO).launch {
+            call.resolve(implementation.getMeshNetwork())
+        }
     }
 
     @PluginMethod
     fun getNode(call: PluginCall){
-        if(!implementation.assertMeshNetwork(call)) return
+        if (!implementation.assertMeshNetwork(call)) return
 
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
 
-        call.resolve(implementation.getNode(unicastAddress))
+        CoroutineScope(Dispatchers.IO).launch {
+            call.resolve(implementation.getNode(unicastAddress))
+        }
     }
 
     @PluginMethod
     fun exportMeshNetwork(call: PluginCall) {
-        if(!implementation.assertMeshNetwork(call)) return
+        if (!implementation.assertMeshNetwork(call)) return
 
-        val result = implementation.exportMeshNetwork()
-
-        if (result != null) {
-            call.resolve(JSObject().put("meshNetwork", result))
-        } else {
-            call.reject("Failed to export mesh network")
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = implementation.exportMeshNetwork()
+            if (result != null) {
+                call.resolve(JSObject().put("meshNetwork", result))
+            } else {
+                call.reject("Failed to export mesh network")
+            }
         }
     }
 
 
     @PluginMethod
     fun importMeshNetwork(call: PluginCall) {
-        if(!implementation.assertMeshNetwork(call)) return
+        if (!implementation.assertMeshNetwork(call)) return
 
         val meshNetwork = call.getString("meshNetwork")
                 ?: return call.reject("meshNetwork is required")
 
-        implementation.importMeshNetwork(meshNetwork)
 
-        call.resolve()
+        CoroutineScope(Dispatchers.IO).launch {
+            implementation.importMeshNetwork(meshNetwork)
+
+            call.resolve()
+        }
     }
 
     @PluginMethod
     fun createAppKey(call: PluginCall) {
-        if(!implementation.assertMeshNetwork(call)) return
+        if (!implementation.assertMeshNetwork(call)) return
 
-        call.resolve(implementation.createAppKey())
+        CoroutineScope(Dispatchers.IO).launch {
+            call.resolve(implementation.createAppKey())
+        }
     }
 
     @PluginMethod
     fun removeAppKey(call: PluginCall){
-        if(!implementation.assertMeshNetwork(call)) return
+        if (!implementation.assertMeshNetwork(call)) return
 
         val appKeyIndex = call.getInt("index")
                 ?: return call.reject("index is required")
 
-        implementation.removeAppKey(appKeyIndex)
-        call.resolve()
+        CoroutineScope(Dispatchers.IO).launch {
+            implementation.removeAppKey(appKeyIndex)
+            call.resolve()
+        }
+    }
+
+    @PluginMethod
+    fun createGroup(call: PluginCall){
+        if (!implementation.assertMeshNetwork(call)) return
+
+        val name = call.getString("name")
+                ?: return call.reject("name is required")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            call.resolve(implementation.createGroup(name))
+        }
+    }
+
+    @PluginMethod
+    fun removeGroup(call: PluginCall){
+        if (!implementation.assertMeshNetwork(call)) return
+
+        val groupAddress = call.getInt("groupAddress")
+                ?: return call.reject("groupAddress is required")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            implementation.removeGroup(groupAddress)
+            call.resolve()
+        }
+    }
+
+    @PluginMethod
+    fun getGroup(call: PluginCall){
+        if (!implementation.assertMeshNetwork(call)) return
+
+        val groupAddress = call.getInt("groupAddress")
+                ?: return call.reject("groupAddress is required")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            call.resolve(implementation.getGroup(groupAddress))
+        }
     }
 
     @PluginMethod

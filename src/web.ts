@@ -19,6 +19,7 @@ import type {
   ModelAppStatus,
   OnOffStatus,
   MeshNode,
+  MeshGroup,
 } from './definitions';
 
 export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
@@ -63,6 +64,17 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async getNode (): Promise<MeshNode | undefined> {
     console.log('getNode');
     return {} as MeshNode;
+  }
+  async createGroup (): Promise<MeshGroup> {
+    console.log('createGroup');
+    return {} as MeshGroup;
+  }
+  async removeGroup (): Promise<void> {
+    console.log('removeGroup');
+  }
+  async getGroup (): Promise<MeshGroup | undefined> {
+    console.log('getGroup');
+    return {} as MeshGroup;
   }
 
   async scanMeshDevices (): Promise<ScanMeshDevices> {

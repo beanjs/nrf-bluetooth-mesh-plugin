@@ -24,6 +24,9 @@ npx cap sync
 * [`createAppKey()`](#createappkey)
 * [`removeAppKey(...)`](#removeappkey)
 * [`getNode(...)`](#getnode)
+* [`createGroup(...)`](#creategroup)
+* [`removeGroup(...)`](#removegroup)
+* [`getGroup(...)`](#getgroup)
 * [`scanMeshDevices(...)`](#scanmeshdevices)
 * [`getProvisioningCapabilities(...)`](#getprovisioningcapabilities)
 * [`provisionDevice(...)`](#provisiondevice)
@@ -172,6 +175,49 @@ getNode(options: { unicastAddress: number; }) => Promise<MeshNode | undefined>
 | **`options`** | <code>{ unicastAddress: number; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#meshnode">MeshNode</a>&gt;</code>
+
+--------------------
+
+
+### createGroup(...)
+
+```typescript
+createGroup(options: { name: string; }) => Promise<MeshGroup>
+```
+
+| Param         | Type                           |
+| ------------- | ------------------------------ |
+| **`options`** | <code>{ name: string; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#meshgroup">MeshGroup</a>&gt;</code>
+
+--------------------
+
+
+### removeGroup(...)
+
+```typescript
+removeGroup(options: { groupAddress: number; }) => Promise<void>
+```
+
+| Param         | Type                                   |
+| ------------- | -------------------------------------- |
+| **`options`** | <code>{ groupAddress: number; }</code> |
+
+--------------------
+
+
+### getGroup(...)
+
+```typescript
+getGroup(options: { groupAddress: number; }) => Promise<MeshGroup | undefined>
+```
+
+| Param         | Type                                   |
+| ------------- | -------------------------------------- |
+| **`options`** | <code>{ groupAddress: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#meshgroup">MeshGroup</a>&gt;</code>
 
 --------------------
 
@@ -580,6 +626,15 @@ removeAllListeners() => Promise<void>
 | **`pid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
 | **`vid`**             | <code>string</code>                                                                                                                                                                                                                                                             |
 | **`crpl`**            | <code>string</code>                                                                                                                                                                                                                                                             |
+
+
+#### MeshGroup
+
+| Prop          | Type                |
+| ------------- | ------------------- |
+| **`name`**    | <code>string</code> |
+| **`address`** | <code>number</code> |
+| **`devices`** | <code>number</code> |
 
 
 #### ScanMeshDevices

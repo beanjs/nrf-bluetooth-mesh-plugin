@@ -16,6 +16,12 @@ export interface MeshAppKey {
   boundNetKeyIndex: number;
 }
 
+export interface MeshGroup {
+  name: string;
+  address: number;
+  devices: number;
+}
+
 export interface MeshNetKey {
   name: string;
   key: string;
@@ -278,6 +284,9 @@ export interface NrfMeshPlugin {
   createAppKey(): Promise<MeshAppKey>;
   removeAppKey(options: { index: number }): Promise<void>;
   getNode(options: { unicastAddress: number }): Promise<MeshNode | undefined>;
+  createGroup(options: { name: string }): Promise<MeshGroup>;
+  removeGroup(options: { groupAddress: number }): Promise<void>;
+  getGroup(options: { groupAddress: number }): Promise<MeshGroup | undefined>;
 
   scanMeshDevices(options: { timeout: number }): Promise<ScanMeshDevices>;
   getProvisioningCapabilities(options: {
