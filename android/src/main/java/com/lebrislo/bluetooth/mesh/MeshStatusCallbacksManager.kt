@@ -19,6 +19,7 @@ import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
 import no.nordicsemi.android.mesh.transport.LightCtlStatus
 import no.nordicsemi.android.mesh.transport.LightHslStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
+import no.nordicsemi.android.mesh.transport.SensorStatus
 import no.nordicsemi.android.mesh.transport.VendorModelMessageStatus
 
 class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatusCallbacks {
@@ -56,7 +57,8 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             is ConfigModelSubscriptionStatus,
             is ConfigModelPublicationStatus,
             is ConfigAppKeyList -> PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
-            is GenericOnOffStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+            is GenericOnOffStatus,
+            is SensorStatus-> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }
 
 //        else if (meshMessage is GenericOnOffStatus) {

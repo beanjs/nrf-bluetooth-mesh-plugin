@@ -47,6 +47,7 @@ npx cap sync
 * [`publish(...)`](#publish)
 * [`getOnOff(...)`](#getonoff)
 * [`setOnOff(...)`](#setonoff)
+* [`getSensor(...)`](#getsensor)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -514,14 +515,29 @@ getOnOff(options: { elementAddress: number; appKeyIndex: number; }) => Promise<O
 ### setOnOff(...)
 
 ```typescript
-setOnOff(options: { elementAddress: number; appKeyIndex: number; onOff?: boolean; acknowledgement?: boolean; }) => Promise<OnOffStatus>
+setOnOff(options: { elementAddress: number; appKeyIndex: number; onOff?: boolean; acknowledgement?: boolean; transitionSteps?: number; transitionResolution?: number; delay?: number; }) => Promise<OnOffStatus>
 ```
 
-| Param         | Type                                                                                                      |
-| ------------- | --------------------------------------------------------------------------------------------------------- |
-| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; onOff?: boolean; acknowledgement?: boolean; }</code> |
+| Param         | Type                                                                                                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; onOff?: boolean; acknowledgement?: boolean; transitionSteps?: number; transitionResolution?: number; delay?: number; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#onoffstatus">OnOffStatus</a>&gt;</code>
+
+--------------------
+
+
+### getSensor(...)
+
+```typescript
+getSensor(options: { elementAddress: number; appKeyIndex: number; propertyId: number; }) => Promise<SensorStatus>
+```
+
+| Param         | Type                                                                              |
+| ------------- | --------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensorstatus">SensorStatus</a>&gt;</code>
 
 --------------------
 
@@ -828,12 +844,33 @@ removeAllListeners() => Promise<void>
 
 #### ModelPublishStatus
 
+| Prop                         | Type                 |
+| ---------------------------- | -------------------- |
+| **`status`**                 | <code>number</code>  |
+| **`statusName`**             | <code>string</code>  |
+| **`elementAddress`**         | <code>number</code>  |
+| **`publishAddress`**         | <code>number</code>  |
+| **`appKeyIndex`**            | <code>number</code>  |
+| **`credentialFlag`**         | <code>boolean</code> |
+| **`publishTtl`**             | <code>number</code>  |
+| **`publicationSteps`**       | <code>number</code>  |
+| **`publicationResolution`**  | <code>number</code>  |
+| **`publishRetransmitCount`** | <code>number</code>  |
+| **`modelId`**                | <code>number</code>  |
+
 
 #### OnOffStatus
 
 | Prop       | Type                             |
 | ---------- | -------------------------------- |
 | **`data`** | <code>{ onOff: boolean; }</code> |
+
+
+#### SensorStatus
+
+| Prop       | Type                                                  |
+| ---------- | ----------------------------------------------------- |
+| **`data`** | <code><a href="#array">Array</a>&lt;number&gt;</code> |
 
 
 #### PluginListenerHandle

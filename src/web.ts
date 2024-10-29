@@ -19,6 +19,7 @@ import type {
   ModelAppStatus,
   ModelSubscribeStatus,
   ModelPublishStatus,
+  SensorStatus,
   OnOffStatus,
   MeshNode,
   MeshGroup,
@@ -160,6 +161,11 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async setOnOff (): Promise<OnOffStatus> {
     console.log('setOnOff');
     return {} as OnOffStatus;
+  }
+
+  async getSensor (): Promise<SensorStatus> {
+    console.log('getSensor');
+    return {} as SensorStatus;
   }
 
   // async createApplicationKey(): Promise<void> {

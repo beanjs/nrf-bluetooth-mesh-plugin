@@ -275,12 +275,28 @@ export interface ModelSubscribeStatus extends Status {
   };
 }
 
-export interface ModelPublishStatus extends Status {}
+export interface ModelPublishStatus extends Status {
+  status: number;
+  statusName: string;
+  elementAddress: number;
+  publishAddress: number;
+  appKeyIndex: number;
+  credentialFlag: boolean;
+  publishTtl: number;
+  publicationSteps: number;
+  publicationResolution: number;
+  publishRetransmitCount: number;
+  modelId: number;
+}
 
 export interface OnOffStatus extends Status {
   data: {
     onOff: boolean;
   };
+}
+
+export interface SensorStatus extends Status {
+  data: Array<number>;
 }
 
 export interface NrfMeshPlugin {
@@ -395,6 +411,12 @@ export interface NrfMeshPlugin {
     transitionResolution?: number;
     delay?: number;
   }): Promise<OnOffStatus>;
+
+  getSensor(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    propertyId: number;
+  }): Promise<SensorStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;

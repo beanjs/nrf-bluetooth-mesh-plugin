@@ -1,5 +1,6 @@
 package com.lebrislo.bluetooth.mesh.plugin
 
+import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import no.nordicsemi.android.mesh.transport.GenericLevelStatus
@@ -8,6 +9,7 @@ import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
 import no.nordicsemi.android.mesh.transport.LightCtlStatus
 import no.nordicsemi.android.mesh.transport.LightHslStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
+import no.nordicsemi.android.mesh.transport.SensorStatus
 
 /**
  * This class is used to generate a response for a SIG plugin call.
@@ -27,6 +29,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                put("opcode", meshMessage.opCode)
                put("data", when (meshMessage) {
                    is GenericOnOffStatus -> genericOnOffStatusResponse(meshMessage)
+                   is SensorStatus -> sensorStatusResponse(meshMessage)
 //                    is GenericLevelStatus -> genericLevelStatusResponse(meshMessage)
 //                    is GenericPowerLevelStatus -> genericPowerLevelStatusResponse(meshMessage)
 //                    is LightHslStatus -> lightHslStatusResponse(meshMessage)
@@ -39,6 +42,14 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
         private fun genericOnOffStatusResponse(meshMessage: GenericOnOffStatus): JSObject {
             return JSObject().apply {
                 put("onOff",meshMessage.presentState)
+            }
+        }
+
+        private fun sensorStatusResponse(meshMessage: SensorStatus):JSArray{
+            return JSArray().apply {
+                meshMessage.parameters.forEach {
+                    put(it)
+                }
             }
         }
 //
