@@ -47,7 +47,7 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
 
     override fun onMeshMessageReceived(src: Int, meshMessage: MeshMessage) {
         Log.d(tag, "onMeshMessageReceived ${meshMessage.javaClass.simpleName}")
-        when(meshMessage){
+        when (meshMessage) {
             is ConfigNodeResetStatus,
             is ConfigModelAppStatus,
             is ConfigAppKeyStatus,
@@ -57,8 +57,9 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             is ConfigModelSubscriptionStatus,
             is ConfigModelPublicationStatus,
             is ConfigAppKeyList -> PluginCallManager.getInstance().resolveConfigPluginCall(meshMessage)
+
             is GenericOnOffStatus,
-            is SensorStatus-> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+            is SensorStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }
 
 //        else if (meshMessage is GenericOnOffStatus) {

@@ -23,29 +23,29 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
          */
         @JvmStatic
         fun generateSigPluginCallResponse(meshMessage: MeshMessage): JSObject {
-           return  JSObject().apply {
-               put("src", meshMessage.src)
-               put("dst", meshMessage.dst)
-               put("opcode", meshMessage.opCode)
-               put("data", when (meshMessage) {
-                   is GenericOnOffStatus -> genericOnOffStatusResponse(meshMessage)
-                   is SensorStatus -> sensorStatusResponse(meshMessage)
+            return JSObject().apply {
+                put("src", meshMessage.src)
+                put("dst", meshMessage.dst)
+                put("opcode", meshMessage.opCode)
+                put("data", when (meshMessage) {
+                    is GenericOnOffStatus -> genericOnOffStatusResponse(meshMessage)
+                    is SensorStatus -> sensorStatusResponse(meshMessage)
 //                    is GenericLevelStatus -> genericLevelStatusResponse(meshMessage)
 //                    is GenericPowerLevelStatus -> genericPowerLevelStatusResponse(meshMessage)
 //                    is LightHslStatus -> lightHslStatusResponse(meshMessage)
 //                    is LightCtlStatus -> lightCtlStatusResponse(meshMessage)
-                   else -> JSObject()
-               })
-           }
+                    else -> JSObject()
+                })
+            }
         }
 
         private fun genericOnOffStatusResponse(meshMessage: GenericOnOffStatus): JSObject {
             return JSObject().apply {
-                put("onOff",meshMessage.presentState)
+                put("onOff", meshMessage.presentState)
             }
         }
 
-        private fun sensorStatusResponse(meshMessage: SensorStatus):JSArray{
+        private fun sensorStatusResponse(meshMessage: SensorStatus): JSArray {
             return JSArray().apply {
                 meshMessage.parameters.forEach {
                     put(it)

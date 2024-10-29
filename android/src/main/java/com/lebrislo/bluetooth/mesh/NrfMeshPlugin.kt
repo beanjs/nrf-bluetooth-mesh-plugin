@@ -43,41 +43,41 @@ import java.util.UUID
 
 @SuppressLint("MissingPermission")
 @CapacitorPlugin(
-    name = "NrfMesh",
-    permissions = [
-        Permission(
-                strings = [
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                ], alias = "ACCESS_COARSE_LOCATION"
-        ),
-        Permission(
-                strings = [
-                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                ], alias = "ACCESS_FINE_LOCATION"
-        ),
-        Permission(
-                strings = [
-                    android.Manifest.permission.BLUETOOTH,
-                ], alias = "BLUETOOTH"
-        ),
-        Permission(
-                strings = [
-                    android.Manifest.permission.BLUETOOTH_ADMIN,
-                ], alias = "BLUETOOTH_ADMIN"
-        ),
-        Permission(
-                strings = [
-                    // Manifest.permission.BLUETOOTH_SCAN
-                    "android.permission.BLUETOOTH_SCAN",
-                ], alias = "BLUETOOTH_SCAN"
-        ),
-        Permission(
-                strings = [
-                    // Manifest.permission.BLUETOOTH_ADMIN
-                    "android.permission.BLUETOOTH_CONNECT",
-                ], alias = "BLUETOOTH_CONNECT"
-        ),
-    ]
+        name = "NrfMesh",
+        permissions = [
+            Permission(
+                    strings = [
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ], alias = "ACCESS_COARSE_LOCATION"
+            ),
+            Permission(
+                    strings = [
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    ], alias = "ACCESS_FINE_LOCATION"
+            ),
+            Permission(
+                    strings = [
+                        android.Manifest.permission.BLUETOOTH,
+                    ], alias = "BLUETOOTH"
+            ),
+            Permission(
+                    strings = [
+                        android.Manifest.permission.BLUETOOTH_ADMIN,
+                    ], alias = "BLUETOOTH_ADMIN"
+            ),
+            Permission(
+                    strings = [
+                        // Manifest.permission.BLUETOOTH_SCAN
+                        "android.permission.BLUETOOTH_SCAN",
+                    ], alias = "BLUETOOTH_SCAN"
+            ),
+            Permission(
+                    strings = [
+                        // Manifest.permission.BLUETOOTH_ADMIN
+                        "android.permission.BLUETOOTH_CONNECT",
+                    ], alias = "BLUETOOTH_CONNECT"
+            ),
+        ]
 )
 class NrfMeshPlugin : Plugin() {
     private val tag: String = NrfMeshPlugin::class.java.simpleName
@@ -97,7 +97,7 @@ class NrfMeshPlugin : Plugin() {
         this.implementation = NrfMeshManager(this.context)
         PluginCallManager.getInstance().setPlugin(this)
 
-        aliases = if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        aliases = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             arrayOf(
                     "BLUETOOTH_SCAN",
                     "BLUETOOTH_CONNECT",
@@ -166,7 +166,7 @@ class NrfMeshPlugin : Plugin() {
 
         call.resolve(JSObject().apply {
             aliases.forEach {
-                put(it,getPermissionState(it))
+                put(it, getPermissionState(it))
             }
         })
     }
@@ -270,14 +270,14 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun getMeshNetwork(call: PluginCall){
+    fun getMeshNetwork(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
         call.resolve(implementation.getMeshNetwork())
     }
 
     @PluginMethod
-    fun getNode(call: PluginCall){
+    fun getNode(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
         val unicastAddress = call.getInt("unicastAddress")
@@ -320,7 +320,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun removeAppKey(call: PluginCall){
+    fun removeAppKey(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
         val appKeyIndex = call.getInt("index")
@@ -331,7 +331,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun createGroup(call: PluginCall){
+    fun createGroup(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
         val name = call.getString("name")
@@ -341,7 +341,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun removeGroup(call: PluginCall){
+    fun removeGroup(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
         val groupAddress = call.getInt("groupAddress")
@@ -352,7 +352,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun getGroup(call: PluginCall){
+    fun getGroup(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
         val groupAddress = call.getInt("groupAddress")
@@ -383,9 +383,9 @@ class NrfMeshPlugin : Plugin() {
                         if (it.provisioned) return@forEach
 
                         val serviceData = Utils.getServiceData(
-                            it.scanResult!!,
-                            MeshManagerApi.MESH_PROVISIONING_UUID
-                        )?: return@forEach
+                                it.scanResult!!,
+                                MeshManagerApi.MESH_PROVISIONING_UUID
+                        ) ?: return@forEach
 
                         if (serviceData.size < 18) return@forEach
 
@@ -410,29 +410,29 @@ class NrfMeshPlugin : Plugin() {
                         })
                     }
                 })
-                put("provisioned",JSArray().apply {
+                put("provisioned", JSArray().apply {
                     val nodes = implementation.getNodes()
-                    nodes.forEach{
+                    nodes.forEach {
                         put(JSObject().apply {
-                            put("name",it.nodeName)
-                            put("provisionedTime",DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.LONG).format(it.timeStamp))
-                            put("unicastAddress",it.unicastAddress)
-                            put("security",it.isSecurelyProvisioned)
-                            put("deviceKey",MeshParserUtils.bytesToHex(it.deviceKey,false))
+                            put("name", it.nodeName)
+                            put("provisionedTime", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(it.timeStamp))
+                            put("unicastAddress", it.unicastAddress)
+                            put("security", it.isSecurelyProvisioned)
+                            put("deviceKey", MeshParserUtils.bytesToHex(it.deviceKey, false))
                             if (it.companyIdentifier != null) {
                                 put("companyIdentifier", CompanyIdentifiers.getCompanyName(it.companyIdentifier.toShort()))
                             }
-                            if(it.productIdentifier !=null){
-                                put("productIdentifier",CompositionDataParser.formatProductIdentifier(it.productIdentifier,false))
+                            if (it.productIdentifier != null) {
+                                put("productIdentifier", CompositionDataParser.formatProductIdentifier(it.productIdentifier, false))
                             }
-                            if (it.versionIdentifier != null){
-                                put("productVersion",CompositionDataParser.formatVersionIdentifier(it.versionIdentifier,false))
+                            if (it.versionIdentifier != null) {
+                                put("productVersion", CompositionDataParser.formatVersionIdentifier(it.versionIdentifier, false))
                             }
-                            if (it.crpl != null){
-                                put("replayProtectionCount",CompositionDataParser.formatReplayProtectionCount(it.crpl,false))
+                            if (it.crpl != null) {
+                                put("replayProtectionCount", CompositionDataParser.formatReplayProtectionCount(it.crpl, false))
                             }
 
-                            if(it.nodeFeatures != null) {
+                            if (it.nodeFeatures != null) {
                                 put("nodeFeaturesSupported", JSObject().apply {
                                     put("relay", it.nodeFeatures.isRelayFeatureSupported)
                                     put("proxy", it.nodeFeatures.isProxyFeatureSupported)
@@ -469,7 +469,7 @@ class NrfMeshPlugin : Plugin() {
             }
 
             PluginCallManager.getInstance()
-                .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call)
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call)
 
             implementation.identify(UUID.fromString(uuid))
         }
@@ -519,7 +519,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun getCompositionData(call: PluginCall){
+    fun getCompositionData(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
 
@@ -539,7 +539,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun getDefaultTTL(call: PluginCall){
+    fun getDefaultTTL(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
 
@@ -559,7 +559,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun setDefaultTTL(call: PluginCall){
+    fun setDefaultTTL(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
 
@@ -578,12 +578,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_DEFAULT_TTL_SET, unicastAddress, call)
 
-            implementation.setDefaultTTL(unicastAddress,ttl)
+            implementation.setDefaultTTL(unicastAddress, ttl)
         }
     }
 
     @PluginMethod
-    fun getNetworkTransmit(call: PluginCall){
+    fun getNetworkTransmit(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
 
@@ -603,7 +603,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun setNetworkTransmit(call: PluginCall){
+    fun setNetworkTransmit(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val networkTransmitCount = call.getInt("networkTransmitCount")
@@ -622,12 +622,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_SET, unicastAddress, call)
 
-            implementation.setNetworkTransmit(unicastAddress,networkTransmitCount,networkTransmitIntervalSteps)
+            implementation.setNetworkTransmit(unicastAddress, networkTransmitCount, networkTransmitIntervalSteps)
         }
     }
 
     @PluginMethod
-    fun addAppKey(call: PluginCall){
+    fun addAppKey(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
@@ -644,12 +644,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD.toInt(), unicastAddress, call)
 
-            implementation.addAppKey(unicastAddress,appKeyIndex)
+            implementation.addAppKey(unicastAddress, appKeyIndex)
         }
     }
 
     @PluginMethod
-    fun delAppKey(call: PluginCall){
+    fun delAppKey(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
@@ -666,12 +666,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_DELETE, unicastAddress, call)
 
-            implementation.delAppKey(unicastAddress,appKeyIndex)
+            implementation.delAppKey(unicastAddress, appKeyIndex)
         }
     }
 
     @PluginMethod
-    fun getAppKeys(call: PluginCall){
+    fun getAppKeys(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
 
@@ -691,7 +691,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun bindAppKey(call: PluginCall){
+    fun bindAppKey(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val elementAddress = call.getInt("elementAddress")
@@ -712,12 +712,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND, unicastAddress, call)
 
-            implementation.bindAppKey(unicastAddress,elementAddress,modelId,appKeyIndex)
+            implementation.bindAppKey(unicastAddress, elementAddress, modelId, appKeyIndex)
         }
     }
 
     @PluginMethod
-    fun unbindAppKey(call: PluginCall){
+    fun unbindAppKey(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val elementAddress = call.getInt("elementAddress")
@@ -738,12 +738,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_UNBIND, unicastAddress, call)
 
-            implementation.unbindAppKey(unicastAddress,elementAddress,modelId,appKeyIndex)
+            implementation.unbindAppKey(unicastAddress, elementAddress, modelId, appKeyIndex)
         }
     }
 
     @PluginMethod
-    fun subscribe(call: PluginCall){
+    fun subscribe(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val elementAddress = call.getInt("elementAddress")
@@ -764,12 +764,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
 
-            implementation.subscribe(unicastAddress,elementAddress,subscriptionAddress,modelId)
+            implementation.subscribe(unicastAddress, elementAddress, subscriptionAddress, modelId)
         }
     }
 
     @PluginMethod
-    fun unsubscribe(call: PluginCall){
+    fun unsubscribe(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val elementAddress = call.getInt("elementAddress")
@@ -790,12 +790,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
 
-            implementation.unsubscribe(unicastAddress,elementAddress,subscriptionAddress,modelId)
+            implementation.unsubscribe(unicastAddress, elementAddress, subscriptionAddress, modelId)
         }
     }
 
     @PluginMethod
-    fun unsubscribeAll(call: PluginCall){
+    fun unsubscribeAll(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val elementAddress = call.getInt("elementAddress")
@@ -814,12 +814,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
 
-            implementation.unsubscribeAll(unicastAddress,elementAddress,subscriptionAddress)
+            implementation.unsubscribeAll(unicastAddress, elementAddress, subscriptionAddress)
         }
     }
 
     @PluginMethod
-    fun publish(call: PluginCall){
+    fun publish(call: PluginCall) {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
         val elementAddress = call.getInt("elementAddress")
@@ -839,24 +839,24 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_PUBLICATION_STATUS, unicastAddress, call)
 
-            if (appKeyIndex == null){
-                implementation.delPublish(unicastAddress,elementAddress,modelId)
-            }else{
+            if (appKeyIndex == null) {
+                implementation.delPublish(unicastAddress, elementAddress, modelId)
+            } else {
                 val publishAddress = call.getInt("publishAddress")
                         ?: return@launch call.reject("publishAddress is required")
-                val credentialFlag = call.getBoolean("credentialFlag",false)!!
-                val publishTtl = call.getInt("publishTtl",0xFF)!!
-                val publicationSteps = call.getInt("publicationSteps",0)!!
-                val publicationResolution = call.getInt("publicationResolution",0)!!
-                val retransmitCount = call.getInt("retransmitCount",1)!!
-                val retransmitIntervalSteps = call.getInt("retransmitIntervalSteps",1)!!
-                implementation.setPublish(unicastAddress,elementAddress,publishAddress,appKeyIndex,credentialFlag,publishTtl,publicationSteps,publicationResolution,retransmitCount,retransmitIntervalSteps,modelId)
+                val credentialFlag = call.getBoolean("credentialFlag", false)!!
+                val publishTtl = call.getInt("publishTtl", 0xFF)!!
+                val publicationSteps = call.getInt("publicationSteps", 0)!!
+                val publicationResolution = call.getInt("publicationResolution", 0)!!
+                val retransmitCount = call.getInt("retransmitCount", 1)!!
+                val retransmitIntervalSteps = call.getInt("retransmitIntervalSteps", 1)!!
+                implementation.setPublish(unicastAddress, elementAddress, publishAddress, appKeyIndex, credentialFlag, publishTtl, publicationSteps, publicationResolution, retransmitCount, retransmitIntervalSteps, modelId)
             }
         }
     }
 
     @PluginMethod
-    fun getOnOff(call: PluginCall){
+    fun getOnOff(call: PluginCall) {
         val elementAddress = call.getInt("elementAddress")
                 ?: return call.reject("elementAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
@@ -873,17 +873,17 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_GET, elementAddress, call)
 
-            implementation.getOnOff(elementAddress,appKeyIndex)
+            implementation.getOnOff(elementAddress, appKeyIndex)
         }
     }
 
     @PluginMethod
-    fun setOnOff(call: PluginCall){
+    fun setOnOff(call: PluginCall) {
         val elementAddress = call.getInt("elementAddress")
                 ?: return call.reject("elementAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
                 ?: return call.reject("appKeyIndex is required")
-        val onOff = call.getBoolean("onOff",false)
+        val onOff = call.getBoolean("onOff", false)
         val acknowledgement = call.getBoolean("acknowledgement", true)
         val transitionSteps = call.getInt("transitionSteps")
         val transitionResolution = call.getInt("transitionResolution")
@@ -897,19 +897,19 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
-            if(acknowledgement == true){
+            if (acknowledgement == true) {
                 PluginCallManager.getInstance()
-                    .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_SET, elementAddress, call)
-                implementation.setOnOffAck(elementAddress,appKeyIndex,onOff==true,transitionSteps,transitionResolution,delay)
-            }else{
-                val res =  implementation.setOnOff(elementAddress,appKeyIndex,onOff==true,transitionSteps,transitionResolution,delay)
+                        .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_SET, elementAddress, call)
+                implementation.setOnOffAck(elementAddress, appKeyIndex, onOff == true, transitionSteps, transitionResolution, delay)
+            } else {
+                val res = implementation.setOnOff(elementAddress, appKeyIndex, onOff == true, transitionSteps, transitionResolution, delay)
                 call.resolve(res)
             }
         }
     }
 
     @PluginMethod
-    fun getSensor(call: PluginCall){
+    fun getSensor(call: PluginCall) {
         val elementAddress = call.getInt("elementAddress")
                 ?: return call.reject("elementAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
@@ -926,11 +926,10 @@ class NrfMeshPlugin : Plugin() {
             }
 
             PluginCallManager.getInstance()
-                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_GET,elementAddress,call)
-            implementation.getSensor(elementAddress,appKeyIndex,propertyId)
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_GET, elementAddress, call)
+            implementation.getSensor(elementAddress, appKeyIndex, propertyId)
         }
     }
-
 
 
     fun sendNotification(eventName: String, data: JSObject) {

@@ -30,7 +30,7 @@ class MeshCallbacksManager(val bleMeshManager: BleMeshManager) : MeshManagerCall
 
         PluginCallManager.getInstance().setNetwork(meshNetwork)
 
-        if (this.meshNetwork!!.appKeys.isEmpty()){
+        if (this.meshNetwork!!.appKeys.isEmpty()) {
             val defaultAppKey = this.meshNetwork!!.createAppKey()
             this.meshNetwork!!.addAppKey(defaultAppKey)
         }

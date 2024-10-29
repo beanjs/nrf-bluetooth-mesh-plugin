@@ -19,8 +19,8 @@ import java.util.UUID
  * Repository for scanning for bluetooth mesh devices
  */
 class ScannerRepository(
-    private val context: Context,
-    private val meshManagerApi: MeshManagerApi
+        private val context: Context,
+        private val meshManagerApi: MeshManagerApi
 ) {
     private val tag: String = ScannerRepository::class.java.simpleName
 
@@ -74,8 +74,8 @@ class ScannerRepository(
 
                     // Delete the node from the mesh network if it was previously provisioned
                     val serviceData = Utils.getServiceData(
-                        result,
-                        MeshManagerApi.MESH_PROVISIONING_UUID
+                            result,
+                            MeshManagerApi.MESH_PROVISIONING_UUID
                     )
 
                     if (serviceData == null || serviceData.size < 18) return
@@ -115,26 +115,26 @@ class ScannerRepository(
     fun startScanDevices() {
         //Scanning settings
         val settings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // Refresh the devices list every second
-            .setReportDelay(0) // Hardware filtering has some issues on selected devices
-            .setUseHardwareFilteringIfSupported(false) // Samsung S6 and S6 Edge report equal value of RSSI for all devices. In this app we ignore the RSSI.
-            .build()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY) // Refresh the devices list every second
+                .setReportDelay(0) // Hardware filtering has some issues on selected devices
+                .setUseHardwareFilteringIfSupported(false) // Samsung S6 and S6 Edge report equal value of RSSI for all devices. In this app we ignore the RSSI.
+                .build()
 
         //Let's use the filter to scan only for unprovisioned mesh nodes.
         val filters: MutableList<ScanFilter> = ArrayList()
         filters.add(
-            ScanFilter.Builder().setServiceUuid(
-                ParcelUuid(
-                    (MeshManagerApi.MESH_PROVISIONING_UUID)
-                )
-            ).build()
+                ScanFilter.Builder().setServiceUuid(
+                        ParcelUuid(
+                                (MeshManagerApi.MESH_PROVISIONING_UUID)
+                        )
+                ).build()
         )
         filters.add(
-            ScanFilter.Builder().setServiceUuid(
-                ParcelUuid(
-                    (MeshManagerApi.MESH_PROXY_UUID)
-                )
-            ).build()
+                ScanFilter.Builder().setServiceUuid(
+                        ParcelUuid(
+                                (MeshManagerApi.MESH_PROXY_UUID)
+                        )
+                ).build()
         )
 
         synchronized(this) {

@@ -67,7 +67,6 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 
-
 class NrfMeshManager(private val context: Context) {
     private val tag: String = NrfMeshManager::class.java.simpleName
 
@@ -94,51 +93,51 @@ class NrfMeshManager(private val context: Context) {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun formatNode(node: ProvisionedMeshNode):JSObject{
+    private fun formatNode(node: ProvisionedMeshNode): JSObject {
         return JSObject().apply {
-            put("name",node.nodeName)
-            put("deviceKey",MeshParserUtils.bytesToHex(node.deviceKey,false))
-            put("unicastAddress",node.unicastAddress)
-            put("security",if(node.security == 1) "secure" else "insecure")
-            put("ttl",node.ttl)
-            put("excluded",node.isExcluded)
-            put("netKeys",JSArray().apply {
+            put("name", node.nodeName)
+            put("deviceKey", MeshParserUtils.bytesToHex(node.deviceKey, false))
+            put("unicastAddress", node.unicastAddress)
+            put("security", if (node.security == 1) "secure" else "insecure")
+            put("ttl", node.ttl)
+            put("excluded", node.isExcluded)
+            put("netKeys", JSArray().apply {
                 node.addedNetKeys.forEach {
                     put(JSObject().apply {
-                        put("index",it.index)
-                        put("updated",it.isUpdated)
+                        put("index", it.index)
+                        put("updated", it.isUpdated)
                     })
                 }
             })
-            put("appKeys",JSArray().apply {
+            put("appKeys", JSArray().apply {
                 node.addedAppKeys.forEach {
                     put(JSObject().apply {
-                        put("index",it.index)
-                        put("updated",it.isUpdated)
+                        put("index", it.index)
+                        put("updated", it.isUpdated)
                     })
                 }
             })
-            put("elements",JSArray().apply {
+            put("elements", JSArray().apply {
                 node.elements.values.forEach {
                     put(JSObject().apply {
-                        put("name",it.name)
-                        put("elementAddress",it.elementAddress)
-                        put("location",it.locationDescriptor)
-                        put("models",JSArray().apply {
+                        put("name", it.name)
+                        put("elementAddress", it.elementAddress)
+                        put("location", it.locationDescriptor)
+                        put("models", JSArray().apply {
                             it.meshModels.values.forEach {
                                 put(JSObject().apply {
-                                    put("modelId",it.modelId)
-                                    put("bind",JSArray().apply {
+                                    put("modelId", it.modelId)
+                                    put("bind", JSArray().apply {
                                         it.boundAppKeyIndexes.forEach {
                                             put(it)
                                         }
                                     })
-                                    put("subscribe",JSArray().apply {
+                                    put("subscribe", JSArray().apply {
                                         it.subscribedAddresses.forEach {
                                             put(it)
                                         }
                                     })
-                                    if(it.publicationSettings != null) {
+                                    if (it.publicationSettings != null) {
                                         put("publish", it.publicationSettings.publishAddress)
                                     }
                                 })
@@ -148,7 +147,7 @@ class NrfMeshManager(private val context: Context) {
                 }
             })
 
-            if(node.nodeFeatures != null) {
+            if (node.nodeFeatures != null) {
                 put("features", JSObject().apply {
                     put("friend", node.nodeFeatures.friend)
                     put("lowPower", node.nodeFeatures.lowPower)
@@ -163,29 +162,29 @@ class NrfMeshManager(private val context: Context) {
                     put("steps", node.networkTransmitSettings.networkIntervalSteps)
                 })
             }
-            if (node.companyIdentifier != null){
-                put("cid", CompositionDataParser.formatCompanyIdentifier(node.companyIdentifier,false))
+            if (node.companyIdentifier != null) {
+                put("cid", CompositionDataParser.formatCompanyIdentifier(node.companyIdentifier, false))
             }
-            if (node.productIdentifier != null){
-                put("pid", CompositionDataParser.formatProductIdentifier(node.productIdentifier,false))
+            if (node.productIdentifier != null) {
+                put("pid", CompositionDataParser.formatProductIdentifier(node.productIdentifier, false))
             }
-            if (node.versionIdentifier != null){
-                put("vid", CompositionDataParser.formatVersionIdentifier(node.versionIdentifier,false))
+            if (node.versionIdentifier != null) {
+                put("vid", CompositionDataParser.formatVersionIdentifier(node.versionIdentifier, false))
             }
-            if(node.crpl != null){
-                put("crpl",CompositionDataParser.formatReplayProtectionCount(node.crpl,false))
+            if (node.crpl != null) {
+                put("crpl", CompositionDataParser.formatReplayProtectionCount(node.crpl, false))
             }
         }
     }
 
-    private fun formatGroup(group:Group):JSObject{
+    private fun formatGroup(group: Group): JSObject {
         val network = meshManagerApi.meshNetwork!!
         val models = network.getModels(group)
 
         return JSObject().apply {
-            put("name",group.name)
-            put("address",group.address)
-            put("devices",models.size)
+            put("name", group.name)
+            put("address", group.address)
+            put("devices", models.size)
         }
     }
 
@@ -216,14 +215,14 @@ class NrfMeshManager(private val context: Context) {
         scannerRepository.stopScanDevices()
     }
 
-    fun getNodes(): List<ProvisionedMeshNode>{
+    fun getNodes(): List<ProvisionedMeshNode> {
         return meshManagerApi.meshNetwork?.nodes ?: listOf()
     }
 
-    fun assertMeshNetwork(call: PluginCall):Boolean{
-        if (meshManagerApi.meshNetwork == null){
+    fun assertMeshNetwork(call: PluginCall): Boolean {
+        if (meshManagerApi.meshNetwork == null) {
             call.reject("meshNetwork not initialized.")
-            return  false
+            return false
         }
         return true
     }
@@ -241,88 +240,88 @@ class NrfMeshManager(private val context: Context) {
     }
 
     @SuppressLint("RestrictedApi")
-    fun getMeshNetwork():JSObject {
+    fun getMeshNetwork(): JSObject {
         val network = meshManagerApi.meshNetwork!!
 
         return JSObject().apply {
-            put("name",network.meshName)
+            put("name", network.meshName)
             put("lastModified", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(network.timestamp))
-            put("netKeys",JSArray().apply {
+            put("netKeys", JSArray().apply {
                 network.netKeys.forEach {
                     put(JSObject().apply {
-                        put("name",it.name)
-                        put("index",it.keyIndex)
-                        put("phase",it.phaseDescription)
-                        put("key", MeshParserUtils.bytesToHex(it.key,false))
+                        put("name", it.name)
+                        put("index", it.keyIndex)
+                        put("phase", it.phaseDescription)
+                        put("key", MeshParserUtils.bytesToHex(it.key, false))
                         if (it.oldKey != null) {
                             put("oldKey", MeshParserUtils.bytesToHex(it.oldKey, false))
                         }
-                        put("security",if(it.isMinSecurity) "secure" else "insecure")
+                        put("security", if (it.isMinSecurity) "secure" else "insecure")
                         put("lastModified", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(it.timestamp))
                     })
                 }
             })
-            put("appKeys",JSArray().apply {
+            put("appKeys", JSArray().apply {
                 network.appKeys.forEach {
                     put(JSObject().apply {
-                        put("name",it.name)
-                        put("index",it.keyIndex)
-                        put("key", MeshParserUtils.bytesToHex(it.key,false))
+                        put("name", it.name)
+                        put("index", it.keyIndex)
+                        put("key", MeshParserUtils.bytesToHex(it.key, false))
                         if (it.oldKey != null) {
-                            put("oldKey", MeshParserUtils.bytesToHex(it.oldKey,false))
+                            put("oldKey", MeshParserUtils.bytesToHex(it.oldKey, false))
                         }
-                        put("boundNetKeyIndex",it.boundNetKeyIndex)
+                        put("boundNetKeyIndex", it.boundNetKeyIndex)
                     })
                 }
             })
-            put("provisioners",JSArray().apply {
+            put("provisioners", JSArray().apply {
                 network.provisioners.forEach {
                     put(JSObject().apply {
-                        put("name",it.provisionerName)
+                        put("name", it.provisionerName)
                         it.allocatedUnicastRanges.forEach {
-                            put("unicast",JSArray().apply {
+                            put("unicast", JSArray().apply {
                                 put(JSObject().apply {
-                                    put("lowerAddress",it.lowAddress)
-                                    put("highAddress",it.highAddress)
+                                    put("lowerAddress", it.lowAddress)
+                                    put("highAddress", it.highAddress)
                                 })
                             })
                         }
 
                         it.allocatedGroupRanges.forEach {
-                            put("group",JSArray().apply {
+                            put("group", JSArray().apply {
                                 put(JSObject().apply {
-                                    put("lowerAddress",it.lowAddress)
-                                    put("highAddress",it.highAddress)
+                                    put("lowerAddress", it.lowAddress)
+                                    put("highAddress", it.highAddress)
                                 })
                             })
                         }
 
                         it.allocatedSceneRanges.forEach {
-                            put("scene",JSArray().apply {
+                            put("scene", JSArray().apply {
                                 put(JSObject().apply {
-                                    put("firstScene",it.firstScene)
-                                    put("lastScene",it.lastScene)
+                                    put("firstScene", it.firstScene)
+                                    put("lastScene", it.lastScene)
                                 })
                             })
                         }
                     })
                 }
             })
-            put("nodes",JSArray().apply {
+            put("nodes", JSArray().apply {
                 network.nodes.forEach {
                     put(formatNode(it))
                 }
             })
-            put("groups",JSArray().apply {
+            put("groups", JSArray().apply {
                 network.groups.forEach {
                     put(formatGroup(it))
                 }
             })
-            put("networkExclusions",JSArray().apply {
+            put("networkExclusions", JSArray().apply {
                 network.networkExclusions.forEach { (ivIndex, address) ->
                     put(JSObject().apply {
-                        put("ivIndex",ivIndex)
-                        put("addresses",JSArray().apply {
+                        put("ivIndex", ivIndex)
+                        put("addresses", JSArray().apply {
                             address.forEach {
                                 put(it)
                             }
@@ -333,7 +332,7 @@ class NrfMeshManager(private val context: Context) {
         }
     }
 
-    fun getNode(unicastAddress: Int): JSObject?{
+    fun getNode(unicastAddress: Int): JSObject? {
         val network = meshManagerApi.meshNetwork!!
         val node = network.getNode(unicastAddress) ?: return null
         return formatNode(node)
@@ -344,14 +343,14 @@ class NrfMeshManager(private val context: Context) {
         val appkey = network.createAppKey()
         network.addAppKey(appkey)
 
-        return  JSObject().apply {
-            put("name",appkey.name)
-            put("index",appkey.keyIndex)
-            put("key", MeshParserUtils.bytesToHex(appkey.key,false))
+        return JSObject().apply {
+            put("name", appkey.name)
+            put("index", appkey.keyIndex)
+            put("key", MeshParserUtils.bytesToHex(appkey.key, false))
             if (appkey.oldKey != null) {
-                put("oldKey", MeshParserUtils.bytesToHex(appkey.oldKey,false))
+                put("oldKey", MeshParserUtils.bytesToHex(appkey.oldKey, false))
             }
-            put("boundNetKeyIndex",appkey.boundNetKeyIndex)
+            put("boundNetKeyIndex", appkey.boundNetKeyIndex)
         }
     }
 
@@ -362,30 +361,30 @@ class NrfMeshManager(private val context: Context) {
         network.removeAppKey(appkey)
     }
 
-    fun createGroup(name: String):JSObject{
+    fun createGroup(name: String): JSObject {
         val network = meshManagerApi.meshNetwork!!
         val provisioner = network.selectedProvisioner
 
-        val  group = network.createGroup(provisioner,name)
-        return  JSObject().apply {
-            put("name",group.name)
-            put("address",group.address)
-            put("devices",0)
+        val group = network.createGroup(provisioner, name)
+        return JSObject().apply {
+            put("name", group.name)
+            put("address", group.address)
+            put("devices", 0)
         }
     }
 
-    fun removeGroup(groupAddress: Int){
+    fun removeGroup(groupAddress: Int) {
         val network = meshManagerApi.meshNetwork!!
-        val group = network.getGroup(groupAddress)?:return
+        val group = network.getGroup(groupAddress) ?: return
         val models = network.getModels(group)
-        if (models.size!=0) return
+        if (models.size != 0) return
 
         network.removeGroup(group)
     }
 
-    fun getGroup(groupAddress: Int):JSObject?{
+    fun getGroup(groupAddress: Int): JSObject? {
         val network = meshManagerApi.meshNetwork!!
-        val group = network.getGroup(groupAddress)?:return null
+        val group = network.getGroup(groupAddress) ?: return null
 
         return formatGroup(group)
     }
@@ -423,7 +422,7 @@ class NrfMeshManager(private val context: Context) {
 
                 devices.sortBy { device -> device.scanResult?.rssi }
 
-                val device =  devices.first().device
+                val device = devices.first().device
                 Log.i(tag, "searchProxyMesh : Found a mesh proxy ${device!!.address}")
                 return device
             }
@@ -436,7 +435,7 @@ class NrfMeshManager(private val context: Context) {
         if (bleMeshManager.isConnected) {
             val macAddress = bleMeshManager.bluetoothDevice!!.address
 
-            synchronized(scannerRepository.devices){
+            synchronized(scannerRepository.devices) {
                 if (scannerRepository.devices.any { device -> !device.provisioned && device.scanResult?.device?.address == macAddress }) {
                     return bleMeshManager.bluetoothDevice
                 }
@@ -449,7 +448,7 @@ class NrfMeshManager(private val context: Context) {
 
         synchronized(scannerRepository.devices) {
             return scannerRepository.devices.firstOrNull { device ->
-                if (device.provisioned){
+                if (device.provisioned) {
                     return@firstOrNull false
                 }
 
@@ -463,7 +462,7 @@ class NrfMeshManager(private val context: Context) {
     }
 
     suspend fun scanMeshDevices(scanDurationMs: Int = 5000): List<ExtendedBluetoothDevice> {
-        synchronized(scannerRepository.devices){
+        synchronized(scannerRepository.devices) {
             scannerRepository.devices.clear()
         }
 
@@ -472,21 +471,21 @@ class NrfMeshManager(private val context: Context) {
 
         delay(scanDurationMs.toLong())
 
-        val devices : MutableList<ExtendedBluetoothDevice> = mutableListOf()
-        synchronized(scannerRepository.devices){
+        val devices: MutableList<ExtendedBluetoothDevice> = mutableListOf()
+        synchronized(scannerRepository.devices) {
             scannerRepository.devices.forEach {
                 devices.add(it)
             }
         }
 
-        return  devices
+        return devices
     }
 
     fun identify(uuid: UUID) {
         meshManagerApi.identifyNode(uuid)
     }
 
-    fun unprovisionedMeshNode(uuid: UUID): UnprovisionedMeshNode?{
+    fun unprovisionedMeshNode(uuid: UUID): UnprovisionedMeshNode? {
         return meshProvisioningCallbacksManager.unprovisionedMeshNodes.firstOrNull { node ->
             node.deviceUuid == uuid
         }
@@ -495,10 +494,10 @@ class NrfMeshManager(private val context: Context) {
     fun provisionDevice(node: UnprovisionedMeshNode) {
         val provisioner = meshManagerApi.meshNetwork?.selectedProvisioner
         val unicastAddress = meshManagerApi.meshNetwork?.nextAvailableUnicastAddress(
-            node.numberOfElements, provisioner!!
+                node.numberOfElements, provisioner!!
         )
 
-        if (bleMeshManager.isConnected){
+        if (bleMeshManager.isConnected) {
             node.nodeName = bleMeshManager.bluetoothDevice!!.name
         }
 
@@ -516,78 +515,78 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(unicastAddress, configCompositionDataGet)
     }
 
-    fun getDefaultTTL(unicastAddress: Int){
+    fun getDefaultTTL(unicastAddress: Int) {
         val configDefaultTtlGet = ConfigDefaultTtlGet()
-        meshManagerApi.createMeshPdu(unicastAddress,configDefaultTtlGet)
+        meshManagerApi.createMeshPdu(unicastAddress, configDefaultTtlGet)
     }
 
-    fun setDefaultTTL(unicastAddress: Int,ttl: Int){
+    fun setDefaultTTL(unicastAddress: Int, ttl: Int) {
         val configDefaultTtlSet = ConfigDefaultTtlSet(ttl)
-        meshManagerApi.createMeshPdu(unicastAddress,configDefaultTtlSet)
+        meshManagerApi.createMeshPdu(unicastAddress, configDefaultTtlSet)
     }
 
-    fun getNetworkTransmit(unicastAddress: Int){
+    fun getNetworkTransmit(unicastAddress: Int) {
         val configNetworkTransmitGet = ConfigNetworkTransmitGet()
-        meshManagerApi.createMeshPdu(unicastAddress,configNetworkTransmitGet)
+        meshManagerApi.createMeshPdu(unicastAddress, configNetworkTransmitGet)
     }
 
-    fun setNetworkTransmit(unicastAddress: Int,networkTransmitCount: Int, networkTransmitIntervalSteps: Int){
-        val configNetworkTransmitSet = ConfigNetworkTransmitSet(networkTransmitCount,networkTransmitIntervalSteps)
+    fun setNetworkTransmit(unicastAddress: Int, networkTransmitCount: Int, networkTransmitIntervalSteps: Int) {
+        val configNetworkTransmitSet = ConfigNetworkTransmitSet(networkTransmitCount, networkTransmitIntervalSteps)
         meshManagerApi.createMeshPdu(unicastAddress, configNetworkTransmitSet)
     }
 
-    fun addAppKey(unicastAddress: Int,appKeyIndex: Int){
+    fun addAppKey(unicastAddress: Int, appKeyIndex: Int) {
         val network = meshManagerApi.meshNetwork!!
         val netkey = network.primaryNetworkKey
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configAppKeyAdd = ConfigAppKeyAdd(netkey,appkey)
-        meshManagerApi.createMeshPdu(unicastAddress,configAppKeyAdd)
+        val configAppKeyAdd = ConfigAppKeyAdd(netkey, appkey)
+        meshManagerApi.createMeshPdu(unicastAddress, configAppKeyAdd)
     }
 
-    fun delAppKey(unicastAddress: Int,appKeyIndex: Int){
+    fun delAppKey(unicastAddress: Int, appKeyIndex: Int) {
         val network = meshManagerApi.meshNetwork!!
         val netkey = network.primaryNetworkKey
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configAppKeyDelete = ConfigAppKeyDelete(netkey,appkey)
-        meshManagerApi.createMeshPdu(unicastAddress,configAppKeyDelete)
+        val configAppKeyDelete = ConfigAppKeyDelete(netkey, appkey)
+        meshManagerApi.createMeshPdu(unicastAddress, configAppKeyDelete)
     }
 
-    fun getAppKeys(unicastAddress: Int){
+    fun getAppKeys(unicastAddress: Int) {
         val network = meshManagerApi.meshNetwork!!
         val netkey = network.primaryNetworkKey
 
         val configAppKeyGet = ConfigAppKeyGet(netkey)
-        meshManagerApi.createMeshPdu(unicastAddress,configAppKeyGet)
+        meshManagerApi.createMeshPdu(unicastAddress, configAppKeyGet)
     }
 
-    fun bindAppKey(unicastAddress:Int,elementAddress: Int,modelId: Int,appKeyIndex:Int ){
-        val configModelAppBind = ConfigModelAppBind(elementAddress,modelId,appKeyIndex)
-        meshManagerApi.createMeshPdu(unicastAddress,configModelAppBind)
+    fun bindAppKey(unicastAddress: Int, elementAddress: Int, modelId: Int, appKeyIndex: Int) {
+        val configModelAppBind = ConfigModelAppBind(elementAddress, modelId, appKeyIndex)
+        meshManagerApi.createMeshPdu(unicastAddress, configModelAppBind)
     }
 
-    fun unbindAppKey(unicastAddress:Int,elementAddress: Int,modelId: Int,appKeyIndex:Int){
-        val configModelAppUnbind = ConfigModelAppUnbind(elementAddress,modelId,appKeyIndex)
-        meshManagerApi.createMeshPdu(unicastAddress,configModelAppUnbind)
+    fun unbindAppKey(unicastAddress: Int, elementAddress: Int, modelId: Int, appKeyIndex: Int) {
+        val configModelAppUnbind = ConfigModelAppUnbind(elementAddress, modelId, appKeyIndex)
+        meshManagerApi.createMeshPdu(unicastAddress, configModelAppUnbind)
     }
 
-    fun subscribe(unicastAddress:Int,elementAddress: Int,subscriptionAddress: Int,modelId: Int){
-        val configModelSubscriptionAdd = ConfigModelSubscriptionAdd(elementAddress,subscriptionAddress,modelId)
-        meshManagerApi.createMeshPdu(unicastAddress,configModelSubscriptionAdd)
+    fun subscribe(unicastAddress: Int, elementAddress: Int, subscriptionAddress: Int, modelId: Int) {
+        val configModelSubscriptionAdd = ConfigModelSubscriptionAdd(elementAddress, subscriptionAddress, modelId)
+        meshManagerApi.createMeshPdu(unicastAddress, configModelSubscriptionAdd)
     }
 
-    fun unsubscribe(unicastAddress:Int,elementAddress: Int,subscriptionAddress: Int,modelId: Int){
-        val configModelSubscriptionDelete = ConfigModelSubscriptionDelete(elementAddress,subscriptionAddress,modelId)
-        meshManagerApi.createMeshPdu(unicastAddress,configModelSubscriptionDelete)
+    fun unsubscribe(unicastAddress: Int, elementAddress: Int, subscriptionAddress: Int, modelId: Int) {
+        val configModelSubscriptionDelete = ConfigModelSubscriptionDelete(elementAddress, subscriptionAddress, modelId)
+        meshManagerApi.createMeshPdu(unicastAddress, configModelSubscriptionDelete)
     }
 
-    fun unsubscribeAll(unicastAddress:Int,elementAddress: Int,subscriptionAddress: Int){
-        val configModelSubscriptionDeleteAll = ConfigModelSubscriptionDeleteAll(elementAddress,subscriptionAddress)
-        meshManagerApi.createMeshPdu(unicastAddress,configModelSubscriptionDeleteAll)
+    fun unsubscribeAll(unicastAddress: Int, elementAddress: Int, subscriptionAddress: Int) {
+        val configModelSubscriptionDeleteAll = ConfigModelSubscriptionDeleteAll(elementAddress, subscriptionAddress)
+        meshManagerApi.createMeshPdu(unicastAddress, configModelSubscriptionDeleteAll)
     }
 
-    fun setPublish(unicastAddress:Int,
+    fun setPublish(unicastAddress: Int,
                    elementAddress: Int,
                    publishAddress: Int,
                    appKeyIndex: Int,
@@ -597,56 +596,56 @@ class NrfMeshManager(private val context: Context) {
                    publicationResolution: Int,
                    retransmitCount: Int,
                    retransmitIntervalSteps: Int,
-                   modelId: Int){
-        val configModelPublicationSet = ConfigModelPublicationSet(elementAddress,publishAddress,appKeyIndex, credentialFlag, publishTtl, publicationSteps, publicationResolution, retransmitCount, retransmitIntervalSteps, modelId)
-        meshManagerApi.createMeshPdu(unicastAddress,configModelPublicationSet)
+                   modelId: Int) {
+        val configModelPublicationSet = ConfigModelPublicationSet(elementAddress, publishAddress, appKeyIndex, credentialFlag, publishTtl, publicationSteps, publicationResolution, retransmitCount, retransmitIntervalSteps, modelId)
+        meshManagerApi.createMeshPdu(unicastAddress, configModelPublicationSet)
     }
 
-    fun delPublish(unicastAddress:Int,
+    fun delPublish(unicastAddress: Int,
                    elementAddress: Int,
-                   modelId: Int){
-        val  configModelPublicationSet = ConfigModelPublicationSet(elementAddress,modelId)
-        meshManagerApi.createMeshPdu(unicastAddress,configModelPublicationSet)
+                   modelId: Int) {
+        val configModelPublicationSet = ConfigModelPublicationSet(elementAddress, modelId)
+        meshManagerApi.createMeshPdu(unicastAddress, configModelPublicationSet)
     }
 
-    fun getOnOff(elementAddress: Int, appKeyIndex: Int){
+    fun getOnOff(elementAddress: Int, appKeyIndex: Int) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
         val configGenericOnOffGet = GenericOnOffGet(appkey)
-        meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffGet)
+        meshManagerApi.createMeshPdu(elementAddress, configGenericOnOffGet)
     }
 
-    fun setOnOffAck(elementAddress: Int, appKeyIndex: Int,onOff: Boolean,transitionSteps: Int?,transitionResolution: Int?,delay: Int?){
+    fun setOnOffAck(elementAddress: Int, appKeyIndex: Int, onOff: Boolean, transitionSteps: Int?, transitionResolution: Int?, delay: Int?) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configGenericOnOffSet = GenericOnOffSet(appkey,onOff, Random.nextInt(),transitionSteps,transitionResolution,delay)
-        meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffSet)
+        val configGenericOnOffSet = GenericOnOffSet(appkey, onOff, Random.nextInt(), transitionSteps, transitionResolution, delay)
+        meshManagerApi.createMeshPdu(elementAddress, configGenericOnOffSet)
     }
 
-    fun setOnOff(elementAddress: Int, appKeyIndex: Int,onOff: Boolean,transitionSteps: Int?,transitionResolution: Int?,delay: Int?):JSObject{
+    fun setOnOff(elementAddress: Int, appKeyIndex: Int, onOff: Boolean, transitionSteps: Int?, transitionResolution: Int?, delay: Int?): JSObject {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configGenericOnOffSet = GenericOnOffSetUnacknowledged(appkey,onOff, Random.nextInt(),transitionSteps,transitionResolution,delay)
-        meshManagerApi.createMeshPdu(elementAddress,configGenericOnOffSet)
+        val configGenericOnOffSet = GenericOnOffSetUnacknowledged(appkey, onOff, Random.nextInt(), transitionSteps, transitionResolution, delay)
+        meshManagerApi.createMeshPdu(elementAddress, configGenericOnOffSet)
 
         return JSObject().apply {
-            put("src",configGenericOnOffSet.src)
-            put("dst",configGenericOnOffSet.dst)
-            put("opcode",configGenericOnOffSet.opCode)
-            put("data",JSObject().apply {
-                put("onOff",onOff)
+            put("src", configGenericOnOffSet.src)
+            put("dst", configGenericOnOffSet.dst)
+            put("opcode", configGenericOnOffSet.opCode)
+            put("data", JSObject().apply {
+                put("onOff", onOff)
             })
         }
     }
 
-    fun getSensor(elementAddress: Int, appKeyIndex: Int,propertyId: Int){
+    fun getSensor(elementAddress: Int, appKeyIndex: Int, propertyId: Int) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
         val configSensorGet = SensorGet(appkey, DeviceProperty.from(propertyId.toShort()))
-        meshManagerApi.createMeshPdu(elementAddress,configSensorGet)
+        meshManagerApi.createMeshPdu(elementAddress, configSensorGet)
     }
 }

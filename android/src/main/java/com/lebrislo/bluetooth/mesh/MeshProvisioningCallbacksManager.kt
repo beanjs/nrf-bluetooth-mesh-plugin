@@ -9,16 +9,16 @@ import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
 
 class MeshProvisioningCallbacksManager(
-    var nrfMeshManager: NrfMeshManager
+        var nrfMeshManager: NrfMeshManager
 ) :
-    MeshProvisioningStatusCallbacks {
+        MeshProvisioningStatusCallbacks {
     private val tag: String = MeshProvisioningCallbacksManager::class.java.simpleName
     val unprovisionedMeshNodes: ArrayList<UnprovisionedMeshNode> = ArrayList()
 
     override fun onProvisioningStateChanged(
-        meshNode: UnprovisionedMeshNode?,
-        state: ProvisioningState.States?,
-        data: ByteArray?
+            meshNode: UnprovisionedMeshNode?,
+            state: ProvisioningState.States?,
+            data: ByteArray?
     ) {
         Log.d(tag, "onProvisioningStateChanged : ${meshNode?.deviceUuid}  ${state?.name}")
         if (state == ProvisioningState.States.PROVISIONING_CAPABILITIES) {
@@ -28,9 +28,9 @@ class MeshProvisioningCallbacksManager(
     }
 
     override fun onProvisioningFailed(
-        meshNode: UnprovisionedMeshNode?,
-        state: ProvisioningState.States?,
-        data: ByteArray?
+            meshNode: UnprovisionedMeshNode?,
+            state: ProvisioningState.States?,
+            data: ByteArray?
     ) {
         Log.d(tag, "onProvisioningFailed : " + meshNode?.deviceUuid)
         if (state == ProvisioningState.States.PROVISIONING_FAILED) {
@@ -39,9 +39,9 @@ class MeshProvisioningCallbacksManager(
     }
 
     override fun onProvisioningCompleted(
-        meshNode: ProvisionedMeshNode?,
-        state: ProvisioningState.States?,
-        data: ByteArray?
+            meshNode: ProvisionedMeshNode?,
+            state: ProvisioningState.States?,
+            data: ByteArray?
     ) {
         Log.d(tag, "onProvisioningCompleted : " + meshNode?.uuid)
         if (state == ProvisioningState.States.PROVISIONING_COMPLETE) {
