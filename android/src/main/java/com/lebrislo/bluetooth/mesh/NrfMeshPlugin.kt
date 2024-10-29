@@ -28,6 +28,7 @@ import com.lebrislo.bluetooth.mesh.utils.Permissions
 import com.lebrislo.bluetooth.mesh.utils.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import no.nordicsemi.android.mesh.Features
@@ -265,7 +266,7 @@ class NrfMeshPlugin : Plugin() {
 
         implementation.initMeshNetwork()
         CoroutineScope(Dispatchers.IO).launch {
-//        delay(500)
+            delay(500)
             implementation.startScan()
             call.resolve()
         }
@@ -945,6 +946,8 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_GET,elementAddress,call)
             implementation.getSensor(elementAddress,appKeyIndex,propertyId)
         }
     }

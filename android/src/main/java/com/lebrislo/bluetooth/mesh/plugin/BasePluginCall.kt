@@ -15,7 +15,7 @@ import no.nordicsemi.android.mesh.sensorutils.Bool
  * @param call The plugin call to be resolved or rejected.
  * @param timeout The time in milliseconds before the call is rejected.
  */
-abstract class BasePluginCall(val call: PluginCall, val timeout: Int = 10000) {
+abstract class BasePluginCall(val call: PluginCall, val timeout: Int = 20000) {
 
     var isResolved: Boolean = false
     var isTimeout: Boolean = false

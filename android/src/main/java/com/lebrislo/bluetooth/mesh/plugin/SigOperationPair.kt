@@ -19,6 +19,8 @@ import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.LIGHT_HSL_GE
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.LIGHT_HSL_SET
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.LIGHT_HSL_SET_UNACKNOWLEDGED
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.LIGHT_HSL_STATUS
+import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_GET
+import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_STATUS
 
 /**
  * This class is used to get the SIG operation pair.
@@ -33,6 +35,7 @@ class SigOperationPair {
         fun getSigOperationPair(operationCode: Int): Int {
             return when (operationCode) {
                 GENERIC_ON_OFF_GET, GENERIC_ON_OFF_SET -> GENERIC_ON_OFF_STATUS
+                SENSOR_GET -> SENSOR_STATUS
 //                GENERIC_LEVEL_GET, GENERIC_LEVEL_SET, GENERIC_LEVEL_SET_UNACKNOWLEDGED -> GENERIC_POWER_LEVEL_STATUS
 //                GENERIC_POWER_LEVEL_GET, GENERIC_POWER_LEVEL_SET, GENERIC_POWER_LEVEL_SET_UNACKNOWLEDGED -> GENERIC_POWER_LEVEL_STATUS
 //                LIGHT_HSL_GET, LIGHT_HSL_SET, LIGHT_HSL_SET_UNACKNOWLEDGED -> LIGHT_HSL_STATUS
