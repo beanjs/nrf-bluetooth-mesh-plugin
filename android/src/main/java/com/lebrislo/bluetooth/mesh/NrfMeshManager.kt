@@ -102,12 +102,6 @@ class NrfMeshManager(private val context: Context) {
             put("security",if(node.security == 1) "secure" else "insecure")
             put("ttl",node.ttl)
             put("excluded",node.isExcluded)
-            put("features",JSObject().apply {
-                put("friend",node.nodeFeatures.friend)
-                put("lowPower",node.nodeFeatures.lowPower)
-                put("proxy",node.nodeFeatures.proxy)
-                put("relay",node.nodeFeatures.relay)
-            })
             put("netKeys",JSArray().apply {
                 node.addedNetKeys.forEach {
                     put(JSObject().apply {
@@ -154,6 +148,14 @@ class NrfMeshManager(private val context: Context) {
                 }
             })
 
+            if(node.nodeFeatures != null) {
+                put("features", JSObject().apply {
+                    put("friend", node.nodeFeatures.friend)
+                    put("lowPower", node.nodeFeatures.lowPower)
+                    put("proxy", node.nodeFeatures.proxy)
+                    put("relay", node.nodeFeatures.relay)
+                })
+            }
             if (node.networkTransmitSettings != null) {
                 put("networkTransmit", JSObject().apply {
                     put("count", node.networkTransmitSettings.networkTransmitCount)
@@ -188,11 +190,13 @@ class NrfMeshManager(private val context: Context) {
     }
 
     fun connectBle(bluetoothDevice: BluetoothDevice): Boolean {
+        scannerRepository.stopScanDevices()
         bleMeshManager.connect(bluetoothDevice).retry(3, 200).await()
         return bleMeshManager.isConnected
     }
 
     fun disconnectBle(): DisconnectRequest {
+        scannerRepository.startScanDevices()
         return bleMeshManager.disconnect()
     }
 
@@ -488,8 +492,7 @@ class NrfMeshManager(private val context: Context) {
         }
     }
 
-    fun provisionDevice(uuid: UUID) {
-        val node = unprovisionedMeshNode(uuid)!!
+    fun provisionDevice(node: UnprovisionedMeshNode) {
         val provisioner = meshManagerApi.meshNetwork?.selectedProvisioner
         val unicastAddress = meshManagerApi.meshNetwork?.nextAvailableUnicastAddress(
             node.numberOfElements, provisioner!!

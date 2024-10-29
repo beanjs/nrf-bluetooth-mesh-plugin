@@ -34,12 +34,11 @@ class ScannerRepository(
             val serviceUuid = result.scanRecord?.serviceUuids?.get(0)?.uuid
 
             if (serviceUuid == MeshManagerApi.MESH_PROVISIONING_UUID) {
-                Log.v(tag, "Unprovisioned device discovered: ${result.device.address}")
                 device.provisioned = false
                 unprovDeviceDiscovered(device)
             } else if (serviceUuid == MeshManagerApi.MESH_PROXY_UUID) {
                 val serviceData: ByteArray? = Utils.getServiceData(result, MeshManagerApi.MESH_PROXY_UUID)
-                Log.v(tag, "Proxy discovered: ${result.device.address}")
+//                Log.v(tag, "Proxy discovered: ${result.device.address}")
                 if (meshManagerApi.isAdvertisingWithNetworkIdentity(serviceData)) {
                     if (meshManagerApi.networkIdMatches(serviceData)) {
                         device.provisioned = true

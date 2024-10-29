@@ -265,20 +265,15 @@ class NrfMeshPlugin : Plugin() {
         context.registerReceiver(bluetoothStateReceiver, filter)
 
         implementation.initMeshNetwork()
-        CoroutineScope(Dispatchers.IO).launch {
-            delay(500)
-            implementation.startScan()
-            call.resolve()
-        }
+        implementation.startScan()
+        call.resolve()
     }
 
     @PluginMethod
     fun getMeshNetwork(call: PluginCall){
         if (!implementation.assertMeshNetwork(call)) return
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.resolve(implementation.getMeshNetwork())
-        }
+        call.resolve(implementation.getMeshNetwork())
     }
 
     @PluginMethod
@@ -288,22 +283,18 @@ class NrfMeshPlugin : Plugin() {
         val unicastAddress = call.getInt("unicastAddress")
                 ?: return call.reject("unicastAddress is required")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.resolve(implementation.getNode(unicastAddress))
-        }
+        call.resolve(implementation.getNode(unicastAddress))
     }
 
     @PluginMethod
     fun exportMeshNetwork(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val result = implementation.exportMeshNetwork()
-            if (result != null) {
-                call.resolve(JSObject().put("meshNetwork", result))
-            } else {
-                call.reject("Failed to export mesh network")
-            }
+        val result = implementation.exportMeshNetwork()
+        if (result != null) {
+            call.resolve(JSObject().put("meshNetwork", result))
+        } else {
+            call.reject("Failed to export mesh network")
         }
     }
 
@@ -316,20 +307,16 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("meshNetwork is required")
 
 
-        CoroutineScope(Dispatchers.IO).launch {
-            implementation.importMeshNetwork(meshNetwork)
+        implementation.importMeshNetwork(meshNetwork)
 
-            call.resolve()
-        }
+        call.resolve()
     }
 
     @PluginMethod
     fun createAppKey(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.resolve(implementation.createAppKey())
-        }
+        call.resolve(implementation.createAppKey())
     }
 
     @PluginMethod
@@ -339,10 +326,8 @@ class NrfMeshPlugin : Plugin() {
         val appKeyIndex = call.getInt("index")
                 ?: return call.reject("index is required")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            implementation.removeAppKey(appKeyIndex)
-            call.resolve()
-        }
+        implementation.removeAppKey(appKeyIndex)
+        call.resolve()
     }
 
     @PluginMethod
@@ -352,9 +337,7 @@ class NrfMeshPlugin : Plugin() {
         val name = call.getString("name")
                 ?: return call.reject("name is required")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.resolve(implementation.createGroup(name))
-        }
+        call.resolve(implementation.createGroup(name))
     }
 
     @PluginMethod
@@ -364,10 +347,8 @@ class NrfMeshPlugin : Plugin() {
         val groupAddress = call.getInt("groupAddress")
                 ?: return call.reject("groupAddress is required")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            implementation.removeGroup(groupAddress)
-            call.resolve()
-        }
+        implementation.removeGroup(groupAddress)
+        call.resolve()
     }
 
     @PluginMethod
@@ -377,9 +358,7 @@ class NrfMeshPlugin : Plugin() {
         val groupAddress = call.getInt("groupAddress")
                 ?: return call.reject("groupAddress is required")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.resolve(implementation.getGroup(groupAddress))
-        }
+        call.resolve(implementation.getGroup(groupAddress))
     }
 
     @PluginMethod
@@ -509,13 +488,13 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to device : $macAddress $uuid")
             }
 
-            implementation.unprovisionedMeshNode(UUID.fromString(uuid))
+            val node = implementation.unprovisionedMeshNode(UUID.fromString(uuid))
                     ?: return@launch call.reject("Unprovisioned Mesh Node not found, try identifying the node first")
 
             PluginCallManager.getInstance()
                     .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call)
 
-            implementation.provisionDevice(UUID.fromString(uuid))
+            implementation.provisionDevice(node)
         }
     }
 
