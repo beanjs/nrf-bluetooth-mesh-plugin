@@ -3,13 +3,13 @@ package com.lebrislo.bluetooth.mesh.plugin
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
-import no.nordicsemi.android.mesh.transport.GenericLevelStatus
 import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
-//import no.nordicsemi.android.mesh.transport.GenericPowerLevelStatus
-import no.nordicsemi.android.mesh.transport.LightCtlStatus
-import no.nordicsemi.android.mesh.transport.LightHslStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
+import no.nordicsemi.android.mesh.transport.SensorDescriptorStatus
 import no.nordicsemi.android.mesh.transport.SensorStatus
+import no.nordicsemi.android.mesh.utils.MeshParserUtils
+import kotlin.experimental.and
+
 
 /**
  * This class is used to generate a response for a SIG plugin call.
@@ -30,10 +30,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                 put("data", when (meshMessage) {
                     is GenericOnOffStatus -> genericOnOffStatusResponse(meshMessage)
                     is SensorStatus -> sensorStatusResponse(meshMessage)
-//                    is GenericLevelStatus -> genericLevelStatusResponse(meshMessage)
-//                    is GenericPowerLevelStatus -> genericPowerLevelStatusResponse(meshMessage)
-//                    is LightHslStatus -> lightHslStatusResponse(meshMessage)
-//                    is LightCtlStatus -> lightCtlStatusResponse(meshMessage)
+                    is SensorDescriptorStatus -> sensorDescriptorStatusResponse(meshMessage)
                     else -> JSObject()
                 })
             }
@@ -52,6 +49,36 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                 }
             }
         }
+
+        private fun sensorDescriptorStatusResponse(meshMessage: SensorDescriptorStatus): JSArray {
+            return JSArray().apply {
+                val pms = meshMessage.parameters
+                var offset = 0
+
+                while (offset < pms.count()) {
+                    val property = MeshParserUtils.unsignedBytesToInt(pms[offset], pms[offset + 1])
+                    val positiveTolerance = MeshParserUtils.bytesToInt(byteArrayOf(pms[offset + 3].toInt().and(0x0F).toByte(), pms[offset + 2]))
+                    val negativeTolerance = MeshParserUtils.bytesToInt(byteArrayOf(
+                            pms[offset + 4].toInt().and(0xF0).shr(4).toByte(),
+                            pms[offset + 4].toInt().and(0x0F).shl(4).or(pms[offset + 3].toInt().and(0xF0).shr(4)).toByte()))
+                    val samplingFunction = pms[offset + 5]
+                    val measurementPeriod = pms[offset + 6]
+                    val updateInterval = pms[offset + 7]
+
+                    offset += 8
+
+                    put(JSObject().apply {
+                        put("propertyId", property)
+                        put("positiveTolerance", positiveTolerance)
+                        put("negativeTolerance", negativeTolerance)
+                        put("samplingFunction", samplingFunction)
+                        put("measurementPeriod", measurementPeriod)
+                        put("updateInterval", updateInterval)
+                    })
+                }
+            }
+        }
+
 //
 //        private fun genericLevelStatusResponse(meshMessage: GenericLevelStatus): JSObject {
 //            val data = JSObject()

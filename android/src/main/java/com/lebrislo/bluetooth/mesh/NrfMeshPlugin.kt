@@ -915,7 +915,6 @@ class NrfMeshPlugin : Plugin() {
         val appKeyIndex = call.getInt("appKeyIndex")
                 ?: return call.reject("appKeyIndex is required")
         val propertyId = call.getInt("propertyId")
-                ?: return call.reject("propertyId is required")
 
         CoroutineScope(Dispatchers.Main).launch {
             if (!assertBluetoothAdapter(call)) return@launch
@@ -928,6 +927,28 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_GET, elementAddress, call)
             implementation.getSensor(elementAddress, appKeyIndex, propertyId)
+        }
+    }
+
+    @PluginMethod
+    fun getSensorDescriptor(call: PluginCall){
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+        val propertyId = call.getInt("propertyId")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_DESCRIPTOR_GET, elementAddress, call)
+            implementation.getSensorDescriptor(elementAddress, appKeyIndex, propertyId)
         }
     }
 

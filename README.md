@@ -48,6 +48,7 @@ npx cap sync
 * [`getOnOff(...)`](#getonoff)
 * [`setOnOff(...)`](#setonoff)
 * [`getSensor(...)`](#getsensor)
+* [`getSensorDescriptor(...)`](#getsensordescriptor)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -530,14 +531,29 @@ setOnOff(options: { elementAddress: number; appKeyIndex: number; onOff?: boolean
 ### getSensor(...)
 
 ```typescript
-getSensor(options: { elementAddress: number; appKeyIndex: number; propertyId: number; }) => Promise<SensorStatus>
+getSensor(options: { elementAddress: number; appKeyIndex: number; propertyId?: number; }) => Promise<SensorStatus>
 ```
 
-| Param         | Type                                                                              |
-| ------------- | --------------------------------------------------------------------------------- |
-| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; }</code> |
+| Param         | Type                                                                               |
+| ------------- | ---------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId?: number; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#sensorstatus">SensorStatus</a>&gt;</code>
+
+--------------------
+
+
+### getSensorDescriptor(...)
+
+```typescript
+getSensorDescriptor(options: { elementAddress: number; appKeyIndex: number; propertyId?: number; }) => Promise<SensorDescriptorStatus>
+```
+
+| Param         | Type                                                                               |
+| ------------- | ---------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId?: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensordescriptorstatus">SensorDescriptorStatus</a>&gt;</code>
 
 --------------------
 
@@ -871,6 +887,13 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                  |
 | ---------- | ----------------------------------------------------- |
 | **`data`** | <code><a href="#array">Array</a>&lt;number&gt;</code> |
+
+
+#### SensorDescriptorStatus
+
+| Prop       | Type                                                                                                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code><a href="#array">Array</a>&lt;{ propertyId: number; positiveTolerance: number; negativeTolerance: number; samplingFunction: number; measurementPeriod: number; updateInterval: number; }&gt;</code> |
 
 
 #### PluginListenerHandle

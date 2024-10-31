@@ -299,6 +299,17 @@ export interface SensorStatus extends Status {
   data: Array<number>;
 }
 
+export interface SensorDescriptorStatus extends Status {
+  data: Array<{
+    propertyId: number;
+    positiveTolerance: number;
+    negativeTolerance: number;
+    samplingFunction: number;
+    measurementPeriod: number;
+    updateInterval: number;
+  }>;
+}
+
 export interface NrfMeshPlugin {
   checkPermissions(): Promise<Permissions>;
   requestPermissions(): Promise<Permissions>;
@@ -415,8 +426,13 @@ export interface NrfMeshPlugin {
   getSensor(options: {
     elementAddress: number;
     appKeyIndex: number;
-    propertyId: number;
+    propertyId?: number;
   }): Promise<SensorStatus>;
+  getSensorDescriptor(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    propertyId?: number;
+  }): Promise<SensorDescriptorStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;

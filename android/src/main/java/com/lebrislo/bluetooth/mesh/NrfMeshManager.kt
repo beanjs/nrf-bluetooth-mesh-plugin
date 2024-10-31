@@ -56,6 +56,7 @@ import no.nordicsemi.android.mesh.transport.LightHslSet
 import no.nordicsemi.android.mesh.transport.LightHslSetUnacknowledged
 import no.nordicsemi.android.mesh.transport.MeshMessage
 import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
+import no.nordicsemi.android.mesh.transport.SensorDescriptorGet
 import no.nordicsemi.android.mesh.transport.SensorGet
 import no.nordicsemi.android.mesh.transport.VendorModelMessageAcked
 import no.nordicsemi.android.mesh.transport.VendorModelMessageUnacked
@@ -641,11 +642,21 @@ class NrfMeshManager(private val context: Context) {
         }
     }
 
-    fun getSensor(elementAddress: Int, appKeyIndex: Int, propertyId: Int) {
+    fun getSensor(elementAddress: Int, appKeyIndex: Int, propertyId: Int?) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configSensorGet = SensorGet(appkey, DeviceProperty.from(propertyId.toShort()))
+        val configSensorGet = SensorGet(appkey, if (propertyId == null) null else DeviceProperty.from(propertyId.toShort()))
         meshManagerApi.createMeshPdu(elementAddress, configSensorGet)
     }
+
+    fun getSensorDescriptor(elementAddress: Int, appKeyIndex: Int,propertyId: Int?){
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val configSensorDescriptorGet = SensorDescriptorGet(appkey,if (propertyId == null) null else DeviceProperty.from(propertyId.toShort()))
+        meshManagerApi.createMeshPdu(elementAddress,configSensorDescriptorGet)
+    }
+
+
 }
