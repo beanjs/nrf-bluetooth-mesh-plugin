@@ -21,6 +21,7 @@ import no.nordicsemi.android.mesh.transport.LightHslStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
 import no.nordicsemi.android.mesh.transport.SensorColumnStatus
 import no.nordicsemi.android.mesh.transport.SensorDescriptorStatus
+import no.nordicsemi.android.mesh.transport.SensorSeriesStatus
 import no.nordicsemi.android.mesh.transport.SensorStatus
 import no.nordicsemi.android.mesh.transport.VendorModelMessageStatus
 
@@ -63,7 +64,8 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             is GenericOnOffStatus,
             is SensorStatus,
             is SensorDescriptorStatus,
-            is SensorColumnStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+            is SensorColumnStatus,
+            is SensorSeriesStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }
     }
 

@@ -7,6 +7,7 @@ import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
 import no.nordicsemi.android.mesh.transport.SensorColumnStatus
 import no.nordicsemi.android.mesh.transport.SensorDescriptorStatus
+import no.nordicsemi.android.mesh.transport.SensorSeriesStatus
 import no.nordicsemi.android.mesh.transport.SensorStatus
 import no.nordicsemi.android.mesh.utils.MeshParserUtils
 import kotlin.experimental.and
@@ -33,6 +34,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                     is SensorStatus -> sensorStatusResponse(meshMessage)
                     is SensorDescriptorStatus -> sensorDescriptorStatusResponse(meshMessage)
                     is SensorColumnStatus -> sensorColumnStatusResponse(meshMessage)
+                    is SensorSeriesStatus -> sensorSeriesStatusResponse(meshMessage)
                     else -> JSObject()
                 })
             }
@@ -84,13 +86,29 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
         private fun sensorColumnStatusResponse(meshMessage: SensorColumnStatus):JSObject{
             return  JSObject().apply {
                 put("propertyId",meshMessage.propertyId)
-                put("results",JSArray().apply {
-                    meshMessage.result.forEach {
-                        put(it)
+                put("columns",JSArray().apply {
+                    if (meshMessage.result != null) {
+                        meshMessage.result.forEach {
+                            put(it)
+                        }
                     }
                 })
             }
         }
+
+        private fun sensorSeriesStatusResponse(meshMessage: SensorSeriesStatus):JSObject{
+            return  JSObject().apply {
+                put("propertyId",meshMessage.propertyId)
+                put("series",JSArray().apply {
+                    if (meshMessage.seriesRawX1X2 != null) {
+                        meshMessage.seriesRawX1X2.forEach {
+                            put(it)
+                        }
+                    }
+                })
+            }
+        }
+
 //
 //        private fun genericLevelStatusResponse(meshMessage: GenericLevelStatus): JSObject {
 //            val data = JSObject()

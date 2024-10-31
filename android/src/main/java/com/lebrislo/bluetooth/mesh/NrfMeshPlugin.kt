@@ -977,6 +977,43 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun getSensorSeries(call: PluginCall) {
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+        val propertyId = call.getInt("propertyId")
+                ?: return call.reject("propertyId is required")
+        val rawValueX1 = call.getArray("rawValueX1")
+        val rawValueX2 = call.getArray("rawValueX2")
+
+        if (rawValueX1 == null && rawValueX2 != null) {
+            return call.reject("rawValueX1 is required")
+        }
+        if (rawValueX1 != null && rawValueX2 == null) {
+            return call.reject("rawValueX2 is required")
+        }
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SERIES_GET, elementAddress, call)
+
+            if (rawValueX1==null){
+                implementation.getSensorSeries(elementAddress,appKeyIndex,propertyId,null,null)
+            }else{
+                implementation.getSensorSeries(elementAddress,appKeyIndex,propertyId,rawValueX1.toList<Byte>().toByteArray(),rawValueX2.toList<Byte>().toByteArray())
+            }
+        }
+    }
+
 
     fun sendNotification(eventName: String, data: JSObject) {
         notifyListeners(eventName, data)

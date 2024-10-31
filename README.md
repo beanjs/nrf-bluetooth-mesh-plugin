@@ -49,6 +49,8 @@ npx cap sync
 * [`setOnOff(...)`](#setonoff)
 * [`getSensor(...)`](#getsensor)
 * [`getSensorDescriptor(...)`](#getsensordescriptor)
+* [`getSensorColumn(...)`](#getsensorcolumn)
+* [`getSensorSeries(...)`](#getsensorseries)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -558,6 +560,36 @@ getSensorDescriptor(options: { elementAddress: number; appKeyIndex: number; prop
 --------------------
 
 
+### getSensorColumn(...)
+
+```typescript
+getSensorColumn(options: { elementAddress: number; appKeyIndex: number; propertyId: number; rawValueX: Array<number>; }) => Promise<SensorColumnStatus>
+```
+
+| Param         | Type                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; rawValueX: number[]; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensorcolumnstatus">SensorColumnStatus</a>&gt;</code>
+
+--------------------
+
+
+### getSensorSeries(...)
+
+```typescript
+getSensorSeries(options: { elementAddress: number; appKeyIndex: number; propertyId: number; rawValueX1?: Array<number>; rawValueX2?: Array<number>; }) => Promise<SensorSeriesStatus>
+```
+
+| Param         | Type                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; rawValueX1?: number[]; rawValueX2?: number[]; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensorseriesstatus">SensorSeriesStatus</a>&gt;</code>
+
+--------------------
+
+
 ### addListener(string, ...)
 
 ```typescript
@@ -894,6 +926,20 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                                                                                                                                                                      |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`data`** | <code><a href="#array">Array</a>&lt;{ propertyId: number; positiveTolerance: number; negativeTolerance: number; samplingFunction: number; measurementPeriod: number; updateInterval: number; }&gt;</code> |
+
+
+#### SensorColumnStatus
+
+| Prop       | Type                                                    |
+| ---------- | ------------------------------------------------------- |
+| **`data`** | <code>{ propertyId: number; columns: number[]; }</code> |
+
+
+#### SensorSeriesStatus
+
+| Prop       | Type                                                   |
+| ---------- | ------------------------------------------------------ |
+| **`data`** | <code>{ propertyId: number; series: number[]; }</code> |
 
 
 #### PluginListenerHandle

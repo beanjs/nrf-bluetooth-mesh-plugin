@@ -59,6 +59,7 @@ import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
 import no.nordicsemi.android.mesh.transport.SensorColumnGet
 import no.nordicsemi.android.mesh.transport.SensorDescriptorGet
 import no.nordicsemi.android.mesh.transport.SensorGet
+import no.nordicsemi.android.mesh.transport.SensorSeriesGet
 import no.nordicsemi.android.mesh.transport.VendorModelMessageAcked
 import no.nordicsemi.android.mesh.transport.VendorModelMessageUnacked
 import no.nordicsemi.android.mesh.utils.CompositionDataParser
@@ -651,21 +652,32 @@ class NrfMeshManager(private val context: Context) {
         meshManagerApi.createMeshPdu(elementAddress, configSensorGet)
     }
 
-    fun getSensorDescriptor(elementAddress: Int, appKeyIndex: Int,propertyId: Int?){
+    fun getSensorDescriptor(elementAddress: Int, appKeyIndex: Int, propertyId: Int?) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configSensorDescriptorGet = SensorDescriptorGet(appkey,if (propertyId == null) null else DeviceProperty.from(propertyId.toShort()))
-        meshManagerApi.createMeshPdu(elementAddress,configSensorDescriptorGet)
+        val configSensorDescriptorGet = SensorDescriptorGet(appkey, if (propertyId == null) null else DeviceProperty.from(propertyId.toShort()))
+        meshManagerApi.createMeshPdu(elementAddress, configSensorDescriptorGet)
     }
 
-    fun getSensorColumn(elementAddress: Int, appKeyIndex: Int,propertyId: Int,rawValueX: ByteArray){
+    fun getSensorColumn(elementAddress: Int, appKeyIndex: Int, propertyId: Int, rawValueX: ByteArray) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configSensorColumnGet = SensorColumnGet(appkey, DeviceProperty.from(propertyId.toShort()),rawValueX)
-        meshManagerApi.createMeshPdu(elementAddress,configSensorColumnGet)
+        val configSensorColumnGet = SensorColumnGet(appkey, DeviceProperty.from(propertyId.toShort()), rawValueX)
+        meshManagerApi.createMeshPdu(elementAddress, configSensorColumnGet)
     }
 
+    fun getSensorSeries(elementAddress: Int, appKeyIndex: Int, propertyId: Int, rawValueX1: ByteArray?, rawValueX2: ByteArray?) {
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
 
+        if (rawValueX1 == null) {
+            val configSensorSeriesGet = SensorSeriesGet(appkey, DeviceProperty.from(propertyId.toShort()))
+            meshManagerApi.createMeshPdu(elementAddress, configSensorSeriesGet)
+        } else {
+            val configSensorSeriesGet = SensorSeriesGet(appkey, DeviceProperty.from(propertyId.toShort()), rawValueX1, rawValueX2!!)
+            meshManagerApi.createMeshPdu(elementAddress, configSensorSeriesGet)
+        }
+    }
 }

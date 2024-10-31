@@ -310,6 +310,20 @@ export interface SensorDescriptorStatus extends Status {
   }>;
 }
 
+export interface SensorColumnStatus extends Status {
+  data: {
+    propertyId: number;
+    columns: Array<number>;
+  };
+}
+
+export interface SensorSeriesStatus extends Status {
+  data: {
+    propertyId: number;
+    series: Array<number>;
+  };
+}
+
 export interface NrfMeshPlugin {
   checkPermissions(): Promise<Permissions>;
   requestPermissions(): Promise<Permissions>;
@@ -433,6 +447,19 @@ export interface NrfMeshPlugin {
     appKeyIndex: number;
     propertyId?: number;
   }): Promise<SensorDescriptorStatus>;
+  getSensorColumn(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    propertyId: number;
+    rawValueX: Array<number>;
+  }): Promise<SensorColumnStatus>;
+  getSensorSeries(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    propertyId: number;
+    rawValueX1?: Array<number>;
+    rawValueX2?: Array<number>;
+  }): Promise<SensorSeriesStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;
