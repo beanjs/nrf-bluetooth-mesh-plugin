@@ -343,6 +343,15 @@ export interface SensorSettingsStatus extends Status {
   };
 }
 
+export interface SensorSettingStatus extends Status {
+  data: {
+    propertyId: number;
+    sensorSettingPropertyId: number;
+    sensorSettingAccess?: number;
+    sensorSetting?: number;
+  };
+}
+
 export interface NrfMeshPlugin {
   checkPermissions(): Promise<Permissions>;
   requestPermissions(): Promise<Permissions>;
@@ -489,6 +498,12 @@ export interface NrfMeshPlugin {
     appKeyIndex: number;
     propertyId: number;
   }): Promise<SensorSettingsStatus>;
+  getSensorSetting(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    propertyId: number;
+    sensorSettingPropertyId: number;
+  }): Promise<SensorSettingStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;

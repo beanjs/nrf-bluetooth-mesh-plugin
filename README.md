@@ -53,6 +53,7 @@ npx cap sync
 * [`getSensorSeries(...)`](#getsensorseries)
 * [`getSensorCadence(...)`](#getsensorcadence)
 * [`getSensorSettings(...)`](#getsensorsettings)
+* [`getSensorSetting(...)`](#getsensorsetting)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -622,6 +623,21 @@ getSensorSettings(options: { elementAddress: number; appKeyIndex: number; proper
 --------------------
 
 
+### getSensorSetting(...)
+
+```typescript
+getSensorSetting(options: { elementAddress: number; appKeyIndex: number; propertyId: number; sensorSettingPropertyId: number; }) => Promise<SensorSettingStatus>
+```
+
+| Param         | Type                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; sensorSettingPropertyId: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensorsettingstatus">SensorSettingStatus</a>&gt;</code>
+
+--------------------
+
+
 ### addListener(string, ...)
 
 ```typescript
@@ -986,6 +1002,13 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                     |
 | ---------- | -------------------------------------------------------- |
 | **`data`** | <code>{ propertyId: number; settings: number[]; }</code> |
+
+
+#### SensorSettingStatus
+
+| Prop       | Type                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ propertyId: number; sensorSettingPropertyId: number; sensorSettingAccess?: number; sensorSetting?: number; }</code> |
 
 
 #### PluginListenerHandle

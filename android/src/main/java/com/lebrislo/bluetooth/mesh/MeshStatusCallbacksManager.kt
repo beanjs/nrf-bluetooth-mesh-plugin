@@ -23,6 +23,7 @@ import no.nordicsemi.android.mesh.transport.SensorCadenceStatus
 import no.nordicsemi.android.mesh.transport.SensorColumnStatus
 import no.nordicsemi.android.mesh.transport.SensorDescriptorStatus
 import no.nordicsemi.android.mesh.transport.SensorSeriesStatus
+import no.nordicsemi.android.mesh.transport.SensorSettingStatus
 import no.nordicsemi.android.mesh.transport.SensorSettingsStatus
 import no.nordicsemi.android.mesh.transport.SensorStatus
 import no.nordicsemi.android.mesh.transport.VendorModelMessageStatus
@@ -69,7 +70,8 @@ class MeshStatusCallbacksManager(var nrfMeshManager: NrfMeshManager) : MeshStatu
             is SensorColumnStatus,
             is SensorSeriesStatus,
             is SensorCadenceStatus,
-            is SensorSettingsStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
+            is SensorSettingsStatus,
+            is SensorSettingStatus -> PluginCallManager.getInstance().resolveSigPluginCall(meshMessage)
         }
     }
 

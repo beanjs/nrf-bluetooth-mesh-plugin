@@ -1031,16 +1031,16 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SERIES_GET, elementAddress, call)
 
-            if (rawValueX1==null){
-                implementation.getSensorSeries(elementAddress,appKeyIndex,propertyId,null,null)
-            }else{
-                implementation.getSensorSeries(elementAddress,appKeyIndex,propertyId,rawValueX1.toList<Byte>().toByteArray(),rawValueX2.toList<Byte>().toByteArray())
+            if (rawValueX1 == null) {
+                implementation.getSensorSeries(elementAddress, appKeyIndex, propertyId, null, null)
+            } else {
+                implementation.getSensorSeries(elementAddress, appKeyIndex, propertyId, rawValueX1.toList<Byte>().toByteArray(), rawValueX2.toList<Byte>().toByteArray())
             }
         }
     }
 
     @PluginMethod
-    fun getSensorCadence(call: PluginCall){
+    fun getSensorCadence(call: PluginCall) {
         val elementAddress = call.getInt("elementAddress")
                 ?: return call.reject("elementAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
@@ -1060,12 +1060,12 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_CADENCE_GET, elementAddress, call)
 
-            implementation.getSensorCadence(elementAddress,appKeyIndex,propertyId)
+            implementation.getSensorCadence(elementAddress, appKeyIndex, propertyId)
         }
     }
 
     @PluginMethod
-    fun getSensorSettings(call: PluginCall){
+    fun getSensorSettings(call: PluginCall) {
         val elementAddress = call.getInt("elementAddress")
                 ?: return call.reject("elementAddress is required")
         val appKeyIndex = call.getInt("appKeyIndex")
@@ -1085,7 +1085,34 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTINGS_GET, elementAddress, call)
 
-            implementation.getSensorSettings(elementAddress,appKeyIndex,propertyId)
+            implementation.getSensorSettings(elementAddress, appKeyIndex, propertyId)
+        }
+    }
+
+    @PluginMethod
+    fun getSensorSetting(call: PluginCall) {
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+        val propertyId = call.getInt("propertyId")
+                ?: return call.reject("propertyId is required")
+        val sensorSettingPropertyId = call.getInt("sensorSettingPropertyId")
+                ?: return call.reject("sensorSettingPropertyId is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTING_GET, elementAddress, call)
+
+            implementation.getSensorSetting(elementAddress, appKeyIndex, propertyId,sensorSettingPropertyId)
         }
     }
 

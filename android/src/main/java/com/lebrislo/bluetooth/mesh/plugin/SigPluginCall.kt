@@ -10,6 +10,7 @@ import no.nordicsemi.android.mesh.transport.SensorCadenceStatus
 import no.nordicsemi.android.mesh.transport.SensorColumnStatus
 import no.nordicsemi.android.mesh.transport.SensorDescriptorStatus
 import no.nordicsemi.android.mesh.transport.SensorSeriesStatus
+import no.nordicsemi.android.mesh.transport.SensorSettingStatus
 import no.nordicsemi.android.mesh.transport.SensorSettingsStatus
 import no.nordicsemi.android.mesh.transport.SensorStatus
 import no.nordicsemi.android.mesh.utils.MeshParserUtils
@@ -40,6 +41,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                     is SensorSeriesStatus -> sensorSeriesStatusResponse(meshMessage)
                     is SensorCadenceStatus -> sensorCadenceStatusResponse(meshMessage)
                     is SensorSettingsStatus -> sensorSettingsStatusResponse(meshMessage)
+                    is SensorSettingStatus -> sensorSettingStatusResponse(meshMessage)
                     else -> JSObject()
                 })
             }
@@ -142,6 +144,21 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                         put(it.propertyId)
                     }
                 })
+            }
+        }
+
+        private fun sensorSettingStatusResponse(meshMessage:SensorSettingStatus):JSObject{
+            return JSObject().apply {
+                put("propertyId",meshMessage.propertyId.propertyId)
+                put("sensorSettingPropertyId",meshMessage.sensorSettingPropertyId.propertyId)
+
+                if (meshMessage.sensorSettingAccess != null){
+                    put("sensorSettingAccess",meshMessage.sensorSettingAccess.ordinal)
+                }
+
+                if (meshMessage.sensorSetting !=null){
+                    put("sensorSetting",meshMessage.sensorSetting.value)
+                }
             }
         }
 

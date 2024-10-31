@@ -62,6 +62,8 @@ import no.nordicsemi.android.mesh.transport.SensorColumnGet
 import no.nordicsemi.android.mesh.transport.SensorDescriptorGet
 import no.nordicsemi.android.mesh.transport.SensorGet
 import no.nordicsemi.android.mesh.transport.SensorSeriesGet
+import no.nordicsemi.android.mesh.transport.SensorSettingGet
+import no.nordicsemi.android.mesh.transport.SensorSettingSet
 import no.nordicsemi.android.mesh.transport.SensorSettingsGet
 import no.nordicsemi.android.mesh.transport.VendorModelMessageAcked
 import no.nordicsemi.android.mesh.transport.VendorModelMessageUnacked
@@ -698,5 +700,13 @@ class NrfMeshManager(private val context: Context) {
 
         val configSensorSettingsGet = SensorSettingsGet(appkey,DeviceProperty.from(propertyId.toShort()))
         meshManagerApi.createMeshPdu(elementAddress,configSensorSettingsGet)
+    }
+
+    fun getSensorSetting(elementAddress: Int, appKeyIndex: Int, propertyId: Int, sensorSettingPropertyId:Int){
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val configSensorSettingGet = SensorSettingGet(appkey,DeviceProperty.from(propertyId.toShort()),DeviceProperty.from(sensorSettingPropertyId.toShort()))
+        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingGet)
     }
 }
