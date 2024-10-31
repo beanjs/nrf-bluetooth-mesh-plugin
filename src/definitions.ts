@@ -504,6 +504,14 @@ export interface NrfMeshPlugin {
     propertyId: number;
     sensorSettingPropertyId: number;
   }): Promise<SensorSettingStatus>;
+  setSensorSetting(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    propertyId: number;
+    sensorSettingPropertyId: number;
+    values: Array<number>;
+    acknowledgement?: boolean;
+  }): Promise<SensorSettingStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;

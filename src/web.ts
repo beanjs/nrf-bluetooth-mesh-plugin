@@ -197,6 +197,10 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     console.log('getSensorSetting');
     return {} as SensorSettingStatus;
   }
+  async setSensorSetting (): Promise<SensorSettingStatus> {
+    console.log('setSensorSetting');
+    return {} as SensorSettingStatus;
+  }
 
   // async createApplicationKey(): Promise<void> {
   //   console.log('createApplicationKey');

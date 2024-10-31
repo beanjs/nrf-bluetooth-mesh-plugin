@@ -54,6 +54,7 @@ npx cap sync
 * [`getSensorCadence(...)`](#getsensorcadence)
 * [`getSensorSettings(...)`](#getsensorsettings)
 * [`getSensorSetting(...)`](#getsensorsetting)
+* [`setSensorSetting(...)`](#setsensorsetting)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -632,6 +633,21 @@ getSensorSetting(options: { elementAddress: number; appKeyIndex: number; propert
 | Param         | Type                                                                                                               |
 | ------------- | ------------------------------------------------------------------------------------------------------------------ |
 | **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; sensorSettingPropertyId: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensorsettingstatus">SensorSettingStatus</a>&gt;</code>
+
+--------------------
+
+
+### setSensorSetting(...)
+
+```typescript
+setSensorSetting(options: { elementAddress: number; appKeyIndex: number; propertyId: number; sensorSettingPropertyId: number; values: Array<number>; acknowledgement?: boolean; }) => Promise<SensorSettingStatus>
+```
+
+| Param         | Type                                                                                                                                                            |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; sensorSettingPropertyId: number; values: number[]; acknowledgement?: boolean; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#sensorsettingstatus">SensorSettingStatus</a>&gt;</code>
 

@@ -138,8 +138,8 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
 
         private fun sensorSettingsStatusResponse(meshMessage: SensorSettingsStatus): JSObject {
             return JSObject().apply {
-                put("propertyId",meshMessage.propertyId)
-                put("settings",JSArray().apply {
+                put("propertyId", meshMessage.propertyId)
+                put("settings", JSArray().apply {
                     meshMessage.sensorSettingPropertyIds.forEach {
                         put(it.propertyId)
                     }
@@ -147,17 +147,17 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
             }
         }
 
-        private fun sensorSettingStatusResponse(meshMessage:SensorSettingStatus):JSObject{
+        private fun sensorSettingStatusResponse(meshMessage: SensorSettingStatus): JSObject {
             return JSObject().apply {
-                put("propertyId",meshMessage.propertyId.propertyId)
-                put("sensorSettingPropertyId",meshMessage.sensorSettingPropertyId.propertyId)
+                put("propertyId", meshMessage.propertyId.propertyId)
+                put("sensorSettingPropertyId", meshMessage.sensorSettingPropertyId.propertyId)
 
-                if (meshMessage.sensorSettingAccess != null){
-                    put("sensorSettingAccess",meshMessage.sensorSettingAccess.ordinal)
+                if (meshMessage.sensorSettingAccess != null) {
+                    put("sensorSettingAccess", meshMessage.sensorSettingAccess.ordinal)
                 }
 
-                if (meshMessage.sensorSetting !=null){
-                    put("sensorSetting",meshMessage.sensorSetting.value)
+                if (meshMessage.sensorSetting != null) {
+                    put("sensorSetting", meshMessage.sensorSetting.value)
                 }
             }
         }

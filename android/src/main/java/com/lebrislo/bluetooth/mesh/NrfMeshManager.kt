@@ -64,6 +64,7 @@ import no.nordicsemi.android.mesh.transport.SensorGet
 import no.nordicsemi.android.mesh.transport.SensorSeriesGet
 import no.nordicsemi.android.mesh.transport.SensorSettingGet
 import no.nordicsemi.android.mesh.transport.SensorSettingSet
+import no.nordicsemi.android.mesh.transport.SensorSettingSetUnacknowledged
 import no.nordicsemi.android.mesh.transport.SensorSettingsGet
 import no.nordicsemi.android.mesh.transport.VendorModelMessageAcked
 import no.nordicsemi.android.mesh.transport.VendorModelMessageUnacked
@@ -686,27 +687,55 @@ class NrfMeshManager(private val context: Context) {
         }
     }
 
-    fun getSensorCadence(elementAddress: Int, appKeyIndex: Int, propertyId: Int){
+    fun getSensorCadence(elementAddress: Int, appKeyIndex: Int, propertyId: Int) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configSensorCadenceGet = SensorCadenceGet(appkey,DeviceProperty.from(propertyId.toShort()))
-        meshManagerApi.createMeshPdu(elementAddress,configSensorCadenceGet)
+        val configSensorCadenceGet = SensorCadenceGet(appkey, DeviceProperty.from(propertyId.toShort()))
+        meshManagerApi.createMeshPdu(elementAddress, configSensorCadenceGet)
     }
 
-    fun getSensorSettings(elementAddress: Int, appKeyIndex: Int, propertyId: Int){
+    fun getSensorSettings(elementAddress: Int, appKeyIndex: Int, propertyId: Int) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configSensorSettingsGet = SensorSettingsGet(appkey,DeviceProperty.from(propertyId.toShort()))
-        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingsGet)
+        val configSensorSettingsGet = SensorSettingsGet(appkey, DeviceProperty.from(propertyId.toShort()))
+        meshManagerApi.createMeshPdu(elementAddress, configSensorSettingsGet)
     }
 
-    fun getSensorSetting(elementAddress: Int, appKeyIndex: Int, propertyId: Int, sensorSettingPropertyId:Int){
+    fun getSensorSetting(elementAddress: Int, appKeyIndex: Int, propertyId: Int, sensorSettingPropertyId: Int) {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
-        val configSensorSettingGet = SensorSettingGet(appkey,DeviceProperty.from(propertyId.toShort()),DeviceProperty.from(sensorSettingPropertyId.toShort()))
-        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingGet)
+        val configSensorSettingGet = SensorSettingGet(appkey, DeviceProperty.from(propertyId.toShort()), DeviceProperty.from(sensorSettingPropertyId.toShort()))
+        meshManagerApi.createMeshPdu(elementAddress, configSensorSettingGet)
+    }
+
+    fun setSensorSettingAck(elementAddress: Int, appKeyIndex: Int, propertyId: Int, sensorSettingPropertyId: Int, values: ByteArray) {
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val sensorId = DeviceProperty.from(sensorSettingPropertyId.toShort())
+        val sensorVl = DeviceProperty.getCharacteristic(sensorId,values,0,values.count())
+
+        val configSensorSettingSet = SensorSettingSet(appkey,DeviceProperty.from(propertyId.toShort()),sensorId,sensorVl)
+        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingSet)
+    }
+
+    fun setSensorSetting(elementAddress: Int, appKeyIndex: Int, propertyId: Int, sensorSettingPropertyId: Int, values: ByteArray):JSObject {
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val sensorId = DeviceProperty.from(sensorSettingPropertyId.toShort())
+        val sensorVl = DeviceProperty.getCharacteristic(sensorId,values,0,values.count())
+
+        val configSensorSettingSet = SensorSettingSetUnacknowledged(appkey,DeviceProperty.from(propertyId.toShort()),sensorId,sensorVl)
+        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingSet)
+
+        return JSObject().apply {
+            put("propertyId", propertyId)
+            put("sensorSettingPropertyId", sensorSettingPropertyId)
+            put("sensorSetting", sensorVl.value)
+        }
     }
 }

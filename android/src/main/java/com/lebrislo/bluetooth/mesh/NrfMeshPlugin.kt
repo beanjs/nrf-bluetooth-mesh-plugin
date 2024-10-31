@@ -1112,7 +1112,42 @@ class NrfMeshPlugin : Plugin() {
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTING_GET, elementAddress, call)
 
-            implementation.getSensorSetting(elementAddress, appKeyIndex, propertyId,sensorSettingPropertyId)
+            implementation.getSensorSetting(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId)
+        }
+    }
+
+    @PluginMethod
+    fun setSensorSetting(call: PluginCall) {
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+        val propertyId = call.getInt("propertyId")
+                ?: return call.reject("propertyId is required")
+        val sensorSettingPropertyId = call.getInt("sensorSettingPropertyId")
+                ?: return call.reject("sensorSettingPropertyId is required")
+        val values = call.getArray("values")
+                ?: return call.reject("values is required")
+        val acknowledgement = call.getBoolean("acknowledgement", true)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            if (acknowledgement == true) {
+                PluginCallManager.getInstance()
+                        .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTING_SET, elementAddress, call)
+
+                implementation.setSensorSettingAck(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId,values.toList<Byte>().toByteArray())
+            }else{
+                val res = implementation.setSensorSetting(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId,values.toList<Byte>().toByteArray())
+                call.resolve(res)
+            }
         }
     }
 
