@@ -10,6 +10,7 @@ import no.nordicsemi.android.mesh.transport.SensorCadenceStatus
 import no.nordicsemi.android.mesh.transport.SensorColumnStatus
 import no.nordicsemi.android.mesh.transport.SensorDescriptorStatus
 import no.nordicsemi.android.mesh.transport.SensorSeriesStatus
+import no.nordicsemi.android.mesh.transport.SensorSettingsStatus
 import no.nordicsemi.android.mesh.transport.SensorStatus
 import no.nordicsemi.android.mesh.utils.MeshParserUtils
 import kotlin.experimental.and
@@ -38,6 +39,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                     is SensorColumnStatus -> sensorColumnStatusResponse(meshMessage)
                     is SensorSeriesStatus -> sensorSeriesStatusResponse(meshMessage)
                     is SensorCadenceStatus -> sensorCadenceStatusResponse(meshMessage)
+                    is SensorSettingsStatus -> sensorSettingsStatusResponse(meshMessage)
                     else -> JSObject()
                 })
             }
@@ -125,13 +127,23 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                 val delta = cadence.delta ?: return@apply
                 val down = delta.down as DevicePropertyCharacteristic<*>
                 val up = delta.up as DevicePropertyCharacteristic<*>
-                put("delta",JSObject().apply {
-                    put("down",down.value)
-                    put("up",up.value)
+                put("delta", JSObject().apply {
+                    put("down", down.value)
+                    put("up", up.value)
                 })
             }
         }
 
+        private fun sensorSettingsStatusResponse(meshMessage: SensorSettingsStatus): JSObject {
+            return JSObject().apply {
+                put("propertyId",meshMessage.propertyId)
+                put("settings",JSArray().apply {
+                    meshMessage.sensorSettingPropertyIds.forEach {
+                        put(it.propertyId)
+                    }
+                })
+            }
+        }
 
 //
 //        private fun genericLevelStatusResponse(meshMessage: GenericLevelStatus): JSObject {

@@ -28,6 +28,8 @@ import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_DESCR
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_GET
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_SERIES_GET
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_SERIES_STATUS
+import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_SETTINGS_GET
+import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_SETTINGS_STATUS
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes.SENSOR_STATUS
 
 /**
@@ -48,6 +50,7 @@ class SigOperationPair {
                 SENSOR_COLUMN_GET -> SENSOR_COLUMN_STATUS
                 SENSOR_SERIES_GET -> SENSOR_SERIES_STATUS
                 SENSOR_CADENCE_GET -> SENSOR_CADENCE_STATUS
+                SENSOR_SETTINGS_GET -> SENSOR_SETTINGS_STATUS
 //                GENERIC_LEVEL_GET, GENERIC_LEVEL_SET, GENERIC_LEVEL_SET_UNACKNOWLEDGED -> GENERIC_POWER_LEVEL_STATUS
 //                GENERIC_POWER_LEVEL_GET, GENERIC_POWER_LEVEL_SET, GENERIC_POWER_LEVEL_SET_UNACKNOWLEDGED -> GENERIC_POWER_LEVEL_STATUS
 //                LIGHT_HSL_GET, LIGHT_HSL_SET, LIGHT_HSL_SET_UNACKNOWLEDGED -> LIGHT_HSL_STATUS

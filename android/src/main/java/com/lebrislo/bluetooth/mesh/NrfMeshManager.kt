@@ -57,10 +57,12 @@ import no.nordicsemi.android.mesh.transport.LightHslSetUnacknowledged
 import no.nordicsemi.android.mesh.transport.MeshMessage
 import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
 import no.nordicsemi.android.mesh.transport.SensorCadenceGet
+import no.nordicsemi.android.mesh.transport.SensorCadenceSet
 import no.nordicsemi.android.mesh.transport.SensorColumnGet
 import no.nordicsemi.android.mesh.transport.SensorDescriptorGet
 import no.nordicsemi.android.mesh.transport.SensorGet
 import no.nordicsemi.android.mesh.transport.SensorSeriesGet
+import no.nordicsemi.android.mesh.transport.SensorSettingsGet
 import no.nordicsemi.android.mesh.transport.VendorModelMessageAcked
 import no.nordicsemi.android.mesh.transport.VendorModelMessageUnacked
 import no.nordicsemi.android.mesh.utils.CompositionDataParser
@@ -688,5 +690,13 @@ class NrfMeshManager(private val context: Context) {
 
         val configSensorCadenceGet = SensorCadenceGet(appkey,DeviceProperty.from(propertyId.toShort()))
         meshManagerApi.createMeshPdu(elementAddress,configSensorCadenceGet)
+    }
+
+    fun getSensorSettings(elementAddress: Int, appKeyIndex: Int, propertyId: Int){
+        val network = meshManagerApi.meshNetwork!!
+        val appkey = network.getAppKey(appKeyIndex)
+
+        val configSensorSettingsGet = SensorSettingsGet(appkey,DeviceProperty.from(propertyId.toShort()))
+        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingsGet)
     }
 }

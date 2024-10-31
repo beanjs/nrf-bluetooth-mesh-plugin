@@ -463,6 +463,8 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("uuid is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
+
             val connected = connectionToUnprovisionedDevice(macAddress, uuid)
             if (!connected) {
                 return@launch call.reject("Failed to connect to device : $macAddress $uuid")
@@ -483,6 +485,8 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("uuid is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
+
             val connected = connectionToUnprovisionedDevice(macAddress, uuid)
             if (!connected) {
                 return@launch call.reject("Failed to connect to device : $macAddress $uuid")
@@ -504,6 +508,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("unicastAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -524,6 +529,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("unicastAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -544,6 +550,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("unicastAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -568,6 +575,7 @@ class NrfMeshPlugin : Plugin() {
 
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -588,6 +596,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("unicastAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -612,6 +621,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("networkTransmitIntervalSteps is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -634,6 +644,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("appKeyIndex is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -656,6 +667,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("appKeyIndex is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -676,6 +688,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("unicastAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -702,6 +715,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("appKeyIndex is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -728,6 +742,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("appKeyIndex is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -754,6 +769,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("modelId is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -780,6 +796,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("modelId is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -804,6 +821,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("subscriptionAddress is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -829,6 +847,7 @@ class NrfMeshPlugin : Plugin() {
         val appKeyIndex = call.getInt("appKeyIndex")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -863,6 +882,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("appKeyIndex is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -890,6 +910,7 @@ class NrfMeshPlugin : Plugin() {
         val delay = call.getInt("delay")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -917,6 +938,7 @@ class NrfMeshPlugin : Plugin() {
         val propertyId = call.getInt("propertyId")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -939,6 +961,7 @@ class NrfMeshPlugin : Plugin() {
         val propertyId = call.getInt("propertyId")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -964,6 +987,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("rawValueX is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -996,6 +1020,7 @@ class NrfMeshPlugin : Plugin() {
         }
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -1024,6 +1049,7 @@ class NrfMeshPlugin : Plugin() {
                 ?: return call.reject("propertyId is required")
 
         CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
@@ -1035,6 +1061,31 @@ class NrfMeshPlugin : Plugin() {
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_CADENCE_GET, elementAddress, call)
 
             implementation.getSensorCadence(elementAddress,appKeyIndex,propertyId)
+        }
+    }
+
+    @PluginMethod
+    fun getSensorSettings(call: PluginCall){
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+        val propertyId = call.getInt("propertyId")
+                ?: return call.reject("propertyId is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!implementation.assertMeshNetwork(call)) return@launch
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTINGS_GET, elementAddress, call)
+
+            implementation.getSensorSettings(elementAddress,appKeyIndex,propertyId)
         }
     }
 

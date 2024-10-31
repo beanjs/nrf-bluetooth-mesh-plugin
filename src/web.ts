@@ -24,6 +24,7 @@ import type {
   SensorColumnStatus,
   SensorSeriesStatus,
   SensorCadenceStatus,
+  SensorSettingsStatus,
   OnOffStatus,
   MeshNode,
   MeshGroup,
@@ -186,6 +187,10 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async getSensorCadence (): Promise<SensorCadenceStatus> {
     console.log('getSensorCadence');
     return {} as SensorCadenceStatus;
+  }
+  async getSensorSettings (): Promise<SensorSettingsStatus> {
+    console.log('getSensorSettings');
+    return {} as SensorSettingsStatus;
   }
 
   // async createApplicationKey(): Promise<void> {

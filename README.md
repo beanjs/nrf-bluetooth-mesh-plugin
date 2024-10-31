@@ -52,6 +52,7 @@ npx cap sync
 * [`getSensorColumn(...)`](#getsensorcolumn)
 * [`getSensorSeries(...)`](#getsensorseries)
 * [`getSensorCadence(...)`](#getsensorcadence)
+* [`getSensorSettings(...)`](#getsensorsettings)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -606,6 +607,21 @@ getSensorCadence(options: { elementAddress: number; appKeyIndex: number; propert
 --------------------
 
 
+### getSensorSettings(...)
+
+```typescript
+getSensorSettings(options: { elementAddress: number; appKeyIndex: number; propertyId: number; }) => Promise<SensorSettingsStatus>
+```
+
+| Param         | Type                                                                              |
+| ------------- | --------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensorsettingsstatus">SensorSettingsStatus</a>&gt;</code>
+
+--------------------
+
+
 ### addListener(string, ...)
 
 ```typescript
@@ -963,6 +979,13 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **`data`** | <code>{ propertyId: number; periodDivisor: number; statusMinInterval: number; triggerType?: number; fastCadenceLow?: number; fastCadenceHigh?: number; delta?: { down: number; up: number; }; }</code> |
+
+
+#### SensorSettingsStatus
+
+| Prop       | Type                                                     |
+| ---------- | -------------------------------------------------------- |
+| **`data`** | <code>{ propertyId: number; settings: number[]; }</code> |
 
 
 #### PluginListenerHandle
