@@ -63,36 +63,26 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
 
         private fun sensorDescriptorStatusResponse(meshMessage: SensorDescriptorStatus): JSArray {
             return JSArray().apply {
-                val pms = meshMessage.parameters
-                var offset = 0
-
-                while (offset < pms.count()) {
-                    val property = MeshParserUtils.unsignedBytesToInt(pms[offset], pms[offset + 1])
-                    val positiveTolerance = MeshParserUtils.bytesToInt(byteArrayOf(pms[offset + 3].toInt().and(0x0F).toByte(), pms[offset + 2]))
-                    val negativeTolerance = MeshParserUtils.bytesToInt(byteArrayOf(
-                            pms[offset + 4].toInt().and(0xF0).shr(4).toByte(),
-                            pms[offset + 4].toInt().and(0x0F).shl(4).or(pms[offset + 3].toInt().and(0xF0).shr(4)).toByte()))
-                    val samplingFunction = pms[offset + 5]
-                    val measurementPeriod = pms[offset + 6]
-                    val updateInterval = pms[offset + 7]
-
-                    offset += 8
-
-                    put(JSObject().apply {
-                        put("propertyId", property)
-                        put("positiveTolerance", positiveTolerance)
-                        put("negativeTolerance", negativeTolerance)
-                        put("samplingFunction", samplingFunction)
-                        put("measurementPeriod", measurementPeriod)
-                        put("updateInterval", updateInterval)
-                    })
+                if (meshMessage.result is SensorDescriptorStatus.SensorDescriptors) {
+                    val result = meshMessage.result as SensorDescriptorStatus.SensorDescriptors
+                    result.descriptors.forEach {
+                        put(JSObject().apply {
+                            put("propertyId", it.property.propertyId)
+                            put("positiveTolerance", it.positiveTolerance)
+                            put("negativeTolerance", it.negativeTolerance)
+                            put("samplingFunction", it.sensorSamplingFunction.ordinal)
+                            put("measurementPeriod", it.measurementPeriod)
+                            put("updateInterval", it.updateInterval)
+                        })
+                    }
                 }
             }
+
         }
 
         private fun sensorColumnStatusResponse(meshMessage: SensorColumnStatus): JSObject {
             return JSObject().apply {
-                put("propertyId", meshMessage.propertyId)
+                put("propertyId", meshMessage.propertyId.propertyId)
                 put("columns", JSArray().apply {
                     if (meshMessage.result != null) {
                         meshMessage.result.forEach {
@@ -105,7 +95,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
 
         private fun sensorSeriesStatusResponse(meshMessage: SensorSeriesStatus): JSObject {
             return JSObject().apply {
-                put("propertyId", meshMessage.propertyId)
+                put("propertyId", meshMessage.propertyId.propertyId)
                 put("series", JSArray().apply {
                     if (meshMessage.seriesRawX1X2 != null) {
                         meshMessage.seriesRawX1X2.forEach {
@@ -138,7 +128,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
 
         private fun sensorSettingsStatusResponse(meshMessage: SensorSettingsStatus): JSObject {
             return JSObject().apply {
-                put("propertyId", meshMessage.propertyId)
+                put("propertyId", meshMessage.propertyId.propertyId)
                 put("settings", JSArray().apply {
                     meshMessage.sensorSettingPropertyIds.forEach {
                         put(it.propertyId)

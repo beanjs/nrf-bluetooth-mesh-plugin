@@ -110,6 +110,12 @@ export abstract class SensorData<T extends SensorDataType> {
   public abstract setValue(value: T | Uint8Array): void;
   public abstract toBytes(): Uint8Array;
 
+  public toValues (): Array<number> {
+    const vals: Array<number> = [];
+    this.toBytes().forEach(v => vals.push(v));
+    return vals;
+  }
+
   // static method
   private static rcls: Map<number, any> = new Map();
 
