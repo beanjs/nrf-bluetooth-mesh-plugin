@@ -51,6 +51,7 @@ npx cap sync
 * [`getSensorDescriptor(...)`](#getsensordescriptor)
 * [`getSensorColumn(...)`](#getsensorcolumn)
 * [`getSensorSeries(...)`](#getsensorseries)
+* [`getSensorCadence(...)`](#getsensorcadence)
 * [`addListener(string, ...)`](#addlistenerstring-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -590,6 +591,21 @@ getSensorSeries(options: { elementAddress: number; appKeyIndex: number; property
 --------------------
 
 
+### getSensorCadence(...)
+
+```typescript
+getSensorCadence(options: { elementAddress: number; appKeyIndex: number; propertyId: number; }) => Promise<SensorCadenceStatus>
+```
+
+| Param         | Type                                                                              |
+| ------------- | --------------------------------------------------------------------------------- |
+| **`options`** | <code>{ elementAddress: number; appKeyIndex: number; propertyId: number; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sensorcadencestatus">SensorCadenceStatus</a>&gt;</code>
+
+--------------------
+
+
 ### addListener(string, ...)
 
 ```typescript
@@ -940,6 +956,13 @@ removeAllListeners() => Promise<void>
 | Prop       | Type                                                   |
 | ---------- | ------------------------------------------------------ |
 | **`data`** | <code>{ propertyId: number; series: number[]; }</code> |
+
+
+#### SensorCadenceStatus
+
+| Prop       | Type                                                                                                                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`data`** | <code>{ propertyId: number; periodDivisor: number; statusMinInterval: number; triggerType?: number; fastCadenceLow?: number; fastCadenceHigh?: number; delta?: { down: number; up: number; }; }</code> |
 
 
 #### PluginListenerHandle

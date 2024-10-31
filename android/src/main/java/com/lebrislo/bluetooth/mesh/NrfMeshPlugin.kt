@@ -1014,6 +1014,30 @@ class NrfMeshPlugin : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun getSensorCadence(call: PluginCall){
+        val elementAddress = call.getInt("elementAddress")
+                ?: return call.reject("elementAddress is required")
+        val appKeyIndex = call.getInt("appKeyIndex")
+                ?: return call.reject("appKeyIndex is required")
+        val propertyId = call.getInt("propertyId")
+                ?: return call.reject("propertyId is required")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!assertBluetoothAdapter(call)) return@launch
+
+            val connected = connectionToProvisionedDevice()
+            if (!connected) {
+                return@launch call.reject("Failed to connect to Mesh proxy")
+            }
+
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_CADENCE_GET, elementAddress, call)
+
+            implementation.getSensorCadence(elementAddress,appKeyIndex,propertyId)
+        }
+    }
+
 
     fun sendNotification(eventName: String, data: JSObject) {
         notifyListeners(eventName, data)

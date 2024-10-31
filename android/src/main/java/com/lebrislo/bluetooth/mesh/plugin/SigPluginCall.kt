@@ -3,8 +3,10 @@ package com.lebrislo.bluetooth.mesh.plugin
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
+import no.nordicsemi.android.mesh.sensorutils.DevicePropertyCharacteristic
 import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
+import no.nordicsemi.android.mesh.transport.SensorCadenceStatus
 import no.nordicsemi.android.mesh.transport.SensorColumnStatus
 import no.nordicsemi.android.mesh.transport.SensorDescriptorStatus
 import no.nordicsemi.android.mesh.transport.SensorSeriesStatus
@@ -35,6 +37,7 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                     is SensorDescriptorStatus -> sensorDescriptorStatusResponse(meshMessage)
                     is SensorColumnStatus -> sensorColumnStatusResponse(meshMessage)
                     is SensorSeriesStatus -> sensorSeriesStatusResponse(meshMessage)
+                    is SensorCadenceStatus -> sensorCadenceStatusResponse(meshMessage)
                     else -> JSObject()
                 })
             }
@@ -83,10 +86,10 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
             }
         }
 
-        private fun sensorColumnStatusResponse(meshMessage: SensorColumnStatus):JSObject{
-            return  JSObject().apply {
-                put("propertyId",meshMessage.propertyId)
-                put("columns",JSArray().apply {
+        private fun sensorColumnStatusResponse(meshMessage: SensorColumnStatus): JSObject {
+            return JSObject().apply {
+                put("propertyId", meshMessage.propertyId)
+                put("columns", JSArray().apply {
                     if (meshMessage.result != null) {
                         meshMessage.result.forEach {
                             put(it)
@@ -96,10 +99,10 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
             }
         }
 
-        private fun sensorSeriesStatusResponse(meshMessage: SensorSeriesStatus):JSObject{
-            return  JSObject().apply {
-                put("propertyId",meshMessage.propertyId)
-                put("series",JSArray().apply {
+        private fun sensorSeriesStatusResponse(meshMessage: SensorSeriesStatus): JSObject {
+            return JSObject().apply {
+                put("propertyId", meshMessage.propertyId)
+                put("series", JSArray().apply {
                     if (meshMessage.seriesRawX1X2 != null) {
                         meshMessage.seriesRawX1X2.forEach {
                             put(it)
@@ -108,6 +111,27 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
                 })
             }
         }
+
+        private fun sensorCadenceStatusResponse(meshMessage: SensorCadenceStatus): JSObject {
+            return JSObject().apply {
+                val cadence = meshMessage.cadence
+                put("propertyId", cadence.deviceProperty.propertyId)
+                put("periodDivisor", cadence.periodDivisor)
+                put("statusMinInterval", cadence.statusMinInterval)
+                cadence.triggerType?.let { put("triggerType", it.ordinal) }
+                cadence.fastCadenceLow?.let { put("fastCadenceLow", it.value) }
+                cadence.fastCadenceHigh?.let { put("fastCadenceHigh", it.value) }
+
+                val delta = cadence.delta ?: return@apply
+                val down = delta.down as DevicePropertyCharacteristic<*>
+                val up = delta.up as DevicePropertyCharacteristic<*>
+                put("delta",JSObject().apply {
+                    put("down",down.value)
+                    put("up",up.value)
+                })
+            }
+        }
+
 
 //
 //        private fun genericLevelStatusResponse(meshMessage: GenericLevelStatus): JSObject {

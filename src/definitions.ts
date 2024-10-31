@@ -324,6 +324,18 @@ export interface SensorSeriesStatus extends Status {
   };
 }
 
+export interface SensorCadenceStatus extends Status {
+  data: {
+    propertyId: number;
+    periodDivisor: number;
+    statusMinInterval: number;
+    triggerType?: number;
+    fastCadenceLow?: number;
+    fastCadenceHigh?: number;
+    delta?: { down: number; up: number };
+  };
+}
+
 export interface NrfMeshPlugin {
   checkPermissions(): Promise<Permissions>;
   requestPermissions(): Promise<Permissions>;
@@ -460,6 +472,11 @@ export interface NrfMeshPlugin {
     rawValueX1?: Array<number>;
     rawValueX2?: Array<number>;
   }): Promise<SensorSeriesStatus>;
+  getSensorCadence(options: {
+    elementAddress: number;
+    appKeyIndex: number;
+    propertyId: number;
+  }): Promise<SensorCadenceStatus>;
 
   // sendGenericOnOffSet(options: {
   //   unicastAddress: number;
