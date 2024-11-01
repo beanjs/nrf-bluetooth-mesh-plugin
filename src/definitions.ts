@@ -361,7 +361,6 @@ export interface NrfMeshPlugin {
   exportMeshNetwork(): Promise<MeshNetworkExport>;
   importMeshNetwork(network: MeshNetworkExport): Promise<void>;
 
-  // getProvisioners(): Promise<Array<MeshProvisioner>>;
   getMeshNetwork(): Promise<MeshNetwork>;
   createAppKey(): Promise<MeshAppKey>;
   removeAppKey(options: { index: number }): Promise<void>;
@@ -513,53 +512,6 @@ export interface NrfMeshPlugin {
     acknowledgement?: boolean;
   }): Promise<SensorSettingStatus>;
 
-  // sendGenericOnOffSet(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  //   onOff: boolean;
-  //   acknowledgement?: boolean;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // sendGenericOnOffGet(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // sendGenericPowerLevelSet(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  //   powerLevel: number;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // sendGenericPowerLevelGet(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // sendLightHslSet(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  //   hue: number;
-  //   saturation: number;
-  //   lightness: number;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // sendLightHslGet(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // sendLightCtlSet(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  //   lightness: number;
-  //   temperature: number;
-  //   deltaUv: number;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // sendVendorModelMessage(options: {
-  //   unicastAddress: number;
-  //   appKeyIndex: number;
-  //   modelId: number;
-  //   opcode: number;
-  //   payload?: Uint8Array;
-  //   opPairCode?: number;
-  // }): Promise<ModelMessageStatus | PluginCallRejection>;
-  // exportMeshNetwork(): Promise<MeshNetworkObject>;
-  // importMeshNetwork(options: { meshNetwork: string }): Promise<void>;
   addListener(
     eventName: string,
     listenerFunc: (event: any) => void,

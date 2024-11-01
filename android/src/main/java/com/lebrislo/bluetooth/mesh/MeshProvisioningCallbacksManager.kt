@@ -7,6 +7,7 @@ import no.nordicsemi.android.mesh.MeshProvisioningStatusCallbacks
 import no.nordicsemi.android.mesh.provisionerstates.ProvisioningState
 import no.nordicsemi.android.mesh.provisionerstates.UnprovisionedMeshNode
 import no.nordicsemi.android.mesh.transport.ProvisionedMeshNode
+import no.nordicsemi.android.mesh.utils.MeshParserUtils
 
 class MeshProvisioningCallbacksManager(
         var nrfMeshManager: NrfMeshManager
@@ -14,6 +15,15 @@ class MeshProvisioningCallbacksManager(
         MeshProvisioningStatusCallbacks {
     private val tag: String = MeshProvisioningCallbacksManager::class.java.simpleName
     val unprovisionedMeshNodes: ArrayList<UnprovisionedMeshNode> = ArrayList()
+
+    private fun findUnode(unode: UnprovisionedMeshNode,pnode: ProvisionedMeshNode):Boolean{
+        if (unode.deviceKey == null) return false
+
+        val ukey = MeshParserUtils.bytesToHex(unode.deviceKey, false)
+        val pkey = MeshParserUtils.bytesToHex(pnode.deviceKey, false)
+
+        return ukey == pkey
+    }
 
     override fun onProvisioningStateChanged(
             meshNode: UnprovisionedMeshNode?,
@@ -34,6 +44,7 @@ class MeshProvisioningCallbacksManager(
     ) {
         Log.d(tag, "onProvisioningFailed : " + meshNode?.deviceUuid)
         if (state == ProvisioningState.States.PROVISIONING_FAILED) {
+            unprovisionedMeshNodes.remove(meshNode!!)
             PluginCallManager.getInstance().resolveMeshProvisionPluginCall(BleMeshDevice.Unprovisioned(meshNode!!))
         }
     }
@@ -46,6 +57,10 @@ class MeshProvisioningCallbacksManager(
         Log.d(tag, "onProvisioningCompleted : " + meshNode?.uuid)
         if (state == ProvisioningState.States.PROVISIONING_COMPLETE) {
             nrfMeshManager.disconnectBle().enqueue()
+            val unode = unprovisionedMeshNodes.find {
+                findUnode(it,meshNode!!)
+            }
+            if (unode != null) unprovisionedMeshNodes.remove(unode)
             PluginCallManager.getInstance().resolveMeshProvisionPluginCall(BleMeshDevice.Provisioned(meshNode!!))
         }
     }

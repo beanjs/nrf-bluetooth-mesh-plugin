@@ -110,10 +110,14 @@ export abstract class SensorData<T extends SensorDataType> {
   public abstract setValue(value: T | Uint8Array): void;
   public abstract toBytes(): Uint8Array;
 
-  public toValues (): Array<number> {
-    const vals: Array<number> = [];
-    this.toBytes().forEach(v => vals.push(v));
-    return vals;
+  public toValues (name?: string): any {
+    const values: Array<number> = [];
+    this.toBytes().forEach(v => values.push(v));
+
+    return {
+      [name || 'propertyId']: this.propertyId,
+      values: values,
+    };
   }
 
   // static method
@@ -724,6 +728,46 @@ export class Unknown extends SensorData<Uint8Array> {
   }
   public toBytes (): Uint8Array {
     return this._value as Uint8Array;
+  }
+}
+
+export class Value extends SensorData<number> {
+  private _exponent: number;
+
+  public get exponent () {
+    return this._exponent;
+  }
+
+  public constructor (propertyId: number, exponent?: number) {
+    super(propertyId);
+    this._exponent = exponent || 0;
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value |= value[2] << 16;
+    this._value |= value[3] << 24;
+    this._value /= Math.pow(10, this._exponent);
+  }
+  public toBytes (): Uint8Array {
+    const val = parseInt(
+      ((this._value as number) * Math.pow(10, this._exponent)).toString(),
+    );
+    const u8a = new Uint8Array(4);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+    u8a[2] = (val >> 16) & 0xff;
+    u8a[3] = (val >> 24) & 0xff;
+
+    return u8a;
   }
 }
 

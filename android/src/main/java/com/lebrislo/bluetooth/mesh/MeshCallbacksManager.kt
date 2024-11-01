@@ -34,6 +34,8 @@ class MeshCallbacksManager(val bleMeshManager: BleMeshManager) : MeshManagerCall
             val defaultAppKey = this.meshNetwork!!.createAppKey()
             this.meshNetwork!!.addAppKey(defaultAppKey)
         }
+
+        PluginCallManager.getInstance().resolveMeshNetworkInitPluginCall()
     }
 
     override fun onNetworkUpdated(meshNetwork: MeshNetwork?) {

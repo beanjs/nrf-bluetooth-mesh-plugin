@@ -27,7 +27,7 @@ class PluginCallManager private constructor() {
     private val pluginCalls: MutableList<BasePluginCall> = mutableListOf()
 
     companion object {
-        const val ELEMENT_NONE_ADDRESS = 0x08000000;
+        const val MESH_NETWORK_INIT = 0x08000000;
         const val MESH_NODE_IDENTIFY = 0x08000001;
         const val MESH_NODE_PROVISION = 0x08000002;
 
@@ -132,14 +132,14 @@ class PluginCallManager private constructor() {
         }
     }
 
-    fun addMeshPluginCall(meshOperation: Int, call: PluginCall) {
+    fun addMeshPluginCall(meshOperation: Int, call: PluginCall, timeout: Int) {
         this.clearTimeout()
-        pluginCalls.add(ConfigPluginCall(meshOperation, ELEMENT_NONE_ADDRESS, call))
+        pluginCalls.add(MeshPluginCall(meshOperation, call, timeout))
     }
 
     fun resolveMeshIndetifyPluginCall(meshNode: UnprovisionedMeshNode) {
         this.clearTimeout()
-        val pluginCall = pluginCalls.find { it is ConfigPluginCall && it.meshOperationCallback == MESH_NODE_IDENTIFY }
+        val pluginCall = pluginCalls.find { it is MeshPluginCall && it.meshOperationCallback == MESH_NODE_IDENTIFY }
 
         val result = JSObject().apply {
             put("numberOfElements", meshNode.provisioningCapabilities.numberOfElements)
@@ -161,7 +161,7 @@ class PluginCallManager private constructor() {
         if (pluginCall == null) {
             plugin.sendNotification(MESH_EVENT_STRING, result)
         } else {
-            pluginCall as ConfigPluginCall
+            pluginCall as MeshPluginCall
             pluginCall.resolve(result)
             pluginCalls.remove(pluginCall)
         }
@@ -169,7 +169,7 @@ class PluginCallManager private constructor() {
 
     fun resolveMeshProvisionPluginCall(meshDevice: BleMeshDevice) {
         this.clearTimeout()
-        val pluginCall = pluginCalls.find { it is ConfigPluginCall && it.meshOperationCallback == MESH_NODE_PROVISION }
+        val pluginCall = pluginCalls.find { it is MeshPluginCall && it.meshOperationCallback == MESH_NODE_PROVISION }
 
         val result = JSObject().apply {
             when (meshDevice) {
@@ -189,8 +189,18 @@ class PluginCallManager private constructor() {
         if (pluginCall == null) {
             plugin.sendNotification(MESH_EVENT_STRING, result)
         } else {
-            pluginCall as ConfigPluginCall
+            pluginCall as MeshPluginCall
             pluginCall.resolve(result)
+            pluginCalls.remove(pluginCall)
+        }
+    }
+
+    fun resolveMeshNetworkInitPluginCall() {
+        this.clearTimeout()
+        val pluginCall = pluginCalls.find { it is MeshPluginCall && it.meshOperationCallback == MESH_NETWORK_INIT }
+        if (pluginCall != null) {
+            pluginCall as MeshPluginCall
+            pluginCall.resolve(JSObject())
             pluginCalls.remove(pluginCall)
         }
     }

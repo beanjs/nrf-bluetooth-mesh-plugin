@@ -266,7 +266,9 @@ class NrfMeshPlugin : Plugin() {
 
         implementation.initMeshNetwork()
         implementation.startScan()
-        call.resolve()
+
+        PluginCallManager.getInstance()
+                .addMeshPluginCall(PluginCallManager.MESH_NETWORK_INIT, call,60000)
     }
 
     @PluginMethod
@@ -471,7 +473,7 @@ class NrfMeshPlugin : Plugin() {
             }
 
             PluginCallManager.getInstance()
-                    .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call)
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call,10000)
 
             implementation.identify(UUID.fromString(uuid))
         }
@@ -496,7 +498,7 @@ class NrfMeshPlugin : Plugin() {
                     ?: return@launch call.reject("Unprovisioned Mesh Node not found, try identifying the node first")
 
             PluginCallManager.getInstance()
-                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call)
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call,30000)
 
             implementation.provisionDevice(node)
         }
