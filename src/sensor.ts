@@ -123,19 +123,20 @@ export abstract class SensorData<T extends SensorDataType> {
   // static method
   private static rcls: Map<number, any> = new Map();
 
-  public static register (propertyId: number, cls: typeof SensorData) {
+  public static register (propertyId: number, cls: any) {
     SensorData.rcls.set(propertyId, cls);
   }
 
   public static from (
     src: SensorStatus | number,
+    ...args: any
   ): SensorData<SensorDataType> | Array<SensorData<SensorDataType>> {
     if (typeof src == 'number') {
       const CLS = CLSM[src];
-      if (CLS) return new CLS(src);
+      if (CLS) return new CLS(src, ...args);
 
       const RCLS = SensorData.rcls.get(src);
-      if (RCLS) return new RCLS(src);
+      if (RCLS) return new RCLS(src, ...args);
 
       return new Unknown(src);
     }
@@ -160,7 +161,10 @@ export abstract class SensorData<T extends SensorDataType> {
         propertyId = (octet2 << 8) | octet1;
       }
 
-      const ins = SensorData.from(propertyId) as SensorData<SensorDataType>;
+      const ins = SensorData.from(
+        propertyId,
+        ...args,
+      ) as SensorData<SensorDataType>;
       res.push(ins);
 
       ins.setValue(u8a.slice(offset, offset + length));
@@ -731,7 +735,214 @@ export class Unknown extends SensorData<Uint8Array> {
   }
 }
 
-export class Value extends SensorData<number> {
+export class Uint8 extends SensorData<number> {
+  public constructor (propertyId: number) {
+    super(propertyId);
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+  }
+
+  public toBytes (): Uint8Array {
+    const val = parseInt((this._value as number).toString());
+    const u8a = new Uint8Array(1);
+
+    u8a[0] = (val >> 0) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Uint16 extends SensorData<number> {
+  public constructor (propertyId: number) {
+    super(propertyId);
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+  }
+
+  public toBytes (): Uint8Array {
+    const val = parseInt((this._value as number).toString());
+    const u8a = new Uint8Array(2);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Uint32 extends SensorData<number> {
+  public constructor (propertyId: number) {
+    super(propertyId);
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value |= value[2] << 16;
+    this._value |= value[3] << 24;
+  }
+
+  public toBytes (): Uint8Array {
+    const val = parseInt((this._value as number).toString());
+    const u8a = new Uint8Array(4);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+    u8a[2] = (val >> 16) & 0xff;
+    u8a[3] = (val >> 24) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Int8 extends SensorData<number> {
+  public constructor (propertyId: number) {
+    super(propertyId);
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value = unsignedToSigned(this._value, 8);
+  }
+
+  public toBytes (): Uint8Array {
+    const int = parseInt((this._value as number).toString());
+    const val = signedToUnsigned(int, 8);
+    const u8a = new Uint8Array(1);
+
+    u8a[0] = (val >> 0) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Int16 extends SensorData<number> {
+  public constructor (propertyId: number) {
+    super(propertyId);
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value = unsignedToSigned(this._value, 16);
+  }
+
+  public toBytes (): Uint8Array {
+    const int = parseInt((this._value as number).toString());
+    const val = signedToUnsigned(int, 16);
+    const u8a = new Uint8Array(2);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Int32 extends SensorData<number> {
+  public constructor (propertyId: number) {
+    super(propertyId);
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value |= value[2] << 16;
+    this._value |= value[3] << 24;
+    this._value = unsignedToSigned(this._value, 32);
+  }
+
+  public toBytes (): Uint8Array {
+    const int = parseInt((this._value as number).toString());
+    const val = signedToUnsigned(int, 32);
+    const u8a = new Uint8Array(4);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+    u8a[2] = (val >> 16) & 0xff;
+    u8a[3] = (val >> 24) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Uint16Value extends SensorData<number> {
+  private _exponent: number;
+
+  public get exponent () {
+    return this._exponent;
+  }
+
+  public constructor (propertyId: number, exponent?: number) {
+    super(propertyId);
+    this._exponent = exponent || 0;
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value /= Math.pow(10, this._exponent);
+  }
+  public toBytes (): Uint8Array {
+    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const val = parseInt(int.toString());
+    const u8a = new Uint8Array(2);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Uint32Value extends SensorData<number> {
   private _exponent: number;
 
   public get exponent () {
@@ -757,9 +968,84 @@ export class Value extends SensorData<number> {
     this._value /= Math.pow(10, this._exponent);
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(
-      ((this._value as number) * Math.pow(10, this._exponent)).toString(),
-    );
+    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const val = parseInt(int.toString());
+    const u8a = new Uint8Array(4);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+    u8a[2] = (val >> 16) & 0xff;
+    u8a[3] = (val >> 24) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Int16Value extends SensorData<number> {
+  private _exponent: number;
+
+  public get exponent () {
+    return this._exponent;
+  }
+
+  public constructor (propertyId: number, exponent?: number) {
+    super(propertyId);
+    this._exponent = exponent || 0;
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value = unsignedToSigned(this._value, 16);
+    this._value /= Math.pow(10, this._exponent);
+  }
+  public toBytes (): Uint8Array {
+    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const val = signedToUnsigned(parseInt(int.toString()), 16);
+    const u8a = new Uint8Array(2);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Int32Value extends SensorData<number> {
+  private _exponent: number;
+
+  public get exponent () {
+    return this._exponent;
+  }
+
+  public constructor (propertyId: number, exponent?: number) {
+    super(propertyId);
+    this._exponent = exponent || 0;
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value |= value[2] << 16;
+    this._value |= value[3] << 24;
+    this._value = unsignedToSigned(this._value, 32);
+    this._value /= Math.pow(10, this._exponent);
+  }
+  public toBytes (): Uint8Array {
+    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const val = signedToUnsigned(parseInt(int.toString()), 32);
     const u8a = new Uint8Array(4);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -776,6 +1062,14 @@ function unsignedToSigned (unsigned: number, size: number) {
     unsigned = -1 * ((1 << (size - 1)) - (unsigned & ((1 << (size - 1)) - 1)));
   }
   return unsigned;
+}
+
+function signedToUnsigned (signed: number, size: number) {
+  if (signed < 0) {
+    signed = (1 << size) + signed;
+    signed &= (1 << size) - 1;
+  }
+  return signed;
 }
 
 const CLSM: any = {
