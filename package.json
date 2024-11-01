@@ -1,6 +1,6 @@
 {
-  "name": "nrf-bluetooth-mesh",
-  "version": "0.0.1",
+  "name": "@beanjs/nrf-bluetooth-mesh",
+  "version": "1.0.0",
   "description": "Capacitor plugin for Bluetooth Mesh, based on nRF Mesh Libraries",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -15,14 +15,14 @@
     "Package.swift",
     "NrfBluetoothMesh.podspec"
   ],
-  "author": "lebrislo",
+  "author": "lebrislo,beanjs",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lebrislo/nrf-bluetooth-mesh-plugin.git"
+    "url": "git+https://github.com/beanjs/nrf-bluetooth-mesh-plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/lebrislo/nrf-bluetooth-mesh-plugin/issues"
+    "url": "https://github.com/beanjs/nrf-bluetooth-mesh-plugin/issues"
   },
   "keywords": [
     "capacitor",
