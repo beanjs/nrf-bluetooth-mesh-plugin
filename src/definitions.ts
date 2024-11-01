@@ -327,12 +327,13 @@ export interface SensorSeriesStatus extends Status {
 export interface SensorCadenceStatus extends Status {
   data: {
     propertyId: number;
-    periodDivisor: number;
-    statusMinInterval: number;
+    periodDivisor?: number;
     triggerType?: number;
-    fastCadenceLow?: number;
-    fastCadenceHigh?: number;
-    delta?: { down: number; up: number };
+    minInterval?: number;
+    triggerDeltaDown?: Array<number>;
+    triggerDeltaUp?: Array<number>;
+    fastCadenceLow?: Array<number>;
+    fastCadenceHigh?: Array<number>;
   };
 }
 
@@ -348,7 +349,7 @@ export interface SensorSettingStatus extends Status {
     propertyId: number;
     sensorSettingPropertyId: number;
     sensorSettingAccess?: number;
-    sensorSetting?: number;
+    sensorSetting?: Array<number>;
   };
 }
 

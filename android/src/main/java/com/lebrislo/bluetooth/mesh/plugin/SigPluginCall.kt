@@ -3,7 +3,9 @@ package com.lebrislo.bluetooth.mesh.plugin
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
+import no.nordicsemi.android.mesh.sensorutils.DeviceProperty
 import no.nordicsemi.android.mesh.sensorutils.DevicePropertyCharacteristic
+import no.nordicsemi.android.mesh.sensorutils.SensorSettingAccess
 import no.nordicsemi.android.mesh.transport.GenericOnOffStatus
 import no.nordicsemi.android.mesh.transport.MeshMessage
 import no.nordicsemi.android.mesh.transport.SensorCadenceStatus
@@ -108,21 +110,51 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
 
         private fun sensorCadenceStatusResponse(meshMessage: SensorCadenceStatus): JSObject {
             return JSObject().apply {
-                val cadence = meshMessage.cadence
-                put("propertyId", cadence.deviceProperty.propertyId)
-                put("periodDivisor", cadence.periodDivisor)
-                put("statusMinInterval", cadence.statusMinInterval)
-                cadence.triggerType?.let { put("triggerType", it.ordinal) }
-                cadence.fastCadenceLow?.let { put("fastCadenceLow", it.value) }
-                cadence.fastCadenceHigh?.let { put("fastCadenceHigh", it.value) }
+                val pms = meshMessage.parameters
 
-                val delta = cadence.delta ?: return@apply
-                val down = delta.down as DevicePropertyCharacteristic<*>
-                val up = delta.up as DevicePropertyCharacteristic<*>
-                put("delta", JSObject().apply {
-                    put("down", down.value)
-                    put("up", up.value)
+                put("propertyId", MeshParserUtils.unsignedBytesToInt(pms[0], pms[1]))
+                if (pms.size <= 2) return@apply
+
+                val periodDivisor = pms[2].toInt().and(0x7F)
+                val triggerType = pms[2].toInt().and(0x80).shr(7)
+                val triggerLen = if (triggerType == 0x00) ((pms.size - 4) / 4) else 2
+
+                var offset = 3
+                val triggerDeltaDown = pms.slice(IntRange(offset, offset + triggerLen - 1))
+                offset += triggerLen
+
+                val triggerDeltaUp = pms.slice(IntRange(offset, offset + triggerLen - 1))
+                offset += triggerLen
+
+                val minInterval = pms[offset++].toInt()
+
+                val fastCadenceLow = pms.slice(IntRange(offset, offset + triggerLen - 1))
+                val fastCadenceHigh = pms.slice(IntRange(offset, offset + triggerLen - 1))
+
+                put("periodDivisor",periodDivisor)
+                put("triggerType",triggerType)
+                put("minInterval",minInterval)
+                put("triggerDeltaDown",JSArray().apply {
+                    triggerDeltaDown.forEach {
+                        put(it)
+                    }
                 })
+                put("triggerDeltaUp",JSArray().apply {
+                    triggerDeltaUp.forEach {
+                        put(it)
+                    }
+                })
+                put("fastCadenceLow",JSArray().apply {
+                    fastCadenceLow.forEach {
+                        put(it)
+                    }
+                })
+                put("fastCadenceHigh",JSArray().apply {
+                    fastCadenceHigh.forEach {
+                        put(it)
+                    }
+                })
+
             }
         }
 
@@ -139,45 +171,18 @@ class SigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: 
 
         private fun sensorSettingStatusResponse(meshMessage: SensorSettingStatus): JSObject {
             return JSObject().apply {
-                put("propertyId", meshMessage.propertyId.propertyId)
-                put("sensorSettingPropertyId", meshMessage.sensorSettingPropertyId.propertyId)
-
-                if (meshMessage.sensorSettingAccess != null) {
-                    put("sensorSettingAccess", meshMessage.sensorSettingAccess.ordinal)
-                }
-
-                if (meshMessage.sensorSetting != null) {
-                    put("sensorSetting", meshMessage.sensorSetting.value)
+                val pms = meshMessage.parameters
+                put("propertyId", MeshParserUtils.unsignedBytesToInt(pms[0], pms[1]))
+                put("sensorSettingPropertyId", MeshParserUtils.unsignedBytesToInt(pms[2], pms[3]))
+                if (pms.size > 4) {
+                    put("sensorSettingAccess", pms[4].toInt().and(0xFF))
+                    put("sensorSetting", JSArray().apply {
+                        pms.slice(IntRange(5, pms.size - 1)).forEach {
+                            put(it)
+                        }
+                    })
                 }
             }
         }
-
-//
-//        private fun genericLevelStatusResponse(meshMessage: GenericLevelStatus): JSObject {
-//            val data = JSObject()
-//            data.put("level", meshMessage.presentLevel)
-//            return data
-//        }
-
-//        private fun genericPowerLevelStatusResponse(meshMessage: GenericPowerLevelStatus): JSObject {
-//            val data = JSObject()
-//            data.put("powerLevel", meshMessage.presentLevel.toUShort().toInt())
-//            return data
-//        }
-
-//        private fun lightHslStatusResponse(meshMessage: LightHslStatus): JSObject {
-//            val data = JSObject()
-//            data.put("hue", meshMessage.presentHue.toUShort().toInt())
-//            data.put("saturation", meshMessage.presentSaturation.toUShort().toInt())
-//            data.put("lightness", meshMessage.presentLightness.toUShort().toInt())
-//            return data
-//        }
-//
-//        private fun lightCtlStatusResponse(meshMessage: LightCtlStatus): JSObject {
-//            val data = JSObject()
-//            data.put("lightness", meshMessage.presentLightness.toUShort().toInt())
-//            data.put("temperature", meshMessage.presentTemperature.toUShort().toInt())
-//            return data
-//        }
     }
 }

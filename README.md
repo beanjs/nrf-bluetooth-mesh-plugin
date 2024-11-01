@@ -1010,9 +1010,9 @@ removeAllListeners() => Promise<void>
 
 #### SensorCadenceStatus
 
-| Prop       | Type                                                                                                                                                                                                   |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **`data`** | <code>{ propertyId: number; periodDivisor: number; statusMinInterval: number; triggerType?: number; fastCadenceLow?: number; fastCadenceHigh?: number; delta?: { down: number; up: number; }; }</code> |
+| Prop       | Type                                                                                                                                                                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ propertyId: number; periodDivisor?: number; triggerType?: number; minInterval?: number; triggerDeltaDown?: number[]; triggerDeltaUp?: number[]; fastCadenceLow?: number[]; fastCadenceHigh?: number[]; }</code> |
 
 
 #### SensorSettingsStatus
@@ -1024,9 +1024,9 @@ removeAllListeners() => Promise<void>
 
 #### SensorSettingStatus
 
-| Prop       | Type                                                                                                                        |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **`data`** | <code>{ propertyId: number; sensorSettingPropertyId: number; sensorSettingAccess?: number; sensorSetting?: number; }</code> |
+| Prop       | Type                                                                                                                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **`data`** | <code>{ propertyId: number; sensorSettingPropertyId: number; sensorSettingAccess?: number; sensorSetting?: number[]; }</code> |
 
 
 #### PluginListenerHandle
