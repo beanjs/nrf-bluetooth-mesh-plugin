@@ -165,9 +165,12 @@ export abstract class SensorData<T extends SensorDataType> {
         propertyId = (octet2 << 8) | octet1;
       }
 
+      const iarg = args[res.length];
+      const iargs = Array.isArray(iarg) ? iarg : [iarg];
+
       const ins = SensorData.from(
         propertyId,
-        ...args,
+        ...iargs,
       ) as SensorData<SensorDataType>;
       res.push(ins);
 
