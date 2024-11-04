@@ -81,6 +81,10 @@ export const SENSOR_FORMAT_B = 0x01;
 
 export type SensorDataType = boolean | number | Date | string | Uint8Array;
 
+export interface SensorDataConstructor {
+  new (propertyId: number, ...args: any): SensorData<SensorDataType>;
+}
+
 export abstract class SensorData<T extends SensorDataType> {
   private _propertyId: number;
   protected _value!: T | null;
@@ -121,9 +125,9 @@ export abstract class SensorData<T extends SensorDataType> {
   }
 
   // static method
-  private static rcls: Map<number, any> = new Map();
+  private static rcls: Map<number, SensorDataConstructor> = new Map();
 
-  public static register (propertyId: number, cls: any) {
+  public static register (propertyId: number, cls: SensorDataConstructor) {
     SensorData.rcls.set(propertyId, cls);
   }
 
