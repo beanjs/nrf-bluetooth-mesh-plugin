@@ -125,10 +125,10 @@ export abstract class SensorData<T extends SensorDataType> {
   }
 
   // static method
-  private static rcls: Map<number, SensorDataConstructor> = new Map();
+  private static REGISTER_CLS: Map<number, SensorDataConstructor> = new Map();
 
   public static register (propertyId: number, cls: SensorDataConstructor) {
-    SensorData.rcls.set(propertyId, cls);
+    SensorData.REGISTER_CLS.set(propertyId, cls);
   }
 
   public static from (
@@ -136,11 +136,11 @@ export abstract class SensorData<T extends SensorDataType> {
     ...args: any
   ): SensorData<SensorDataType> | Array<SensorData<SensorDataType>> {
     if (typeof src == 'number') {
-      const CLS = CLSM[src];
-      if (CLS) return new CLS(src, ...args);
-
-      const RCLS = SensorData.rcls.get(src);
+      const RCLS = SensorData.REGISTER_CLS.get(src);
       if (RCLS) return new RCLS(src, ...args);
+
+      const CLS = DEFAULTS_CLS[src];
+      if (CLS) return new CLS(src, ...args);
 
       return new Unknown(src);
     }
@@ -180,6 +180,19 @@ export abstract class SensorData<T extends SensorDataType> {
 
     return res.length == 1 ? res[0] : res;
   }
+
+  public static of (
+    propertyId: number,
+    value: Array<number>,
+    ...args: any
+  ): SensorData<SensorDataType> {
+    const val = SensorData.from(
+      propertyId,
+      ...args,
+    ) as SensorData<SensorDataType>;
+    val.setValue(Uint8Array.from(value));
+    return val;
+  }
 }
 
 export class Bool extends SensorData<boolean> {
@@ -218,12 +231,11 @@ export class Percentage8 extends SensorData<number> {
   }
 
   public toBytes (): Uint8Array {
+    const val = parseInt(((this._value || 0) * 2.0).toString());
     const u8a = new Uint8Array(1);
-    if (this._value == null) {
-      u8a[0] = 0xff;
-    } else {
-      u8a[0] = parseInt((this._value * 2.0).toString());
-    }
+
+    u8a[0] = (val >> 0) & 0xff;
+
     return u8a;
   }
 }
@@ -300,7 +312,7 @@ export class Count extends SensorData<number> {
   }
   public toBytes (): Uint8Array {
     const m16 = 0xffff;
-    const val = this._value as number;
+    const val = parseInt((this._value || 0).toString());
     const u8a = new Uint8Array(val > m16 ? 3 : 2);
 
     if (val > m16) {
@@ -333,7 +345,7 @@ export class Humidity extends SensorData<number> {
     this._value /= 100.0;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(((this._value as number) * 100).toString());
+    const val = parseInt(((this._value || 0) * 100).toString());
     const u8a = new Uint8Array(2);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -359,7 +371,7 @@ export class PerceivedLightness extends SensorData<number> {
     this._value |= value[1] << 8;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt((this._value as number).toString());
+    const val = parseInt((this._value || 0).toString());
     const u8a = new Uint8Array(2);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -395,7 +407,7 @@ export class TimeSecond extends SensorData<number> {
     }
   }
   public toBytes (): Uint8Array {
-    const val = this._value as number;
+    const val = this._value || 0;
     let len = 1;
     if (val > 0xffff) len = 2;
     if (val > 0xffffffff) len = 4;
@@ -434,7 +446,7 @@ export class Illuminance extends SensorData<number> {
     this._value /= 100.0;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(((this._value as number) * 100).toString());
+    const val = parseInt(((this._value || 0) * 100).toString());
     const u8a = new Uint8Array(3);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -462,7 +474,7 @@ export class TimeHour24 extends SensorData<number> {
     this._value |= value[2] << 16;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt((this._value as number).toString());
+    const val = parseInt((this._value || 0).toString());
     const u8a = new Uint8Array(3);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -491,7 +503,7 @@ export class TimeMillisecond24 extends SensorData<number> {
     this._value /= 1000.0;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(((this._value as number) * 1000).toString());
+    const val = parseInt(((this._value || 0) * 1000).toString());
     const u8a = new Uint8Array(3);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -552,7 +564,7 @@ export class Pressure extends SensorData<number> {
     this._value /= 10.0;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(((this._value as number) * 10).toString());
+    const val = parseInt(((this._value || 0) * 10).toString());
     const u8a = new Uint8Array(4);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -612,7 +624,7 @@ export class FixedString extends SensorData<string> {
     this._value = String.fromCharCode(...value);
   }
   public toBytes (): Uint8Array {
-    const vals = (this._value as string).split('');
+    const vals = (this._value || '').split('');
     const raws = Uint8Array.from(vals.map(c => c.charCodeAt(0)));
 
     let flen = raws.byteLength;
@@ -655,11 +667,10 @@ export class Energy32 extends SensorData<number> {
     this._value |= value[1] << 8;
     this._value |= value[2] << 16;
     this._value |= value[3] << 24;
-
     this._value /= 1000.0;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(((this._value as number) * 1000).toString());
+    const val = parseInt(((this._value || 0) * 1000).toString());
     const u8a = new Uint8Array(4);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -689,7 +700,7 @@ export class Power extends SensorData<number> {
     this._value /= 10.0;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(((this._value as number) * 10).toString());
+    const val = parseInt(((this._value || 0) * 10).toString());
     const u8a = new Uint8Array(3);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -717,7 +728,7 @@ export class ElectricCurrent extends SensorData<number> {
     this._value /= 100.0;
   }
   public toBytes (): Uint8Array {
-    const val = parseInt(((this._value as number) * 100).toString());
+    const val = parseInt(((this._value || 0) * 100).toString());
     const u8a = new Uint8Array(3);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -758,7 +769,7 @@ export class Uint8 extends SensorData<number> {
   }
 
   public toBytes (): Uint8Array {
-    const val = parseInt((this._value as number).toString());
+    const val = parseInt((this._value || 0).toString());
     const u8a = new Uint8Array(1);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -784,7 +795,7 @@ export class Uint16 extends SensorData<number> {
   }
 
   public toBytes (): Uint8Array {
-    const val = parseInt((this._value as number).toString());
+    const val = parseInt((this._value || 0).toString());
     const u8a = new Uint8Array(2);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -813,7 +824,7 @@ export class Uint32 extends SensorData<number> {
   }
 
   public toBytes (): Uint8Array {
-    const val = parseInt((this._value as number).toString());
+    const val = parseInt((this._value || 0).toString());
     const u8a = new Uint8Array(4);
 
     u8a[0] = (val >> 0) & 0xff;
@@ -842,7 +853,7 @@ export class Int8 extends SensorData<number> {
   }
 
   public toBytes (): Uint8Array {
-    const int = parseInt((this._value as number).toString());
+    const int = parseInt((this._value || 0).toString());
     const val = signedToUnsigned(int, 8);
     const u8a = new Uint8Array(1);
 
@@ -870,7 +881,7 @@ export class Int16 extends SensorData<number> {
   }
 
   public toBytes (): Uint8Array {
-    const int = parseInt((this._value as number).toString());
+    const int = parseInt((this._value || 0).toString());
     const val = signedToUnsigned(int, 16);
     const u8a = new Uint8Array(2);
 
@@ -901,7 +912,7 @@ export class Int32 extends SensorData<number> {
   }
 
   public toBytes (): Uint8Array {
-    const int = parseInt((this._value as number).toString());
+    const int = parseInt((this._value || 0).toString());
     const val = signedToUnsigned(int, 32);
     const u8a = new Uint8Array(4);
 
@@ -938,7 +949,7 @@ export class Uint16Value extends SensorData<number> {
     this._value /= Math.pow(10, this._exponent);
   }
   public toBytes (): Uint8Array {
-    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const int = (this._value || 0) * Math.pow(10, this._exponent);
     const val = parseInt(int.toString());
     const u8a = new Uint8Array(2);
 
@@ -975,7 +986,7 @@ export class Uint32Value extends SensorData<number> {
     this._value /= Math.pow(10, this._exponent);
   }
   public toBytes (): Uint8Array {
-    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const int = (this._value || 0) * Math.pow(10, this._exponent);
     const val = parseInt(int.toString());
     const u8a = new Uint8Array(4);
 
@@ -1013,7 +1024,7 @@ export class Int16Value extends SensorData<number> {
     this._value /= Math.pow(10, this._exponent);
   }
   public toBytes (): Uint8Array {
-    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const int = (this._value || 0) * Math.pow(10, this._exponent);
     const val = signedToUnsigned(parseInt(int.toString()), 16);
     const u8a = new Uint8Array(2);
 
@@ -1051,7 +1062,7 @@ export class Int32Value extends SensorData<number> {
     this._value /= Math.pow(10, this._exponent);
   }
   public toBytes (): Uint8Array {
-    const int = (this._value as number) * Math.pow(10, this._exponent);
+    const int = (this._value || 0) * Math.pow(10, this._exponent);
     const val = signedToUnsigned(parseInt(int.toString()), 32);
     const u8a = new Uint8Array(4);
 
@@ -1079,7 +1090,7 @@ function signedToUnsigned (signed: number, size: number) {
   return signed;
 }
 
-const CLSM: any = {
+const DEFAULTS_CLS: any = {
   [PRESENCE_DETECTED]: Bool,
   [LIGHT_CONTROL_REGULATOR_ACCURACY]: Percentage8,
   [OUTPUT_RIPPLE_VOLTAGE_SPECIFICATION]: Percentage8,
