@@ -183,14 +183,16 @@ export abstract class SensorData<T extends SensorDataType> {
 
   public static of (
     propertyId: number,
-    value: Array<number>,
+    value: Array<number> | SensorDataType,
     ...args: any
   ): SensorData<SensorDataType> {
     const val = SensorData.from(
       propertyId,
       ...args,
     ) as SensorData<SensorDataType>;
-    val.setValue(Uint8Array.from(value));
+    if (value instanceof Uint8Array) val.setValue(value);
+    if (Array.isArray(value)) val.setValue(Uint8Array.from(value));
+    else val.setValue(value);
     return val;
   }
 }
