@@ -2,6 +2,7 @@ import { WebPlugin } from '@capacitor/core';
 
 import type {
   BluetoothState,
+  BluetoothConnectionState,
   NrfMeshPlugin,
   Permissions,
   MeshNetwork,
@@ -47,6 +48,10 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async requestBluetoothEnable (): Promise<BluetoothState> {
     console.log('requestBluetoothEnabled');
     return { enabled: true };
+  }
+  async isBluetoothConnected (): Promise<BluetoothConnectionState> {
+    console.log('isBluetoothConnected');
+    return {} as BluetoothConnectionState;
   }
 
   async initMeshNetwork (): Promise<void> {

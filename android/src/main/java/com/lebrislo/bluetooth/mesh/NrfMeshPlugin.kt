@@ -239,7 +239,7 @@ class NrfMeshPlugin : Plugin() {
         return true
     }
 
-    private fun assertBluetoothEnabled(call: PluginCall):Boolean{
+    private fun assertBluetoothEnabled(call: PluginCall): Boolean {
         if (!bluetoothAdapter.isEnabled) {
             call.reject("Bluetooth is not enabled")
             return false
@@ -266,13 +266,28 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
+    fun isBluetoothConnected(call: PluginCall) {
+        if (!assertBluetoothAdapter(call)) return
+        if (!assertBluetoothEnabled(call)) return
+
+        val connected = implementation.isBleConnected()
+        call.resolve(JSObject().apply {
+            put("connected",connected)
+            if (!connected) return@apply
+
+            val device = implementation.connectedDevice()
+            put("macAddress",device!!.address)
+        })
+    }
+
+    @PluginMethod
     fun initMeshNetwork(call: PluginCall) {
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
 
         // Register for Bluetooth state changes
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        bluetoothStateReceiver = BluetoothStateReceiver(this,implementation)
+        bluetoothStateReceiver = BluetoothStateReceiver(this, implementation)
         context.registerReceiver(bluetoothStateReceiver, filter)
 
         implementation.initMeshNetwork()

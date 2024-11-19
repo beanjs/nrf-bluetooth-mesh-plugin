@@ -19,6 +19,7 @@ npx cap sync
 * [`requestPermissions()`](#requestpermissions)
 * [`isBluetoothEnabled()`](#isbluetoothenabled)
 * [`requestBluetoothEnable()`](#requestbluetoothenable)
+* [`isBluetoothConnected()`](#isbluetoothconnected)
 * [`initMeshNetwork()`](#initmeshnetwork)
 * [`exportMeshNetwork()`](#exportmeshnetwork)
 * [`importMeshNetwork(...)`](#importmeshnetwork)
@@ -109,6 +110,17 @@ requestBluetoothEnable() => Promise<BluetoothState>
 ```
 
 **Returns:** <code>Promise&lt;<a href="#bluetoothstate">BluetoothState</a>&gt;</code>
+
+--------------------
+
+
+### isBluetoothConnected()
+
+```typescript
+isBluetoothConnected() => Promise<BluetoothConnectionState>
+```
+
+**Returns:** <code>Promise&lt;<a href="#bluetoothconnectionstate">BluetoothConnectionState</a>&gt;</code>
 
 --------------------
 
@@ -743,6 +755,14 @@ removeAllListeners() => Promise<void>
 | Prop          | Type                 |
 | ------------- | -------------------- |
 | **`enabled`** | <code>boolean</code> |
+
+
+#### BluetoothConnectionState
+
+| Prop             | Type                 |
+| ---------------- | -------------------- |
+| **`connected`**  | <code>boolean</code> |
+| **`macAddress`** | <code>string</code>  |
 
 
 #### MeshNetworkExport
