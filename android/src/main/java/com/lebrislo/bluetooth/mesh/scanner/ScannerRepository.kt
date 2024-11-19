@@ -137,6 +137,10 @@ class ScannerRepository(
                 ).build()
         )
 
+        synchronized(devices){
+            devices.clear()
+        }
+
         synchronized(this) {
             Log.v(tag, "startScanDevices isScanning: $isScanning")
             if (isScanning) {

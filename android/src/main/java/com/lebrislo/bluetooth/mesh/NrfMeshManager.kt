@@ -204,9 +204,6 @@ class NrfMeshManager(private val context: Context) {
     }
 
     fun disconnectBle(): DisconnectRequest {
-        synchronized(scannerRepository.devices) {
-            scannerRepository.devices.clear()
-        }
         scannerRepository.stopScanDevices()
         scannerRepository.startScanDevices()
         return bleMeshManager.disconnect()
@@ -475,10 +472,6 @@ class NrfMeshManager(private val context: Context) {
     }
 
     suspend fun scanMeshDevices(scanDurationMs: Int = 5000): List<ExtendedBluetoothDevice> {
-        synchronized(scannerRepository.devices) {
-            scannerRepository.devices.clear()
-        }
-
         scannerRepository.stopScanDevices()
         scannerRepository.startScanDevices()
 
