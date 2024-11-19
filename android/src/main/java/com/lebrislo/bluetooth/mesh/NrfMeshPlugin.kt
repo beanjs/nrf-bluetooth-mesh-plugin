@@ -85,9 +85,9 @@ class NrfMeshPlugin : Plugin() {
     private val tag: String = NrfMeshPlugin::class.java.simpleName
 
     companion object {
-        val MESH_EVENT_STRING: String = "meshEvent"
-        val BLUETOOTH_ADAPTER_EVENT_STRING: String = "bluetoothAdapterEvent"
-        val BLUETOOTH_CONNECTION_EVENT_STRING: String = "bluetoothConnectionEvent"
+        val MODEL_EVENT_STRING: String = "model"
+        val ADAPTER_EVENT_STRING: String = "adapter"
+        val CONNECTION_EVENT_STRING: String = "connection"
     }
 
     private var aliases: Array<String> = arrayOf()

@@ -58,9 +58,9 @@ npx cap sync
 * [`getSensorSetting(...)`](#getsensorsetting)
 * [`setSensorSetting(...)`](#setsensorsetting)
 * [`addListener(string, ...)`](#addlistenerstring-)
-* [`addListener('meshEvent', ...)`](#addlistenermeshevent-)
-* [`addListener('bluetoothAdapterEvent', ...)`](#addlistenerbluetoothadapterevent-)
-* [`addListener('bluetoothConnectionEvent', ...)`](#addlistenerbluetoothconnectionevent-)
+* [`addListener('model', ...)`](#addlistenermodel-)
+* [`addListener('adapter', ...)`](#addlisteneradapter-)
+* [`addListener('connection', ...)`](#addlistenerconnection-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
 
@@ -675,15 +675,15 @@ addListener(event: string, callback: (arg: any) => void) => Promise<PluginListen
 --------------------
 
 
-### addListener('meshEvent', ...)
+### addListener('model', ...)
 
 ```typescript
-addListener(event: 'meshEvent', callback: (arg: any) => void) => Promise<PluginListenerHandle>
+addListener(event: 'model', callback: (arg: any) => void) => Promise<PluginListenerHandle>
 ```
 
 | Param          | Type                               |
 | -------------- | ---------------------------------- |
-| **`event`**    | <code>'meshEvent'</code>           |
+| **`event`**    | <code>'model'</code>               |
 | **`callback`** | <code>(arg: any) =&gt; void</code> |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
@@ -691,15 +691,15 @@ addListener(event: 'meshEvent', callback: (arg: any) => void) => Promise<PluginL
 --------------------
 
 
-### addListener('bluetoothAdapterEvent', ...)
+### addListener('adapter', ...)
 
 ```typescript
-addListener(event: 'bluetoothAdapterEvent', callback: (arg: { enabled: boolean; }) => void) => Promise<PluginListenerHandle>
+addListener(event: 'adapter', callback: (arg: { enabled: boolean; }) => void) => Promise<PluginListenerHandle>
 ```
 
 | Param          | Type                                                 |
 | -------------- | ---------------------------------------------------- |
-| **`event`**    | <code>'bluetoothAdapterEvent'</code>                 |
+| **`event`**    | <code>'adapter'</code>                               |
 | **`callback`** | <code>(arg: { enabled: boolean; }) =&gt; void</code> |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
@@ -707,15 +707,15 @@ addListener(event: 'bluetoothAdapterEvent', callback: (arg: { enabled: boolean; 
 --------------------
 
 
-### addListener('bluetoothConnectionEvent', ...)
+### addListener('connection', ...)
 
 ```typescript
-addListener(event: 'bluetoothConnectionEvent', callback: (arg: { connected: boolean; }) => void) => Promise<PluginListenerHandle>
+addListener(event: 'connection', callback: (arg: { connected: boolean; }) => void) => Promise<PluginListenerHandle>
 ```
 
 | Param          | Type                                                   |
 | -------------- | ------------------------------------------------------ |
-| **`event`**    | <code>'bluetoothConnectionEvent'</code>                |
+| **`event`**    | <code>'connection'</code>                              |
 | **`callback`** | <code>(arg: { connected: boolean; }) =&gt; void</code> |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>

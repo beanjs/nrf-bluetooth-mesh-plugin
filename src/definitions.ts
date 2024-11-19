@@ -521,15 +521,15 @@ export interface NrfMeshPlugin {
     callback: (arg: any) => void,
   ): Promise<PluginListenerHandle>;
   addListener(
-    event: 'meshEvent',
+    event: 'model',
     callback: (arg: any) => void,
   ): Promise<PluginListenerHandle>;
   addListener(
-    event: 'bluetoothAdapterEvent',
+    event: 'adapter',
     callback: (arg: { enabled: boolean }) => void,
   ): Promise<PluginListenerHandle>;
   addListener(
-    event: 'bluetoothConnectionEvent',
+    event: 'connection',
     callback: (arg: { connected: boolean }) => void,
   ): Promise<PluginListenerHandle>;
   removeAllListeners(): Promise<void>;

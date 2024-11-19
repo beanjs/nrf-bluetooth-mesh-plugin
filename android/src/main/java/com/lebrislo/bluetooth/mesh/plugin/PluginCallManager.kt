@@ -5,7 +5,7 @@ import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import com.lebrislo.bluetooth.mesh.NrfMeshPlugin
-import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.MESH_EVENT_STRING
+import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.MODEL_EVENT_STRING
 import com.lebrislo.bluetooth.mesh.models.BleMeshDevice
 import com.lebrislo.bluetooth.mesh.plugin.ConfigOperationPair.Companion.getConfigOperationPair
 import com.lebrislo.bluetooth.mesh.plugin.ConfigPluginCall.Companion.generateConfigPluginCallResponse
@@ -94,7 +94,7 @@ class PluginCallManager private constructor() {
             pluginCall.resolve(callResponse)
             pluginCalls.remove(pluginCall)
         }
-        plugin.sendNotification(MESH_EVENT_STRING, callResponse)
+        plugin.sendNotification(MODEL_EVENT_STRING, callResponse)
     }
 
     /**
@@ -123,13 +123,13 @@ class PluginCallManager private constructor() {
         val pluginCall =
                 pluginCalls.find { it is ConfigPluginCall && it.meshOperationCallback == meshMessage.opCode && it.meshAddress == meshMessage.src }
 
-        if (pluginCall == null) {
-            plugin.sendNotification(MESH_EVENT_STRING, callResponse)
-        } else {
+        if (pluginCall != null) {
             pluginCall as ConfigPluginCall
             pluginCall.resolve(callResponse)
             pluginCalls.remove(pluginCall)
         }
+
+        plugin.sendNotification(MODEL_EVENT_STRING, callResponse)
     }
 
     fun addMeshPluginCall(meshOperation: Int, call: PluginCall, timeout: Int) {
@@ -158,13 +158,11 @@ class PluginCallManager private constructor() {
             put("inputOobActions", meshNode.provisioningCapabilities.rawInputOOBAction)
         }
 
-        if (pluginCall == null) {
-            plugin.sendNotification(MESH_EVENT_STRING, result)
-        } else {
-            pluginCall as MeshPluginCall
-            pluginCall.resolve(result)
-            pluginCalls.remove(pluginCall)
-        }
+        if (pluginCall == null) return
+
+        pluginCall as MeshPluginCall
+        pluginCall.resolve(result)
+        pluginCalls.remove(pluginCall)
     }
 
     fun resolveMeshProvisionPluginCall(meshDevice: BleMeshDevice) {
@@ -186,23 +184,22 @@ class PluginCallManager private constructor() {
             }
         }
 
-        if (pluginCall == null) {
-            plugin.sendNotification(MESH_EVENT_STRING, result)
-        } else {
-            pluginCall as MeshPluginCall
-            pluginCall.resolve(result)
-            pluginCalls.remove(pluginCall)
-        }
+        if (pluginCall == null) return
+
+        pluginCall as MeshPluginCall
+        pluginCall.resolve(result)
+        pluginCalls.remove(pluginCall)
     }
 
     fun resolveMeshNetworkInitPluginCall() {
         this.clearTimeout()
         val pluginCall = pluginCalls.find { it is MeshPluginCall && it.meshOperationCallback == MESH_NETWORK_INIT }
-        if (pluginCall != null) {
-            pluginCall as MeshPluginCall
-            pluginCall.resolve(JSObject())
-            pluginCalls.remove(pluginCall)
-        }
+
+        if (pluginCall == null) return
+
+        pluginCall as MeshPluginCall
+        pluginCall.resolve(JSObject())
+        pluginCalls.remove(pluginCall)
     }
 
     /**
@@ -233,12 +230,12 @@ class PluginCallManager private constructor() {
         val pluginCall =
                 pluginCalls.find { it is VendorPluginCall && it.meshOperationCallback == meshMessage.opCode && it.meshAddress == meshMessage.src }
 
-        if (pluginCall == null) {
-            plugin.sendNotification(MESH_EVENT_STRING, callResponse)
-        } else {
+        if (pluginCall != null) {
             pluginCall as VendorPluginCall
             pluginCall.resolve(callResponse)
             pluginCalls.remove(pluginCall)
         }
+
+        plugin.sendNotification(MODEL_EVENT_STRING, callResponse)
     }
 }

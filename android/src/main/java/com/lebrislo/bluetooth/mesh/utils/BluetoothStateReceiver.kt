@@ -8,8 +8,8 @@ import android.content.Intent
 import com.getcapacitor.JSObject
 import com.lebrislo.bluetooth.mesh.NrfMeshManager
 import com.lebrislo.bluetooth.mesh.NrfMeshPlugin
-import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.BLUETOOTH_ADAPTER_EVENT_STRING
-import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.BLUETOOTH_CONNECTION_EVENT_STRING
+import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.ADAPTER_EVENT_STRING
+import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.CONNECTION_EVENT_STRING
 
 class BluetoothStateReceiver(private val plugin: NrfMeshPlugin, private val implementation: NrfMeshManager) : BroadcastReceiver() {
 
@@ -17,23 +17,23 @@ class BluetoothStateReceiver(private val plugin: NrfMeshPlugin, private val impl
         val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
         when (state) {
             BluetoothAdapter.STATE_ON -> {
-                plugin.sendNotification(BLUETOOTH_ADAPTER_EVENT_STRING, JSObject().put("enabled", true))
+                plugin.sendNotification(ADAPTER_EVENT_STRING, JSObject().put("enabled", true))
                 implementation.startScan()
             }
 
             BluetoothAdapter.STATE_OFF -> {
-                plugin.sendNotification(BLUETOOTH_ADAPTER_EVENT_STRING, JSObject().put("enabled", false))
+                plugin.sendNotification(ADAPTER_EVENT_STRING, JSObject().put("enabled", false))
                 implementation.stopScan()
             }
         }
 
         when (intent.action) {
             BluetoothDevice.ACTION_ACL_CONNECTED -> {
-                plugin.sendNotification(BLUETOOTH_CONNECTION_EVENT_STRING, JSObject().put("connected", true))
+                plugin.sendNotification(CONNECTION_EVENT_STRING, JSObject().put("connected", true))
             }
 
             BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
-                plugin.sendNotification(BLUETOOTH_CONNECTION_EVENT_STRING, JSObject().put("connected", false))
+                plugin.sendNotification(CONNECTION_EVENT_STRING, JSObject().put("connected", false))
             }
         }
     }
