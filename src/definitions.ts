@@ -370,7 +370,10 @@ export interface NrfMeshPlugin {
   removeGroup(options: { groupAddress: number }): Promise<void>;
   getGroup(options: { groupAddress: number }): Promise<MeshGroup | undefined>;
 
-  scanMeshDevices(options: { timeout: number }): Promise<ScanMeshDevices>;
+  scanMeshDevices(options: {
+    timeout?: number;
+    provisionedOnly?: boolean;
+  }): Promise<ScanMeshDevices>;
   getProvisioningCapabilities(options: {
     macAddress: string;
     uuid: string;
@@ -514,8 +517,20 @@ export interface NrfMeshPlugin {
   }): Promise<SensorSettingStatus>;
 
   addListener(
-    eventName: string,
-    listenerFunc: (event: any) => void,
+    event: string,
+    callback: (arg: any) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    event: 'meshEvent',
+    callback: (arg: any) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    event: 'bluetoothAdapterEvent',
+    callback: (arg: { enabled: boolean }) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    event: 'bluetoothConnectionEvent',
+    callback: (arg: { connected: boolean }) => void,
   ): Promise<PluginListenerHandle>;
   removeAllListeners(): Promise<void>;
 }

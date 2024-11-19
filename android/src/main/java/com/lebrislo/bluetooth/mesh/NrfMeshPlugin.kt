@@ -22,6 +22,7 @@ import com.getcapacitor.annotation.ActivityCallback
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
 import com.getcapacitor.annotation.PermissionCallback
+import com.lebrislo.bluetooth.mesh.models.ExtendedBluetoothDevice
 import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import com.lebrislo.bluetooth.mesh.utils.BluetoothStateReceiver
 import com.lebrislo.bluetooth.mesh.utils.Permissions
@@ -35,6 +36,7 @@ import no.nordicsemi.android.mesh.Features
 import no.nordicsemi.android.mesh.MeshManagerApi
 import no.nordicsemi.android.mesh.opcodes.ApplicationMessageOpCodes
 import no.nordicsemi.android.mesh.opcodes.ConfigMessageOpCodes
+import no.nordicsemi.android.mesh.sensorutils.Bool
 import no.nordicsemi.android.mesh.utils.CompanyIdentifiers
 import no.nordicsemi.android.mesh.utils.CompositionDataParser
 import no.nordicsemi.android.mesh.utils.MeshParserUtils
@@ -85,6 +87,7 @@ class NrfMeshPlugin : Plugin() {
     companion object {
         val MESH_EVENT_STRING: String = "meshEvent"
         val BLUETOOTH_ADAPTER_EVENT_STRING: String = "bluetoothAdapterEvent"
+        val BLUETOOTH_CONNECTION_EVENT_STRING: String = "bluetoothConnectionEvent"
     }
 
     private var aliases: Array<String> = arrayOf()
@@ -236,6 +239,14 @@ class NrfMeshPlugin : Plugin() {
         return true
     }
 
+    private fun assertBluetoothEnabled(call: PluginCall):Boolean{
+        if (!bluetoothAdapter.isEnabled) {
+            call.reject("Bluetooth is not enabled")
+            return false
+        }
+        return true
+    }
+
     @PluginMethod
     fun isBluetoothEnabled(call: PluginCall) {
         val result = JSObject()
@@ -261,14 +272,14 @@ class NrfMeshPlugin : Plugin() {
 
         // Register for Bluetooth state changes
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        bluetoothStateReceiver = BluetoothStateReceiver(this)
+        bluetoothStateReceiver = BluetoothStateReceiver(this,implementation)
         context.registerReceiver(bluetoothStateReceiver, filter)
 
         implementation.initMeshNetwork()
         implementation.startScan()
 
         PluginCallManager.getInstance()
-                .addMeshPluginCall(PluginCallManager.MESH_NETWORK_INIT, call,60000)
+                .addMeshPluginCall(PluginCallManager.MESH_NETWORK_INIT, call, 60000)
     }
 
     @PluginMethod
@@ -366,6 +377,7 @@ class NrfMeshPlugin : Plugin() {
     @PluginMethod
     fun scanMeshDevices(call: PluginCall) {
         val scanDuration = call.getInt("timeout", 5000)
+        val provisionedOnly = call.getBoolean("provisionedOnly", false)
 
         if (!Permissions.isBleEnabled(context)) {
             return call.reject("Bluetooth is disabled")
@@ -376,7 +388,10 @@ class NrfMeshPlugin : Plugin() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            val devices = implementation.scanMeshDevices(scanDuration!!)
+            var devices = listOf<ExtendedBluetoothDevice>()
+            if (provisionedOnly == false) {
+                devices = implementation.scanMeshDevices(scanDuration!!)
+            }
 
             // return a dict of devices, unprovisioned and provisioned
             val result = JSObject().apply {
@@ -473,7 +488,7 @@ class NrfMeshPlugin : Plugin() {
             }
 
             PluginCallManager.getInstance()
-                    .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call,10000)
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call, 10000)
 
             implementation.identify(UUID.fromString(uuid))
         }
@@ -498,7 +513,7 @@ class NrfMeshPlugin : Plugin() {
                     ?: return@launch call.reject("Unprovisioned Mesh Node not found, try identifying the node first")
 
             PluginCallManager.getInstance()
-                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call,30000)
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call, 30000)
 
             implementation.provisionDevice(node)
         }
@@ -512,6 +527,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -533,6 +549,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -554,6 +571,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -579,6 +597,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -600,6 +619,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -625,6 +645,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -648,6 +669,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -671,6 +693,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -692,6 +715,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -719,6 +743,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -746,6 +771,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -773,6 +799,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -800,6 +827,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -825,6 +853,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -851,6 +880,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -886,6 +916,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -914,6 +945,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -942,6 +974,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -965,6 +998,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -991,6 +1025,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -1024,6 +1059,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -1053,6 +1089,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -1078,6 +1115,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -1105,6 +1143,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -1135,6 +1174,7 @@ class NrfMeshPlugin : Plugin() {
         CoroutineScope(Dispatchers.Main).launch {
             if (!implementation.assertMeshNetwork(call)) return@launch
             if (!assertBluetoothAdapter(call)) return@launch
+            if (!assertBluetoothEnabled(call)) return@launch
 
             val connected = connectionToProvisionedDevice()
             if (!connected) {
@@ -1145,9 +1185,9 @@ class NrfMeshPlugin : Plugin() {
                 PluginCallManager.getInstance()
                         .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTING_SET, elementAddress, call)
 
-                implementation.setSensorSettingAck(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId,values.toList<Byte>().toByteArray())
-            }else{
-                val res = implementation.setSensorSetting(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId,values.toList<Byte>().toByteArray())
+                implementation.setSensorSettingAck(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId, values.toList<Byte>().toByteArray())
+            } else {
+                val res = implementation.setSensorSetting(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId, values.toList<Byte>().toByteArray())
                 call.resolve(res)
             }
         }
