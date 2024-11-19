@@ -198,15 +198,20 @@ class NrfMeshManager(private val context: Context) {
     }
 
     fun connectBle(bluetoothDevice: BluetoothDevice): Boolean {
-        scannerRepository.stopScanDevices()
+//        scannerRepository.stopScanDevices()
         bleMeshManager.connect(bluetoothDevice).retry(3, 200).await()
         return bleMeshManager.isConnected
     }
 
     fun disconnectBle(): DisconnectRequest {
-        scannerRepository.stopScanDevices()
-        scannerRepository.startScanDevices()
+//        scannerRepository.startScanDevices()
         return bleMeshManager.disconnect()
+    }
+
+    fun clearDevices() {
+        synchronized(scannerRepository.devices) {
+            scannerRepository.devices.clear()
+        }
     }
 
     fun isBleConnected(): Boolean {
@@ -405,15 +410,17 @@ class NrfMeshManager(private val context: Context) {
             Log.d(tag, "searchProxyMesh : Connected to a bluetooth device")
 
             synchronized(scannerRepository.devices) {
-                val isMeshProxy = scannerRepository.devices.any() { device ->
-                    device.provisioned && device.scanResult?.device?.address == bleMeshManager.bluetoothDevice?.address
-                }
+                if (scannerRepository.devices.isNotEmpty()) {
+                    val isMeshProxy = scannerRepository.devices.any() { device ->
+                        device.provisioned && device.scanResult?.device?.address == bleMeshManager.bluetoothDevice?.address
+                    }
 
-                Log.d(tag, "searchProxyMesh : Is mesh proxy: $isMeshProxy")
+                    Log.d(tag, "searchProxyMesh : Is mesh proxy: $isMeshProxy")
 
-                if (isMeshProxy) {
-                    Log.i(tag, "searchProxyMesh : Connected to a mesh proxy ${bleMeshManager.bluetoothDevice?.address}")
-                    return bleMeshManager.bluetoothDevice
+                    if (isMeshProxy) {
+                        Log.i(tag, "searchProxyMesh : Connected to a mesh proxy ${bleMeshManager.bluetoothDevice?.address}")
+                        return bleMeshManager.bluetoothDevice
+                    }
                 }
             }
 
@@ -422,20 +429,29 @@ class NrfMeshManager(private val context: Context) {
             }
         }
 
-        synchronized(scannerRepository.devices) {
-            Log.d(tag, "searchProxyMesh : Provisioned devices: ${scannerRepository.devices.size}")
+        val maxRetry = 20;
+        var retry = 0
+        while (retry < maxRetry) {
+            retry++
 
-            if (scannerRepository.devices.isNotEmpty()) {
-                val devices = scannerRepository.devices.filter {
-                    it.provisioned
-                }.toMutableList()
-
-                devices.sortBy { device -> device.scanResult?.rssi }
-
-                val device = devices.first().device
-                Log.i(tag, "searchProxyMesh : Found a mesh proxy ${device!!.address}")
-                return device
+            if (scannerRepository.devices.isEmpty()) {
+                delay(500)
+                continue;
             }
+
+            val devices = scannerRepository.devices.filter {
+                it.provisioned
+            }.toMutableList()
+
+            if (devices.isEmpty()) {
+                delay(500)
+                continue;
+            }
+
+            devices.sortBy { device -> device.scanResult?.rssi }
+            val device = devices.first().device
+            Log.i(tag, "searchProxyMesh : Found a mesh proxy ${device!!.address}")
+            return device
         }
 
         return null
@@ -472,8 +488,9 @@ class NrfMeshManager(private val context: Context) {
     }
 
     suspend fun scanMeshDevices(scanDurationMs: Int = 5000): List<ExtendedBluetoothDevice> {
-        scannerRepository.stopScanDevices()
-        scannerRepository.startScanDevices()
+        clearDevices()
+        stopScan()
+        startScan()
 
         delay(scanDurationMs.toLong())
 
@@ -713,21 +730,21 @@ class NrfMeshManager(private val context: Context) {
         val appkey = network.getAppKey(appKeyIndex)
 
         val sensorId = DeviceProperty.from(sensorSettingPropertyId.toShort())
-        val sensorVl = DeviceProperty.getCharacteristic(sensorId,values,0,values.count())
+        val sensorVl = DeviceProperty.getCharacteristic(sensorId, values, 0, values.count())
 
-        val configSensorSettingSet = SensorSettingSet(appkey,DeviceProperty.from(propertyId.toShort()),sensorId,sensorVl)
-        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingSet)
+        val configSensorSettingSet = SensorSettingSet(appkey, DeviceProperty.from(propertyId.toShort()), sensorId, sensorVl)
+        meshManagerApi.createMeshPdu(elementAddress, configSensorSettingSet)
     }
 
-    fun setSensorSetting(elementAddress: Int, appKeyIndex: Int, propertyId: Int, sensorSettingPropertyId: Int, values: ByteArray):JSObject {
+    fun setSensorSetting(elementAddress: Int, appKeyIndex: Int, propertyId: Int, sensorSettingPropertyId: Int, values: ByteArray): JSObject {
         val network = meshManagerApi.meshNetwork!!
         val appkey = network.getAppKey(appKeyIndex)
 
         val sensorId = DeviceProperty.from(sensorSettingPropertyId.toShort())
-        val sensorVl = DeviceProperty.getCharacteristic(sensorId,values,0,values.count())
+        val sensorVl = DeviceProperty.getCharacteristic(sensorId, values, 0, values.count())
 
-        val configSensorSettingSet = SensorSettingSetUnacknowledged(appkey,DeviceProperty.from(propertyId.toShort()),sensorId,sensorVl)
-        meshManagerApi.createMeshPdu(elementAddress,configSensorSettingSet)
+        val configSensorSettingSet = SensorSettingSetUnacknowledged(appkey, DeviceProperty.from(propertyId.toShort()), sensorId, sensorVl)
+        meshManagerApi.createMeshPdu(elementAddress, configSensorSettingSet)
 
         return JSObject().apply {
             put("propertyId", propertyId)
