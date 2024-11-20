@@ -364,6 +364,7 @@ export interface NrfMeshPlugin {
   isBluetoothEnabled(): Promise<BluetoothState>;
   requestBluetoothEnable(): Promise<BluetoothState>;
   isBluetoothConnected(): Promise<BluetoothConnectionState>;
+  disconnectBluetooth(): Promise<void>;
 
   initMeshNetwork(): Promise<void>;
   exportMeshNetwork(): Promise<MeshNetworkExport>;
@@ -538,6 +539,10 @@ export interface NrfMeshPlugin {
   addListener(
     event: 'connection',
     callback: (arg: { connected: boolean }) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    event: 'node',
+    callback: (arg: { action: 'delete'; unicastAddress: number }) => void,
   ): Promise<PluginListenerHandle>;
   removeAllListeners(): Promise<void>;
 }

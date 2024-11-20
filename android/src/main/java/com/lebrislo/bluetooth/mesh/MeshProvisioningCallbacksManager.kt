@@ -57,7 +57,7 @@ class MeshProvisioningCallbacksManager(
         Log.d(tag, "onProvisioningCompleted : " + meshNode?.uuid)
         if (state == ProvisioningState.States.PROVISIONING_COMPLETE) {
             nrfMeshManager.clearDevices()
-            nrfMeshManager.disconnectBle().enqueue()
+//            nrfMeshManager.disconnectBle().enqueue()
             val unode = unprovisionedMeshNodes.find {
                 findUnode(it,meshNode!!)
             }

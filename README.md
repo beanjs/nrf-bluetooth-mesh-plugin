@@ -20,6 +20,7 @@ npx cap sync
 * [`isBluetoothEnabled()`](#isbluetoothenabled)
 * [`requestBluetoothEnable()`](#requestbluetoothenable)
 * [`isBluetoothConnected()`](#isbluetoothconnected)
+* [`disconnectBluetooth()`](#disconnectbluetooth)
 * [`initMeshNetwork()`](#initmeshnetwork)
 * [`exportMeshNetwork()`](#exportmeshnetwork)
 * [`importMeshNetwork(...)`](#importmeshnetwork)
@@ -62,6 +63,7 @@ npx cap sync
 * [`addListener('model', ...)`](#addlistenermodel-)
 * [`addListener('adapter', ...)`](#addlisteneradapter-)
 * [`addListener('connection', ...)`](#addlistenerconnection-)
+* [`addListener('node', ...)`](#addlistenernode-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
 
@@ -121,6 +123,15 @@ isBluetoothConnected() => Promise<BluetoothConnectionState>
 ```
 
 **Returns:** <code>Promise&lt;<a href="#bluetoothconnectionstate">BluetoothConnectionState</a>&gt;</code>
+
+--------------------
+
+
+### disconnectBluetooth()
+
+```typescript
+disconnectBluetooth() => Promise<void>
+```
 
 --------------------
 
@@ -729,6 +740,22 @@ addListener(event: 'connection', callback: (arg: { connected: boolean; }) => voi
 | -------------- | ------------------------------------------------------ |
 | **`event`**    | <code>'connection'</code>                              |
 | **`callback`** | <code>(arg: { connected: boolean; }) =&gt; void</code> |
+
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
+
+--------------------
+
+
+### addListener('node', ...)
+
+```typescript
+addListener(event: 'node', callback: (arg: { action: 'delete'; unicastAddress: number; }) => void) => Promise<PluginListenerHandle>
+```
+
+| Param          | Type                                                                         |
+| -------------- | ---------------------------------------------------------------------------- |
+| **`event`**    | <code>'node'</code>                                                          |
+| **`callback`** | <code>(arg: { action: 'delete'; unicastAddress: number; }) =&gt; void</code> |
 
 **Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
 

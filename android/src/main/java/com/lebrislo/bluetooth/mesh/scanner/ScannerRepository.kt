@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.ParcelUuid
 import android.util.Log
 import com.lebrislo.bluetooth.mesh.models.ExtendedBluetoothDevice
+import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 import com.lebrislo.bluetooth.mesh.utils.Utils
 import no.nordicsemi.android.mesh.MeshManagerApi
 import no.nordicsemi.android.mesh.MeshNetwork
@@ -84,6 +85,7 @@ class ScannerRepository(
                     meshManagerApi.meshNetwork?.nodes?.forEach { node ->
                         if (node.uuid == deviceUuid.toString()) {
                             meshManagerApi.meshNetwork?.deleteNode(node)
+                            PluginCallManager.getInstance().notifyNodeDelete(node.unicastAddress)
                         }
                     }
                 }

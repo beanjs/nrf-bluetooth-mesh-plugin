@@ -88,6 +88,7 @@ class NrfMeshPlugin : Plugin() {
         val MODEL_EVENT_STRING: String = "model"
         val ADAPTER_EVENT_STRING: String = "adapter"
         val CONNECTION_EVENT_STRING: String = "connection"
+        val NODE_EVENT_STRING: String = "node"
     }
 
     private var aliases: Array<String> = arrayOf()
@@ -247,11 +248,11 @@ class NrfMeshPlugin : Plugin() {
         return true
     }
 
-    fun startScan(){
+    fun startScan() {
         implementation.startScan()
     }
 
-    fun stopScan(){
+    fun stopScan() {
         implementation.stopScan()
     }
 
@@ -280,12 +281,26 @@ class NrfMeshPlugin : Plugin() {
 
         val connected = implementation.isBleConnected()
         call.resolve(JSObject().apply {
-            put("connected",connected)
+            put("connected", connected)
             if (!connected) return@apply
 
             val device = implementation.connectedDevice()
-            put("macAddress",device!!.address)
+            put("macAddress", device!!.address)
         })
+    }
+
+    @PluginMethod
+    fun disconnectBluetooth(call: PluginCall){
+        if (!assertBluetoothAdapter(call)) return
+        if (!assertBluetoothEnabled(call)) return
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val connected = implementation.isBleConnected()
+            if (connected) {
+                implementation.disconnectBle().await()
+            }
+            call.resolve()
+        }
     }
 
     @PluginMethod

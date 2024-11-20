@@ -6,6 +6,7 @@ import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 import com.lebrislo.bluetooth.mesh.NrfMeshPlugin
 import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.MODEL_EVENT_STRING
+import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.NODE_EVENT_STRING
 import com.lebrislo.bluetooth.mesh.models.BleMeshDevice
 import com.lebrislo.bluetooth.mesh.plugin.ConfigOperationPair.Companion.getConfigOperationPair
 import com.lebrislo.bluetooth.mesh.plugin.ConfigPluginCall.Companion.generateConfigPluginCallResponse
@@ -200,6 +201,15 @@ class PluginCallManager private constructor() {
         pluginCall as MeshPluginCall
         pluginCall.resolve(JSObject())
         pluginCalls.remove(pluginCall)
+    }
+
+    fun notifyNodeDelete(unicastAddress: Int) {
+        if (plugin == null) return
+
+        plugin.sendNotification(NODE_EVENT_STRING, JSObject().apply {
+            put("action","delete")
+            put("unicastAddress", unicastAddress)
+        })
     }
 
     /**
