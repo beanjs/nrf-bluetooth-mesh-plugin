@@ -247,6 +247,14 @@ class NrfMeshPlugin : Plugin() {
         return true
     }
 
+    fun startScan(){
+        implementation.startScan()
+    }
+
+    fun stopScan(){
+        implementation.stopScan()
+    }
+
     @PluginMethod
     fun isBluetoothEnabled(call: PluginCall) {
         val result = JSObject()
@@ -287,7 +295,7 @@ class NrfMeshPlugin : Plugin() {
 
         // Register for Bluetooth state changes
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        bluetoothStateReceiver = BluetoothStateReceiver(this, implementation)
+        bluetoothStateReceiver = BluetoothStateReceiver(this)
         context.registerReceiver(bluetoothStateReceiver, filter)
 
         implementation.initMeshNetwork()

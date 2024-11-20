@@ -749,7 +749,12 @@ class NrfMeshManager(private val context: Context) {
         return JSObject().apply {
             put("propertyId", propertyId)
             put("sensorSettingPropertyId", sensorSettingPropertyId)
-            put("sensorSetting", sensorVl.value)
+            put("sensorSetting",JSArray().apply {
+                sensorVl.bytes.forEach {
+                    put(it)
+                }
+            })
+//            puxt("sensorSetting", sensorVl.value)
         }
     }
 }
