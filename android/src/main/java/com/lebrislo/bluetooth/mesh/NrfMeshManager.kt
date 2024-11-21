@@ -421,6 +421,8 @@ class NrfMeshManager(private val context: Context) {
                         Log.i(tag, "searchProxyMesh : Connected to a mesh proxy ${bleMeshManager.bluetoothDevice?.address}")
                         return bleMeshManager.bluetoothDevice
                     }
+
+                    scannerRepository.devices.clear()
                 }
             }
 
@@ -465,6 +467,8 @@ class NrfMeshManager(private val context: Context) {
                 if (scannerRepository.devices.any { device -> !device.provisioned && device.scanResult?.device?.address == macAddress }) {
                     return bleMeshManager.bluetoothDevice
                 }
+
+                scannerRepository.devices.clear()
             }
 
             withContext(Dispatchers.IO) {
@@ -472,19 +476,38 @@ class NrfMeshManager(private val context: Context) {
             }
         }
 
-        synchronized(scannerRepository.devices) {
-            return scannerRepository.devices.firstOrNull { device ->
-                if (device.provisioned) {
-                    return@firstOrNull false
-                }
+        val maxRetry = 20;
+        var retry = 0
+        while (retry < maxRetry) {
+            retry++
 
-                device.scanResult?.let {
+            if (scannerRepository.devices.isEmpty()) {
+                delay(500)
+                continue;
+            }
+
+            val devices = scannerRepository.devices.filter {
+                !it.provisioned
+            }.toMutableList()
+
+            if (devices.isEmpty()) {
+                delay(500)
+                continue;
+            }
+
+            devices.sortBy { device -> device.scanResult?.rssi }
+            val device = devices.firstOrNull{
+                it.scanResult?.let {
                     val serviceData = Utils.getServiceData(it, MeshManagerApi.MESH_PROVISIONING_UUID)
                     val deviceUuid = meshManagerApi.getDeviceUuid(serviceData!!)
                     deviceUuid.toString() == uuid
                 } ?: false
             }?.device
+
+            if (device!=null) return device
         }
+
+        return null
     }
 
     suspend fun scanMeshDevices(scanDurationMs: Int = 5000): List<ExtendedBluetoothDevice> {
