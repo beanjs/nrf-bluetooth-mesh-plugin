@@ -41,7 +41,7 @@ class ScannerRepository(
                 val serviceData: ByteArray? = Utils.getServiceData(result, MeshManagerApi.MESH_PROXY_UUID)
 //                Log.v(tag, "Proxy discovered: ${result.device.address}")
                 if (meshManagerApi.isAdvertisingWithNetworkIdentity(serviceData)) {
-                    if (meshManagerApi.meshNetwork!=null && meshManagerApi.networkIdMatches(serviceData)) {
+                    if (meshManagerApi.meshNetwork != null && meshManagerApi.networkIdMatches(serviceData)) {
                         device.provisioned = true
                         provDeviceDiscovered(device)
                     }
@@ -72,23 +72,24 @@ class ScannerRepository(
                 if (!devices.contains(device)) {
                     Log.d(tag, "Unprovisioned device discovered: ${result.device.address} ")
                     devices.add(device)
+                }
 
-                    // Delete the node from the mesh network if it was previously provisioned
-                    val serviceData = Utils.getServiceData(
-                            result,
-                            MeshManagerApi.MESH_PROVISIONING_UUID
-                    )
+                // Delete the node from the mesh network if it was previously provisioned
+                val serviceData = Utils.getServiceData(
+                        result,
+                        MeshManagerApi.MESH_PROVISIONING_UUID
+                )
 
-                    if (serviceData == null || serviceData.size < 18) return
-                    val deviceUuid: UUID = meshManagerApi.getDeviceUuid(serviceData)
+                if (serviceData == null || serviceData.size < 18) return
+                val deviceUuid: UUID = meshManagerApi.getDeviceUuid(serviceData)
 
-                    meshManagerApi.meshNetwork?.nodes?.forEach { node ->
-                        if (node.uuid == deviceUuid.toString()) {
-                            meshManagerApi.meshNetwork?.deleteNode(node)
-                            PluginCallManager.getInstance().notifyNodeDelete(node.unicastAddress)
-                        }
+                meshManagerApi.meshNetwork?.nodes?.forEach { node ->
+                    if (node.uuid == deviceUuid.toString()) {
+                        meshManagerApi.meshNetwork?.deleteNode(node)
+                        PluginCallManager.getInstance().notifyNodeDelete(node.unicastAddress)
                     }
                 }
+
             }
         }
 
