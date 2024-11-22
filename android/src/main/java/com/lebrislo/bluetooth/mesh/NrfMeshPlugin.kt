@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothAdapter.ACTION_REQUEST_ENABLE
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -310,6 +311,8 @@ class NrfMeshPlugin : Plugin() {
 
         // Register for Bluetooth state changes
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         bluetoothStateReceiver = BluetoothStateReceiver()
         context.registerReceiver(bluetoothStateReceiver, filter)
 

@@ -50,43 +50,61 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
         private fun configNodeResetStatusResponse(meshMessage: ConfigNodeResetStatus): JSObject {
             return JSObject().apply {
                 put("status", meshMessage.statusCode)
-                put("statusName",meshMessage.statusCodeName)
+                put("statusName", meshMessage.statusCodeName)
             }
         }
 
-        private fun configCompositionDataStatusResponse(meshMessage: ConfigCompositionDataStatus):JSObject{
+        private fun configCompositionDataStatusResponse(meshMessage: ConfigCompositionDataStatus): JSObject {
             return JSObject().apply {
                 put("status", meshMessage.statusCode)
                 put("statusName", meshMessage.statusCodeName)
                 put("companyIdentifier", CompanyIdentifiers.getCompanyName(meshMessage.companyIdentifier.toShort()))
-                put("productIdentifier", CompositionDataParser.formatProductIdentifier(meshMessage.productIdentifier,false))
-                put("productVersion",CompositionDataParser.formatVersionIdentifier(meshMessage.versionIdentifier,false))
+                put("productIdentifier", CompositionDataParser.formatProductIdentifier(meshMessage.productIdentifier, false))
+                put("productVersion", CompositionDataParser.formatVersionIdentifier(meshMessage.versionIdentifier, false))
                 put("nodeFeaturesSupported", JSObject().apply {
                     put("relay", meshMessage.isRelayFeatureSupported)
                     put("proxy", meshMessage.isProxyFeatureSupported)
                     put("friend", meshMessage.isFriendFeatureSupported)
                     put("lowPower", meshMessage.isLowPowerFeatureSupported)
                 })
-                put("elements",JSArray().apply {
-                    meshMessage.elements.values.forEach{
+                put("elements", JSArray().apply {
+                    meshMessage.elements.values.forEach {
                         put(JSObject().apply {
-                            put("name",it.name)
-                            put("elementAddress",it.elementAddress)
-                            put("sigModelCount",it.sigModelCount)
-                            put("vendorModelCount",it.vendorModelCount)
-                            put("location",it.locationDescriptor)
-                            put("models",JSArray().apply {
+                            put("name", it.name)
+                            put("elementAddress", it.elementAddress)
+                            put("sigModelCount", it.sigModelCount)
+                            put("vendorModelCount", it.vendorModelCount)
+                            put("location", it.locationDescriptor)
+                            put("models", JSArray().apply {
                                 it.meshModels.values.forEach {
                                     put(JSObject().apply {
-                                        put("modelId",it.modelId)
-                                        put("modelName",it.modelName)
-                                        put("boundAppKeyIndexes",JSArray().apply {
+                                        put("modelId", it.modelId)
+                                        put("modelName", it.modelName)
+                                        put("boundAppKeyIndexes", JSArray().apply {
                                             it.boundAppKeyIndexes.forEach {
                                                 put(it)
                                             }
                                         })
-//                                        put("subscribedAddresses",it.subscribedAddresses)
-//                                        put("",it.publicationSettings.)
+                                        if (it.subscribedAddresses != null) {
+                                            put("subscribedAddresses", JSArray().apply {
+                                                it.subscribedAddresses.forEach {
+                                                    put(it)
+                                                }
+                                            })
+                                        }
+
+                                        if (it.publicationSettings != null) {
+                                            put("publicationSettings",JSObject().apply {
+                                                put("appKeyIndex",it.publicationSettings.appKeyIndex)
+                                                put("publishAddress",it.publicationSettings.publishAddress)
+                                                put("credentialFlag",it.publicationSettings.credentialFlag)
+                                                put("publishTtl",it.publicationSettings.publishTtl)
+                                                put("publicationSteps",it.publicationSettings.publicationSteps)
+                                                put("publicationResolution",it.publicationSettings.publicationResolution)
+                                                put("retransmitCount",it.publicationSettings.publishRetransmitCount)
+                                                put("retransmitIntervalSteps",it.publicationSettings.publishRetransmitIntervalSteps)
+                                            })
+                                        }
                                     })
                                 }
                             })
@@ -96,20 +114,20 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
             }
         }
 
-        private fun configDefaultTtlStatusResponse(meshMessage: ConfigDefaultTtlStatus):JSObject{
-            return  JSObject().apply {
+        private fun configDefaultTtlStatusResponse(meshMessage: ConfigDefaultTtlStatus): JSObject {
+            return JSObject().apply {
                 put("status", meshMessage.statusCode)
                 put("statusName", meshMessage.statusCodeName)
-                put("ttl",meshMessage.ttl)
+                put("ttl", meshMessage.ttl)
             }
         }
 
-        private fun configNetworkTransmitStatusResponse(meshMessage: ConfigNetworkTransmitStatus):JSObject{
-            return  JSObject().apply {
+        private fun configNetworkTransmitStatusResponse(meshMessage: ConfigNetworkTransmitStatus): JSObject {
+            return JSObject().apply {
                 put("status", meshMessage.statusCode)
                 put("statusName", meshMessage.statusCodeName)
-                put("networkTransmitCount",meshMessage.networkTransmitCount)
-                put("networkTransmitIntervalSteps",meshMessage.networkTransmitIntervalSteps)
+                put("networkTransmitCount", meshMessage.networkTransmitCount)
+                put("networkTransmitIntervalSteps", meshMessage.networkTransmitIntervalSteps)
             }
         }
 
@@ -122,12 +140,12 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
             }
         }
 
-        private fun configAppKeyListResponse(meshMessage: ConfigAppKeyList):JSObject{
+        private fun configAppKeyListResponse(meshMessage: ConfigAppKeyList): JSObject {
             return JSObject().apply {
                 put("status", meshMessage.statusCode)
                 put("statusName", meshMessage.statusCodeName)
-                put("netKeyIndex",meshMessage.netKeyIndex)
-                put("appKeyIndexes",JSArray().apply {
+                put("netKeyIndex", meshMessage.netKeyIndex)
+                put("appKeyIndexes", JSArray().apply {
                     meshMessage.keyIndexes.forEach {
                         put(it)
                     }
@@ -145,29 +163,29 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
             }
         }
 
-        private fun configModelSubscriptionStatusResponse(meshMessage: ConfigModelSubscriptionStatus):JSObject{
+        private fun configModelSubscriptionStatusResponse(meshMessage: ConfigModelSubscriptionStatus): JSObject {
             return JSObject().apply {
                 put("status", meshMessage.statusCode)
                 put("statusName", meshMessage.statusCodeName)
-                put("elementAddress",meshMessage.elementAddress)
-                put("subscriptionAddress",meshMessage.subscriptionAddress)
+                put("elementAddress", meshMessage.elementAddress)
+                put("subscriptionAddress", meshMessage.subscriptionAddress)
                 put("modelIdentifier", meshMessage.modelIdentifier)
             }
         }
 
-        private fun configModelPublicationStatusResponse(meshMessage: ConfigModelPublicationStatus):JSObject{
+        private fun configModelPublicationStatusResponse(meshMessage: ConfigModelPublicationStatus): JSObject {
             return JSObject().apply {
                 put("status", meshMessage.statusCode)
                 put("statusName", meshMessage.statusCodeName)
-                put("elementAddress",meshMessage.elementAddress)
-                put("publishAddress",meshMessage.publishAddress)
-                put("appKeyIndex",meshMessage.appKeyIndex)
-                put("credentialFlag",meshMessage.credentialFlag)
-                put("publishTtl",meshMessage.publishTtl)
-                put("publicationSteps",meshMessage.publicationSteps)
-                put("publicationResolution",meshMessage.publicationResolution)
-                put("publishRetransmitCount",meshMessage.publishRetransmitCount)
-                put("modelId",meshMessage.modelIdentifier)
+                put("elementAddress", meshMessage.elementAddress)
+                put("publishAddress", meshMessage.publishAddress)
+                put("appKeyIndex", meshMessage.appKeyIndex)
+                put("credentialFlag", meshMessage.credentialFlag)
+                put("publishTtl", meshMessage.publishTtl)
+                put("publicationSteps", meshMessage.publicationSteps)
+                put("publicationResolution", meshMessage.publicationResolution)
+                put("publishRetransmitCount", meshMessage.publishRetransmitCount)
+                put("modelId", meshMessage.modelIdentifier)
             }
         }
     }
