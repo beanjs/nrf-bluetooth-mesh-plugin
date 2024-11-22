@@ -5,35 +5,29 @@ import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.getcapacitor.JSObject
-import com.lebrislo.bluetooth.mesh.NrfMeshManager
-import com.lebrislo.bluetooth.mesh.NrfMeshPlugin
-import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.ADAPTER_EVENT_STRING
-import com.lebrislo.bluetooth.mesh.NrfMeshPlugin.Companion.CONNECTION_EVENT_STRING
+import com.lebrislo.bluetooth.mesh.plugin.PluginCallManager
 
-class BluetoothStateReceiver(private val plugin: NrfMeshPlugin) : BroadcastReceiver() {
+class BluetoothStateReceiver() : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR)
         when (state) {
             BluetoothAdapter.STATE_ON -> {
-                plugin.sendNotification(ADAPTER_EVENT_STRING, JSObject().put("enabled", true))
-                plugin.startScan()
+                PluginCallManager.getInstance().notifyAdapter(true)
             }
 
             BluetoothAdapter.STATE_OFF -> {
-                plugin.sendNotification(ADAPTER_EVENT_STRING, JSObject().put("enabled", false))
-                plugin.stopScan()
+                PluginCallManager.getInstance().notifyAdapter(false)
             }
         }
 
         when (intent.action) {
             BluetoothDevice.ACTION_ACL_CONNECTED -> {
-                plugin.sendNotification(CONNECTION_EVENT_STRING, JSObject().put("connected", true))
+                PluginCallManager.getInstance().notifyConnection(true)
             }
 
             BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
-                plugin.sendNotification(CONNECTION_EVENT_STRING, JSObject().put("connected", false))
+                PluginCallManager.getInstance().notifyConnection(false)
             }
         }
     }

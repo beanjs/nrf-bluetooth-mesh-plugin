@@ -310,7 +310,7 @@ class NrfMeshPlugin : Plugin() {
 
         // Register for Bluetooth state changes
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        bluetoothStateReceiver = BluetoothStateReceiver(this)
+        bluetoothStateReceiver = BluetoothStateReceiver()
         context.registerReceiver(bluetoothStateReceiver, filter)
 
         implementation.initMeshNetwork()
