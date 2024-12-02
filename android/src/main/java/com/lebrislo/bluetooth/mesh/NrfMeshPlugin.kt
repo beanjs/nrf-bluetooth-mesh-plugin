@@ -276,22 +276,26 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun isBluetoothConnected(call: PluginCall) {
+    fun isConnected(call: PluginCall) {
         if (!assertBluetoothAdapter(call)) return
         if (!assertBluetoothEnabled(call)) return
 
-        val connected = implementation.isBleConnected()
         call.resolve(JSObject().apply {
+
+            val connected = implementation.isBleConnected()
             put("connected", connected)
             if (!connected) return@apply
 
             val device = implementation.connectedDevice()
             put("macAddress", device!!.address)
+
+            val isProxy = implementation.isProxy(device.address)
+            put("isProxy",isProxy)
         })
     }
 
     @PluginMethod
-    fun disconnectBluetooth(call: PluginCall){
+    fun disconnect(call: PluginCall){
         if (!assertBluetoothAdapter(call)) return
         if (!assertBluetoothEnabled(call)) return
 

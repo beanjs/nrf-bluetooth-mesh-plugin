@@ -1,6 +1,6 @@
 {
   "name": "@beanjs/nrf-bluetooth-mesh",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Capacitor plugin for Bluetooth Mesh, based on nRF Mesh Libraries",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",

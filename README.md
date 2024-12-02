@@ -19,8 +19,8 @@ npx cap sync
 * [`requestPermissions()`](#requestpermissions)
 * [`isBluetoothEnabled()`](#isbluetoothenabled)
 * [`requestBluetoothEnable()`](#requestbluetoothenable)
-* [`isBluetoothConnected()`](#isbluetoothconnected)
-* [`disconnectBluetooth()`](#disconnectbluetooth)
+* [`isConnected()`](#isconnected)
+* [`disconnect()`](#disconnect)
 * [`initMeshNetwork()`](#initmeshnetwork)
 * [`exportMeshNetwork()`](#exportmeshnetwork)
 * [`importMeshNetwork(...)`](#importmeshnetwork)
@@ -116,10 +116,10 @@ requestBluetoothEnable() => Promise<BluetoothState>
 --------------------
 
 
-### isBluetoothConnected()
+### isConnected()
 
 ```typescript
-isBluetoothConnected() => Promise<BluetoothConnectionState>
+isConnected() => Promise<BluetoothConnectionState>
 ```
 
 **Returns:** <code>Promise&lt;<a href="#bluetoothconnectionstate">BluetoothConnectionState</a>&gt;</code>
@@ -127,10 +127,10 @@ isBluetoothConnected() => Promise<BluetoothConnectionState>
 --------------------
 
 
-### disconnectBluetooth()
+### disconnect()
 
 ```typescript
-disconnectBluetooth() => Promise<void>
+disconnect() => Promise<void>
 ```
 
 --------------------
@@ -790,6 +790,7 @@ removeAllListeners() => Promise<void>
 | ---------------- | -------------------- |
 | **`connected`**  | <code>boolean</code> |
 | **`macAddress`** | <code>string</code>  |
+| **`isProxy`**    | <code>boolean</code> |
 
 
 #### MeshNetworkExport

@@ -222,6 +222,16 @@ class NrfMeshManager(private val context: Context) {
         return bleMeshManager.bluetoothDevice
     }
 
+    fun isProxy(mac: String): Boolean {
+        synchronized(scannerRepository.devices) {
+            scannerRepository.devices.firstOrNull {
+                it.provisioned && it.address == mac
+            } != null
+        }
+
+        return false
+    }
+
     fun startScan() {
         scannerRepository.startScanDevices()
     }
@@ -496,7 +506,7 @@ class NrfMeshManager(private val context: Context) {
             }
 
             devices.sortBy { device -> device.scanResult?.rssi }
-            val device = devices.firstOrNull{
+            val device = devices.firstOrNull {
                 it.scanResult?.let {
                     val serviceData = Utils.getServiceData(it, MeshManagerApi.MESH_PROVISIONING_UUID)
                     val deviceUuid = meshManagerApi.getDeviceUuid(serviceData!!)
@@ -504,7 +514,7 @@ class NrfMeshManager(private val context: Context) {
                 } ?: false
             }?.device
 
-            if (device!=null) return device
+            if (device != null) return device
         }
 
         return null
@@ -772,7 +782,7 @@ class NrfMeshManager(private val context: Context) {
         return JSObject().apply {
             put("propertyId", propertyId)
             put("sensorSettingPropertyId", sensorSettingPropertyId)
-            put("sensorSetting",JSArray().apply {
+            put("sensorSetting", JSArray().apply {
                 sensorVl.bytes.forEach {
                     put(it)
                 }

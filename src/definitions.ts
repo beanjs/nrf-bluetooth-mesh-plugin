@@ -7,6 +7,7 @@ export interface BluetoothState {
 export interface BluetoothConnectionState {
   connected: boolean;
   macAddress?: string;
+  isProxy?: boolean;
 }
 
 export interface Permissions {
@@ -363,8 +364,8 @@ export interface NrfMeshPlugin {
   requestPermissions(): Promise<Permissions>;
   isBluetoothEnabled(): Promise<BluetoothState>;
   requestBluetoothEnable(): Promise<BluetoothState>;
-  isBluetoothConnected(): Promise<BluetoothConnectionState>;
-  disconnectBluetooth(): Promise<void>;
+  isConnected(): Promise<BluetoothConnectionState>;
+  disconnect(): Promise<void>;
 
   initMeshNetwork(): Promise<void>;
   exportMeshNetwork(): Promise<MeshNetworkExport>;

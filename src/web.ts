@@ -49,12 +49,12 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
     console.log('requestBluetoothEnabled');
     return { enabled: true };
   }
-  async isBluetoothConnected (): Promise<BluetoothConnectionState> {
+  async isConnected (): Promise<BluetoothConnectionState> {
     console.log('isBluetoothConnected');
     return {} as BluetoothConnectionState;
   }
-  async disconnectBluetooth (): Promise<void> {
-    console.log('disconnectBluetooth');
+  async disconnect (): Promise<void> {
+    console.log('disconnect');
   }
 
   async initMeshNetwork (): Promise<void> {
