@@ -962,6 +962,43 @@ export class Uint16Value extends SensorData<number> {
   }
 }
 
+export class Uint24Value extends SensorData<number> {
+  private _exponent: number;
+
+  public get exponent () {
+    return this._exponent;
+  }
+
+  public constructor (propertyId: number, exponent?: number) {
+    super(propertyId);
+    this._exponent = exponent || 0;
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value |= value[2] << 16;
+    this._value /= Math.pow(10, this._exponent);
+  }
+  public toBytes (): Uint8Array {
+    const int = (this._value || 0) * Math.pow(10, this._exponent);
+    const val = parseInt(int.toString());
+    const u8a = new Uint8Array(3);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+    u8a[2] = (val >> 16) & 0xff;
+
+    return u8a;
+  }
+}
+
 export class Uint32Value extends SensorData<number> {
   private _exponent: number;
 
@@ -1032,6 +1069,44 @@ export class Int16Value extends SensorData<number> {
 
     u8a[0] = (val >> 0) & 0xff;
     u8a[1] = (val >> 8) & 0xff;
+
+    return u8a;
+  }
+}
+
+export class Int24Value extends SensorData<number> {
+  private _exponent: number;
+
+  public get exponent () {
+    return this._exponent;
+  }
+
+  public constructor (propertyId: number, exponent?: number) {
+    super(propertyId);
+    this._exponent = exponent || 0;
+  }
+
+  public setValue (value: number | Uint8Array): void {
+    if (typeof value == 'number') {
+      this._value = value;
+      return;
+    }
+
+    this._value = 0;
+    this._value |= value[0] << 0;
+    this._value |= value[1] << 8;
+    this._value |= value[2] << 16;
+    this._value = unsignedToSigned(this._value, 24);
+    this._value /= Math.pow(10, this._exponent);
+  }
+  public toBytes (): Uint8Array {
+    const int = (this._value || 0) * Math.pow(10, this._exponent);
+    const val = signedToUnsigned(parseInt(int.toString()), 24);
+    const u8a = new Uint8Array(3);
+
+    u8a[0] = (val >> 0) & 0xff;
+    u8a[1] = (val >> 8) & 0xff;
+    u8a[2] = (val >> 16) & 0xff;
 
     return u8a;
   }
