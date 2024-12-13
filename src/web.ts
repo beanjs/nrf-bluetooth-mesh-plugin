@@ -60,6 +60,9 @@ export class NrfMeshWeb extends WebPlugin implements NrfMeshPlugin {
   async initMeshNetwork (): Promise<void> {
     console.log('initMeshNetwork');
   }
+  async killMeshNetwork (): Promise<void> {
+    console.log('killMeshNetwork');
+  }
   async getMeshNetwork (): Promise<MeshNetwork> {
     console.log('getMeshNetwork');
     return {} as MeshNetwork;

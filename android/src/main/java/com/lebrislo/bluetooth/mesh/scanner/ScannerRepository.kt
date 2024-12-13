@@ -41,9 +41,11 @@ class ScannerRepository(
                 val serviceData: ByteArray? = Utils.getServiceData(result, MeshManagerApi.MESH_PROXY_UUID)
 //                Log.v(tag, "Proxy discovered: ${result.device.address}")
                 if (meshManagerApi.isAdvertisingWithNetworkIdentity(serviceData)) {
-                    if (meshManagerApi.meshNetwork != null && meshManagerApi.networkIdMatches(serviceData)) {
-                        device.provisioned = true
-                        provDeviceDiscovered(device)
+                    if (meshManagerApi.meshNetwork != null) {
+                        if(meshManagerApi.networkIdMatches(serviceData)) {
+                            device.provisioned = true
+                            provDeviceDiscovered(device)
+                        }
                     }
                 } else if (meshManagerApi.isAdvertisedWithNodeIdentity(serviceData)) {
                     if (checkIfNodeIdentityMatches(serviceData!!)) {

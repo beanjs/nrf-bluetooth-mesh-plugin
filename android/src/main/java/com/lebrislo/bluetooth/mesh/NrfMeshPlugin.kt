@@ -328,6 +328,24 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
+    fun killMeshNetwork(call: PluginCall){
+        try {
+            context.unregisterReceiver(bluetoothStateReceiver)
+        } catch (e: IllegalArgumentException) {
+            Log.e(tag, "handleOnDestroy : Receiver not registered")
+        }
+
+        if (implementation.isBleConnected()) {
+            CoroutineScope(Dispatchers.IO).launch {
+                implementation.disconnectBle().await()
+            }
+        }
+
+        implementation.stopScan()
+        call.resolve(JSObject())
+    }
+
+    @PluginMethod
     fun getMeshNetwork(call: PluginCall) {
         if (!implementation.assertMeshNetwork(call)) return
 

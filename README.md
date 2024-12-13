@@ -22,6 +22,7 @@ npx cap sync
 * [`isConnected()`](#isconnected)
 * [`disconnect()`](#disconnect)
 * [`initMeshNetwork()`](#initmeshnetwork)
+* [`killMeshNetwork()`](#killmeshnetwork)
 * [`exportMeshNetwork()`](#exportmeshnetwork)
 * [`importMeshNetwork(...)`](#importmeshnetwork)
 * [`getMeshNetwork()`](#getmeshnetwork)
@@ -140,6 +141,15 @@ disconnect() => Promise<void>
 
 ```typescript
 initMeshNetwork() => Promise<void>
+```
+
+--------------------
+
+
+### killMeshNetwork()
+
+```typescript
+killMeshNetwork() => Promise<void>
 ```
 
 --------------------

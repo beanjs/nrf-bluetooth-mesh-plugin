@@ -368,6 +368,7 @@ export interface NrfMeshPlugin {
   disconnect(): Promise<void>;
 
   initMeshNetwork(): Promise<void>;
+  killMeshNetwork(): Promise<void>;
   exportMeshNetwork(): Promise<MeshNetworkExport>;
   importMeshNetwork(network: MeshNetworkExport): Promise<void>;
 

@@ -253,7 +253,9 @@ class NrfMeshManager(private val context: Context) {
     }
 
     fun initMeshNetwork() {
-        meshManagerApi.loadMeshNetwork()
+        if(meshManagerApi.meshNetwork == null) {
+            meshManagerApi.loadMeshNetwork()
+        }
     }
 
     fun exportMeshNetwork(): String? {
