@@ -19,7 +19,7 @@ import no.nordicsemi.android.mesh.utils.CompositionDataParser
 /**
  * This class is used to generate a response for a Config plugin call.
  */
-class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: PluginCall) : BasePluginCall(call) {
+class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, call: PluginCall, timeout: Int = 10000) : BasePluginCall(call, timeout) {
     companion object {
         /**
          * Generates a response for a Config plugin call.
@@ -94,15 +94,15 @@ class ConfigPluginCall(val meshOperationCallback: Int, val meshAddress: Int, cal
                                         }
 
                                         if (it.publicationSettings != null) {
-                                            put("publicationSettings",JSObject().apply {
-                                                put("appKeyIndex",it.publicationSettings.appKeyIndex)
-                                                put("publishAddress",it.publicationSettings.publishAddress)
-                                                put("credentialFlag",it.publicationSettings.credentialFlag)
-                                                put("publishTtl",it.publicationSettings.publishTtl)
-                                                put("publicationSteps",it.publicationSettings.publicationSteps)
-                                                put("publicationResolution",it.publicationSettings.publicationResolution)
-                                                put("retransmitCount",it.publicationSettings.publishRetransmitCount)
-                                                put("retransmitIntervalSteps",it.publicationSettings.publishRetransmitIntervalSteps)
+                                            put("publicationSettings", JSObject().apply {
+                                                put("appKeyIndex", it.publicationSettings.appKeyIndex)
+                                                put("publishAddress", it.publicationSettings.publishAddress)
+                                                put("credentialFlag", it.publicationSettings.credentialFlag)
+                                                put("publishTtl", it.publicationSettings.publishTtl)
+                                                put("publicationSteps", it.publicationSettings.publicationSteps)
+                                                put("publicationResolution", it.publicationSettings.publicationResolution)
+                                                put("retransmitCount", it.publicationSettings.publishRetransmitCount)
+                                                put("retransmitIntervalSteps", it.publicationSettings.publishRetransmitIntervalSteps)
                                             })
                                         }
                                     })

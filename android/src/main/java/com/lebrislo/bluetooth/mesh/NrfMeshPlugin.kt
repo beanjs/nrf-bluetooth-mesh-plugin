@@ -290,12 +290,12 @@ class NrfMeshPlugin : Plugin() {
             put("macAddress", device!!.address)
 
             val isProxy = implementation.isProxy(device.address)
-            put("isProxy",isProxy)
+            put("isProxy", isProxy)
         })
     }
 
     @PluginMethod
-    fun disconnect(call: PluginCall){
+    fun disconnect(call: PluginCall) {
         if (!assertBluetoothAdapter(call)) return
         if (!assertBluetoothEnabled(call)) return
 
@@ -328,7 +328,7 @@ class NrfMeshPlugin : Plugin() {
     }
 
     @PluginMethod
-    fun killMeshNetwork(call: PluginCall){
+    fun killMeshNetwork(call: PluginCall) {
         try {
             context.unregisterReceiver(bluetoothStateReceiver)
         } catch (e: IllegalArgumentException) {
@@ -550,10 +550,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to device : $macAddress $uuid")
             }
 
-            PluginCallManager.getInstance()
-                    .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call, 10000)
-
             implementation.identify(UUID.fromString(uuid))
+
+            PluginCallManager.getInstance()
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_IDENTIFY, call, 15000)
+
+
         }
     }
 
@@ -575,10 +577,12 @@ class NrfMeshPlugin : Plugin() {
             val node = implementation.unprovisionedMeshNode(UUID.fromString(uuid))
                     ?: return@launch call.reject("Unprovisioned Mesh Node not found, try identifying the node first")
 
-            PluginCallManager.getInstance()
-                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call, 30000)
-
             implementation.provisionDevice(node)
+
+            PluginCallManager.getInstance()
+                    .addMeshPluginCall(PluginCallManager.MESH_NODE_PROVISION, call, 40000)
+
+
         }
     }
 
@@ -597,10 +601,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.unprovisionDevice(unicastAddress)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NODE_RESET, unicastAddress, call)
 
-            implementation.unprovisionDevice(unicastAddress)
+
         }
     }
 
@@ -619,10 +625,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
-            PluginCallManager.getInstance()
-                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_COMPOSITION_DATA_GET, unicastAddress, call)
-
             implementation.getCompositionData(unicastAddress)
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_COMPOSITION_DATA_GET, unicastAddress, call,20000)
+
+
         }
     }
 
@@ -641,10 +649,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getDefaultTTL(unicastAddress)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_DEFAULT_TTL_GET, unicastAddress, call)
 
-            implementation.getDefaultTTL(unicastAddress)
+
         }
     }
 
@@ -667,10 +677,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.setDefaultTTL(unicastAddress, ttl)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_DEFAULT_TTL_SET, unicastAddress, call)
 
-            implementation.setDefaultTTL(unicastAddress, ttl)
+
         }
     }
 
@@ -689,10 +701,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getNetworkTransmit(unicastAddress)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_GET, unicastAddress, call)
 
-            implementation.getNetworkTransmit(unicastAddress)
+
         }
     }
 
@@ -715,10 +729,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.setNetworkTransmit(unicastAddress, networkTransmitCount, networkTransmitIntervalSteps)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_NETWORK_TRANSMIT_SET, unicastAddress, call)
 
-            implementation.setNetworkTransmit(unicastAddress, networkTransmitCount, networkTransmitIntervalSteps)
+
         }
     }
 
@@ -739,10 +755,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.addAppKey(unicastAddress, appKeyIndex)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_ADD.toInt(), unicastAddress, call)
 
-            implementation.addAppKey(unicastAddress, appKeyIndex)
+
         }
     }
 
@@ -763,10 +781,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.delAppKey(unicastAddress, appKeyIndex)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_DELETE, unicastAddress, call)
 
-            implementation.delAppKey(unicastAddress, appKeyIndex)
+
         }
     }
 
@@ -785,10 +805,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getAppKeys(unicastAddress)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_APPKEY_GET, unicastAddress, call)
 
-            implementation.getAppKeys(unicastAddress)
+
         }
     }
 
@@ -813,10 +835,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.bindAppKey(unicastAddress, elementAddress, modelId, appKeyIndex)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_BIND, unicastAddress, call)
 
-            implementation.bindAppKey(unicastAddress, elementAddress, modelId, appKeyIndex)
+
         }
     }
 
@@ -841,10 +865,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.unbindAppKey(unicastAddress, elementAddress, modelId, appKeyIndex)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_APP_UNBIND, unicastAddress, call)
 
-            implementation.unbindAppKey(unicastAddress, elementAddress, modelId, appKeyIndex)
+
         }
     }
 
@@ -869,10 +895,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.subscribe(unicastAddress, elementAddress, subscriptionAddress, modelId)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
 
-            implementation.subscribe(unicastAddress, elementAddress, subscriptionAddress, modelId)
+
         }
     }
 
@@ -897,10 +925,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.unsubscribe(unicastAddress, elementAddress, subscriptionAddress, modelId)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
 
-            implementation.unsubscribe(unicastAddress, elementAddress, subscriptionAddress, modelId)
+
         }
     }
 
@@ -923,10 +953,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.unsubscribeAll(unicastAddress, elementAddress, subscriptionAddress)
+
             PluginCallManager.getInstance()
                     .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_SUBSCRIPTION_STATUS, unicastAddress, call)
 
-            implementation.unsubscribeAll(unicastAddress, elementAddress, subscriptionAddress)
+
         }
     }
 
@@ -950,8 +982,6 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
-            PluginCallManager.getInstance()
-                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_PUBLICATION_STATUS, unicastAddress, call)
 
             if (appKeyIndex == null) {
                 implementation.delPublish(unicastAddress, elementAddress, modelId)
@@ -966,6 +996,10 @@ class NrfMeshPlugin : Plugin() {
                 val retransmitIntervalSteps = call.getInt("retransmitIntervalSteps", 1)!!
                 implementation.setPublish(unicastAddress, elementAddress, publishAddress, appKeyIndex, credentialFlag, publishTtl, publicationSteps, publicationResolution, retransmitCount, retransmitIntervalSteps, modelId)
             }
+
+            PluginCallManager.getInstance()
+                    .addConfigPluginCall(ConfigMessageOpCodes.CONFIG_MODEL_PUBLICATION_STATUS, unicastAddress, call)
+
         }
     }
 
@@ -986,10 +1020,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getOnOff(elementAddress, appKeyIndex)
+
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_GET, elementAddress, call)
 
-            implementation.getOnOff(elementAddress, appKeyIndex)
+
         }
     }
 
@@ -1016,9 +1052,10 @@ class NrfMeshPlugin : Plugin() {
             }
 
             if (acknowledgement == true) {
+                implementation.setOnOffAck(elementAddress, appKeyIndex, onOff == true, transitionSteps, transitionResolution, delay)
+
                 PluginCallManager.getInstance()
                         .addSigPluginCall(ApplicationMessageOpCodes.GENERIC_ON_OFF_SET, elementAddress, call)
-                implementation.setOnOffAck(elementAddress, appKeyIndex, onOff == true, transitionSteps, transitionResolution, delay)
             } else {
                 val res = implementation.setOnOff(elementAddress, appKeyIndex, onOff == true, transitionSteps, transitionResolution, delay)
                 call.resolve(res)
@@ -1044,9 +1081,11 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getSensor(elementAddress, appKeyIndex, propertyId)
+
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_GET, elementAddress, call)
-            implementation.getSensor(elementAddress, appKeyIndex, propertyId)
+
         }
     }
 
@@ -1068,9 +1107,11 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getSensorDescriptor(elementAddress, appKeyIndex, propertyId)
+
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_DESCRIPTOR_GET, elementAddress, call)
-            implementation.getSensorDescriptor(elementAddress, appKeyIndex, propertyId)
+
         }
     }
 
@@ -1095,9 +1136,11 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getSensorColumn(elementAddress, appKeyIndex, propertyId, rawValueX.toList<Byte>().toByteArray())
+
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_COLUMN_GET, elementAddress, call)
-            implementation.getSensorColumn(elementAddress, appKeyIndex, propertyId, rawValueX.toList<Byte>().toByteArray())
+
         }
     }
 
@@ -1129,14 +1172,15 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
-            PluginCallManager.getInstance()
-                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SERIES_GET, elementAddress, call)
-
             if (rawValueX1 == null) {
                 implementation.getSensorSeries(elementAddress, appKeyIndex, propertyId, null, null)
             } else {
                 implementation.getSensorSeries(elementAddress, appKeyIndex, propertyId, rawValueX1.toList<Byte>().toByteArray(), rawValueX2.toList<Byte>().toByteArray())
             }
+
+            PluginCallManager.getInstance()
+                    .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SERIES_GET, elementAddress, call)
+
         }
     }
 
@@ -1159,10 +1203,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getSensorCadence(elementAddress, appKeyIndex, propertyId)
+
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_CADENCE_GET, elementAddress, call)
 
-            implementation.getSensorCadence(elementAddress, appKeyIndex, propertyId)
+
         }
     }
 
@@ -1185,10 +1231,12 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+
+            implementation.getSensorSettings(elementAddress, appKeyIndex, propertyId)
+
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTINGS_GET, elementAddress, call)
 
-            implementation.getSensorSettings(elementAddress, appKeyIndex, propertyId)
         }
     }
 
@@ -1213,10 +1261,11 @@ class NrfMeshPlugin : Plugin() {
                 return@launch call.reject("Failed to connect to Mesh proxy")
             }
 
+            implementation.getSensorSetting(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId)
+
             PluginCallManager.getInstance()
                     .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTING_GET, elementAddress, call)
 
-            implementation.getSensorSetting(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId)
         }
     }
 
@@ -1245,10 +1294,12 @@ class NrfMeshPlugin : Plugin() {
             }
 
             if (acknowledgement == true) {
+                implementation.setSensorSettingAck(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId, values.toList<Byte>().toByteArray())
+
                 PluginCallManager.getInstance()
                         .addSigPluginCall(ApplicationMessageOpCodes.SENSOR_SETTING_SET, elementAddress, call)
 
-                implementation.setSensorSettingAck(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId, values.toList<Byte>().toByteArray())
+
             } else {
                 val res = implementation.setSensorSetting(elementAddress, appKeyIndex, propertyId, sensorSettingPropertyId, values.toList<Byte>().toByteArray())
                 call.resolve(res)

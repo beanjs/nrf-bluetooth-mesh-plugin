@@ -107,10 +107,10 @@ class PluginCallManager private constructor() {
      * @param meshAddress Mesh address.
      * @param call Plugin call.
      */
-    fun addConfigPluginCall(meshOperation: Int, meshAddress: Int, call: PluginCall) {
+    fun addConfigPluginCall(meshOperation: Int, meshAddress: Int, call: PluginCall, timeout: Int = 10000) {
         this.clearTimeout()
         val operationPair = getConfigOperationPair(meshOperation)
-        pluginCalls.add(ConfigPluginCall(operationPair, meshAddress, call))
+        pluginCalls.add(ConfigPluginCall(operationPair, meshAddress, call, timeout))
     }
 
     /**
